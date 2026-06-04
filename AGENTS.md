@@ -15,7 +15,6 @@ The project focuses on email parsing, classification, and state tracking, while 
 ## Rules
 
 * Keep raw `.eml` files unchanged
-* Store processed outputs under `/data/processed`
 * Use modular scripts
 * Add comments for non-trivial logic
 * Avoid hardcoded absolute paths
@@ -33,6 +32,7 @@ After changing code, scripts, docs, data schemas, or workflow decisions, update 
 ## Folder Structure
 
 * `/data/raw/eml` for source emails
+* `/data/raw/jd` for source job descriptions
 * `/scripts` for parsing scripts
 * `/docs` for architecture notes
 
