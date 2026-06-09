@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import hashlib
 import re
 from datetime import datetime
@@ -23,6 +24,18 @@ def default_temp_dir() -> Path:
 
 def default_output_dir() -> Path:
     return project_root() / "data" / "raw" / "eml"
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Move imported .eml files into data/raw/eml with stable names."
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show planned file moves without changing files.",
+    )
+    return parser.parse_args()
 
 
 def parse_email_timestamp(eml_path: Path) -> str:
@@ -89,11 +102,14 @@ def build_target_path(
     return output_dir / f"{timestamp}_{hash_prefix} - {normalized_source_name(eml_path)}"
 
 
-def rename_eml_files(temp_dir: Path, output_dir: Path) -> list[tuple[Path, Path, str]]:
+def rename_eml_files(
+    temp_dir: Path, output_dir: Path, dry_run: bool = False
+) -> list[tuple[Path, Path, str]]:
     if not temp_dir.exists():
         raise FileNotFoundError(f"Temp directory does not exist: {temp_dir}")
 
-    output_dir.mkdir(parents=True, exist_ok=True)
+    if not dry_run:
+        output_dir.mkdir(parents=True, exist_ok=True)
 
     renamed: list[tuple[Path, Path, str]] = []
     for eml_path in sorted(temp_dir.glob("*.eml")):
@@ -110,21 +126,30 @@ def rename_eml_files(temp_dir: Path, output_dir: Path) -> list[tuple[Path, Path,
         target = build_target_path(eml_path, output_dir, timestamp, email_hash)
         renamed.append((eml_path, target, email_hash))
 
-        eml_path.rename(target)
+        if not dry_run:
+            eml_path.rename(target)
 
     return renamed
 
 
 def main() -> None:
-    renamed = rename_eml_files(default_temp_dir(), default_output_dir())
+    args = parse_args()
+    renamed = rename_eml_files(
+        default_temp_dir(), default_output_dir(), dry_run=args.dry_run
+    )
 
     if not renamed:
         print("No .eml files needed moving.")
         return
 
     for source, target, email_hash in renamed:
-        print(f"Created: {target}")
-        print(f"Message-ID SHA-256: {email_hash}")
+        print("Would create:" if args.dry_run else "Created:")
+        print(f"  {target}")
+        if args.dry_run:
+            print("From:")
+            print(f"  {source}")
+        print(f"Message-ID SHA-256:")
+        print(f"  {email_hash}")
 
 
 if __name__ == "__main__":

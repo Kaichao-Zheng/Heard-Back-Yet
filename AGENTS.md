@@ -33,6 +33,7 @@ After changing code, scripts, docs, data schemas, or workflow decisions, update 
 
 * `/data/raw/eml` for source emails
 * `/data/raw/jd` for source job descriptions
+* `/data/raw/json` for parsed email JSON intermediates
 * `/scripts` for parsing scripts
 * `/docs` for architecture notes
 

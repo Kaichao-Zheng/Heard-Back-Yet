@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import hashlib
 import html
 import json
@@ -15,6 +16,7 @@ from typing import Any
 
 
 RAW_EMAIL_DIR = "data/raw/eml"
+PARSED_JSON_DIR = "data/raw/json"
 CURRENT_USER_ID = "001"
 
 
@@ -24,6 +26,22 @@ def project_root() -> Path:
 
 def default_raw_dir() -> Path:
     return project_root() / RAW_EMAIL_DIR
+
+
+def default_json_dir() -> Path:
+    return project_root() / PARSED_JSON_DIR
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Parse raw .eml files into structured JSON files."
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show planned JSON outputs without writing files.",
+    )
+    return parser.parse_args()
 
 
 def calculate_email_id(message_id: str) -> str:
@@ -152,12 +170,23 @@ def parse_eml(eml_path: Path, user_id: str) -> dict[str, Any]:
         "category": {
             "label": None,
             "confidence": None,
+            "source": None,
+            "review_required": None,
         },
         "company": {
             "normalized": None,
             "raw": None,
-            "source": None,
             "confidence": None,
+            "source": None,
+            "review_required": None,
+            "candidates": [],
+        },
+        "position": {
+            "normalized": None,
+            "raw": None,
+            "confidence": None,
+            "source": None,
+            "review_required": None,
             "candidates": [],
         },
     }
@@ -189,19 +218,25 @@ def validate_unique(records: list[tuple[Path, dict[str, Any]]]) -> None:
         email_ids[email_id] = (message_id, eml_path)
 
 
-def output_path_for(eml_path: Path) -> Path:
-    return eml_path.with_suffix(".json")
+def output_path_for(eml_path: Path, json_dir: Path) -> Path:
+    return json_dir / eml_path.with_suffix(".json").name
 
 
-def write_records(records: list[tuple[Path, dict[str, Any]]]) -> None:
+def write_records(records: list[tuple[Path, dict[str, Any]]], json_dir: Path) -> None:
+    json_dir.mkdir(parents=True, exist_ok=True)
     for eml_path, record in records:
-        output_path = output_path_for(eml_path)
+        output_path = output_path_for(eml_path, json_dir)
         with output_path.open("w", encoding="utf-8", newline="\n") as file:
             json.dump(record, file, ensure_ascii=False, indent=2)
             file.write("\n")
 
 
-def parse_raw_dir(raw_dir: Path, user_id: str = CURRENT_USER_ID) -> list[Path]:
+def parse_raw_dir(
+    raw_dir: Path,
+    json_dir: Path = default_json_dir(),
+    user_id: str = CURRENT_USER_ID,
+    dry_run: bool = False,
+) -> list[Path]:
     if not raw_dir.exists():
         raise FileNotFoundError(f"Raw directory does not exist: {raw_dir}")
 
@@ -210,21 +245,24 @@ def parse_raw_dir(raw_dir: Path, user_id: str = CURRENT_USER_ID) -> list[Path]:
         for eml_path in sorted(raw_dir.glob("*.eml"))
     ]
     validate_unique(records)
-    write_records(records)
-    return [output_path_for(eml_path) for eml_path, _record in records]
+    if not dry_run:
+        write_records(records, json_dir)
+    return [output_path_for(eml_path, json_dir) for eml_path, _record in records]
 
 
 def main() -> None:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-    outputs = parse_raw_dir(default_raw_dir())
+    args = parse_args()
+    outputs = parse_raw_dir(default_raw_dir(), dry_run=args.dry_run)
     if not outputs:
         print("No .eml files found.")
         return
 
     for output_path in outputs:
-        print(f"Created: {output_path}")
+        print("Would create:" if args.dry_run else "Created:")
+        print(f"  {output_path}")
 
 
 if __name__ == "__main__":
