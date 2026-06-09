@@ -10,6 +10,12 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+from constants import (
+    ALLOWED_CATEGORY_LABELS,
+    CATEGORY_EVIDENCE,
+    CATEGORY_LABEL_UNKNOWN,
+)
+
 
 JSON_DIR = "data/raw/json"
 DEFAULT_MODEL = "qwen3.5:9b"
@@ -24,20 +30,6 @@ SYSTEM_PROMPT = (
     "You classify emails into a closed label set. "
     "You must return only valid JSON and no markdown."
 )
-
-ALLOWED_LABELS = [
-    "applied",
-    "assessment",
-    "auth",
-    "delivery-failure",
-    "interview",
-    "logistics",
-    "offer",
-    "profile-update",
-    "rejection",
-    "unknown",
-    "unrelated",
-]
 
 LABEL_GUIDE = """
 Use exactly one label:
@@ -133,7 +125,7 @@ def build_prompt(record: dict[str, Any], include_body: bool, max_body_chars: int
         body_text = str(record.get("body_text") or "")
         if len(body_text) > max_body_chars:
             body_text = body_text[:max_body_chars] + "\n[TRUNCATED]"
-        email_payload["body_excerpt"] = body_text
+        email_payload[CATEGORY_EVIDENCE["body_excerpt"]] = body_text
 
     evidence_note = (
         "Use subject as the primary signal and sender as supporting context. Use body_excerpt only as additional evidence."
@@ -204,7 +196,7 @@ def parse_model_json(content: str) -> dict[str, Any]:
 
 def validate_classification(value: dict[str, Any]) -> dict[str, Any]:
     label = value.get("label")
-    if label not in ALLOWED_LABELS:
+    if label not in ALLOWED_CATEGORY_LABELS:
         raise ValueError(f"Invalid label from model: {label!r}")
 
     confidence = value.get("confidence")
@@ -226,7 +218,7 @@ def validate_classification(value: dict[str, Any]) -> dict[str, Any]:
 def fallback_classification(error: Exception) -> dict[str, Any]:
     _message = str(error).strip()
     return {
-        "label": "unknown",
+        "label": CATEGORY_LABEL_UNKNOWN,
         "confidence": 0.0,
     }
 
@@ -250,10 +242,10 @@ def classify_record(
     )
 
     if (
-        subject_sender_result["label"] != "unknown"
+        subject_sender_result["label"] != CATEGORY_LABEL_UNKNOWN
         and subject_sender_result["confidence"] >= SUBJECT_SENDER_ACCEPT_THRESHOLD
     ):
-        subject_sender_result["evidence"] = "subject_sender"
+        subject_sender_result["evidence"] = CATEGORY_EVIDENCE["subject_sender"]
         return subject_sender_result
 
     print("Escalating to body_excerpt:")
@@ -263,7 +255,7 @@ def classify_record(
         f"confidence={subject_sender_result['confidence']:.3f}"
     )
     print("Evidence:")
-    print("  body_excerpt")
+    print(f"  {CATEGORY_EVIDENCE['body_excerpt']}")
     body_result = classify_with_evidence(
         record=record,
         include_body=True,
@@ -273,7 +265,7 @@ def classify_record(
         retries=retries,
         timeout_seconds=timeout_seconds,
     )
-    body_result["evidence"] = "body_excerpt"
+    body_result["evidence"] = CATEGORY_EVIDENCE["body_excerpt"]
     return body_result
 
 
@@ -329,7 +321,8 @@ def update_category(
             "label": label,
             "confidence": confidence,
             "source": f"ollama:{model}:{classification['evidence']}",
-            "review_required": label == "unknown" or confidence < review_threshold,
+            "review_required": label == CATEGORY_LABEL_UNKNOWN
+            or confidence < review_threshold,
         }
     )
 
