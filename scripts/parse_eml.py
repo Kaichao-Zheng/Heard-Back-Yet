@@ -174,19 +174,23 @@ def parse_eml(eml_path: Path, user_id: str) -> dict[str, Any]:
             "review_required": None,
         },
         "company": {
-            "normalized": None,
-            "raw": None,
-            "confidence": None,
-            "source": None,
-            "review_required": None,
+            "selected": {
+                "normalized": None,
+                "raw": None,
+                "confidence": None,
+                "source": None,
+                "review_required": None,
+            },
             "candidates": [],
         },
         "position": {
-            "normalized": None,
-            "raw": None,
-            "confidence": None,
-            "source": None,
-            "review_required": None,
+            "selected": {
+                "normalized": None,
+                "raw": None,
+                "confidence": None,
+                "source": None,
+                "review_required": None,
+            },
             "candidates": [],
         },
     }
