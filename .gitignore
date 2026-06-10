@@ -228,4 +228,9 @@ agent-logs/*
 # Raw Emails / Privacy
 # =========================
 data/raw/
-data/temp
+data/temp/
+
+# =========================
+# Temporary Scripts
+# =========================
+scripts/temp/

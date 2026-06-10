@@ -24,7 +24,7 @@ MAX_BODY_CHARS = 1500
 MODEL_RESPONSE_RETRIES = 1
 REVIEW_THRESHOLD = 0.75
 SUBJECT_SENDER_ACCEPT_THRESHOLD = 0.85
-OLLAMA_TIMEOUT_SECONDS = 100
+OLLAMA_TIMEOUT_SECONDS = 60
 
 SYSTEM_PROMPT = (
     "You classify emails into a closed label set. "
@@ -149,8 +149,8 @@ def call_ollama(ollama_url: str, model: str, prompt: str, timeout_seconds: int) 
     payload = {
         "model": model,
         "stream": False,
-        "think": False,
-        "format": "json",
+        "think": False,         # Keep thinking disabled. 
+        "format": "json",       # With Qwen thinking mode and format=json, ambiguous emails can overthink until timeout.
         "messages": [
             {
                 "role": "system",
