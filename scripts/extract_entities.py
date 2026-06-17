@@ -14,12 +14,12 @@ from typing import Any
 from constants import ENTITY_EVIDENCE
 
 
-JSON_DIR = "data/raw/json"
+JSON_DIR = "data/raw/eml/parsed"
 DEFAULT_MODEL = "qwen3.5:9b"
 DEFAULT_OLLAMA_URL = "http://localhost:11434"
 MODEL_RESPONSE_RETRIES = 1
 MAX_BODY_CHARS = 2000
-MIN_CANDIDATE_CONFIDENCE = 0.80
+MIN_CANDIDATE_CONFIDENCE = 0.60
 REVIEW_THRESHOLD = 0.80
 TOP_CANDIDATE_MARGIN = 0.1
 OLLAMA_TIMEOUT_SECONDS = 30
@@ -58,7 +58,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--force",
         action="store_true",
-        help="Re-extract files that already have selected company and position raw values.",
+        help="Re-extract files that already have selected company or position raw values.",
     )
     parser.add_argument(
         "--dry-run",
@@ -69,7 +69,7 @@ def parse_args() -> argparse.Namespace:
         "--limit",
         type=int,
         default=None,
-        help="Extract entities from at most this many JSON files from data/raw/json.",
+        help="Extract entities from at most this many JSON files from data/raw/eml/parsed.",
     )
     return parser.parse_args()
 
@@ -326,7 +326,6 @@ def selected_from_candidates(
 ) -> dict[str, Any]:
     if not candidates:
         return {
-            "normalized": None,
             "raw": None,
             "confidence": None,
             "source": None,
@@ -342,7 +341,6 @@ def selected_from_candidates(
     )
 
     return {
-        "normalized": None,
         "raw": top["raw"],
         "confidence": confidence,
         "source": top["source"],
@@ -382,12 +380,10 @@ def selected_raw(record: dict[str, Any], entity_name: str) -> str | None:
     return raw if isinstance(raw, str) and raw.strip() else None
 
 
-def skip_reason(record: dict[str, Any], force: bool) -> str | None:
+def should_skip(record: dict[str, Any], force: bool) -> bool:
     if force:
-        return None
-    if selected_raw(record, "company") is not None and selected_raw(record, "position") is not None:
-        return "already_extracted"
-    return None
+        return False
+    return selected_raw(record, "company") is not None or selected_raw(record, "position") is not None
 
 
 def extract_files(args: argparse.Namespace) -> int:
@@ -402,13 +398,10 @@ def extract_files(args: argparse.Namespace) -> int:
 
     for path in paths:
         record = load_record(path)
-        reason = skip_reason(record, args.force)
-        if reason is not None:
+        if should_skip(record, args.force):
             skipped += 1
             print("Skipped:")
             print(f"  {path}")
-            print("Reason:")
-            print(f"  {reason}")
             continue
 
         try:

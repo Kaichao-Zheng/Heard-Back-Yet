@@ -26,9 +26,10 @@ Use `agent-logs/README.md` for log types, naming, templates, and maintenance rul
 
 ## Folder Structure
 
-* `/data/raw/eml` for source emails
+* `/data/raw/eml` for stable-named source emails
+* `/data/raw/eml/source` for newly imported `.eml` files before stable renaming
+* `/data/raw/eml/parsed` for parsed email JSON intermediates
 * `/data/raw/jd` for source job descriptions
-* `/data/raw/json` for parsed email JSON intermediates
 * `/scripts` for parsing scripts
 * `/docs` for architecture notes
 

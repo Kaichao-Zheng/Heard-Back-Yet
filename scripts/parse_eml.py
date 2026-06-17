@@ -6,6 +6,7 @@ import html
 import json
 import re
 import sys
+from dataclasses import dataclass
 from email import policy
 from email.headerregistry import AddressHeader
 from email.message import EmailMessage, Message
@@ -16,8 +17,16 @@ from typing import Any
 
 
 RAW_EMAIL_DIR = "data/raw/eml"
-PARSED_JSON_DIR = "data/raw/json"
+PARSED_JSON_DIR = "data/raw/eml/parsed"
 CURRENT_USER_ID = "001"
+
+
+@dataclass(frozen=True)
+class ParseResult:
+    status: str
+    source: Path
+    output: Path | None = None
+    reason: str | None = None
 
 
 def project_root() -> Path:
@@ -40,6 +49,11 @@ def parse_args() -> argparse.Namespace:
         "--dry-run",
         action="store_true",
         help="Show planned JSON outputs without writing files.",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Recreate parsed JSON files that already exist.",
     )
     return parser.parse_args()
 
@@ -175,21 +189,19 @@ def parse_eml(eml_path: Path, user_id: str) -> dict[str, Any]:
         },
         "company": {
             "selected": {
-                "normalized": None,
                 "raw": None,
                 "confidence": None,
                 "source": None,
-                "review_required": None,
+                "review_required": True,
             },
             "candidates": [],
         },
         "position": {
             "selected": {
-                "normalized": None,
                 "raw": None,
                 "confidence": None,
                 "source": None,
-                "review_required": None,
+                "review_required": True,
             },
             "candidates": [],
         },
@@ -240,18 +252,69 @@ def parse_raw_dir(
     json_dir: Path = default_json_dir(),
     user_id: str = CURRENT_USER_ID,
     dry_run: bool = False,
-) -> list[Path]:
+    force: bool = False,
+) -> list[ParseResult]:
     if not raw_dir.exists():
         raise FileNotFoundError(f"Raw directory does not exist: {raw_dir}")
 
-    records = [
-        (eml_path, parse_eml(eml_path, user_id))
-        for eml_path in sorted(raw_dir.glob("*.eml"))
-    ]
+    results: list[ParseResult] = []
+    records: list[tuple[Path, dict[str, Any]]] = []
+    for eml_path in sorted(raw_dir.glob("*.eml")):
+        output_path = output_path_for(eml_path, json_dir)
+        if output_path.exists() and not force:
+            results.append(
+                ParseResult(
+                    status="skipped",
+                    source=eml_path,
+                    output=output_path,
+                    reason="parsed JSON already exists",
+                )
+            )
+            continue
+        records.append((eml_path, parse_eml(eml_path, user_id)))
+
     validate_unique(records)
     if not dry_run:
         write_records(records, json_dir)
-    return [output_path_for(eml_path, json_dir) for eml_path, _record in records]
+    results.extend(
+        ParseResult(
+            status="recreated"
+            if output_path_for(eml_path, json_dir).exists() and force
+            else "created",
+            source=eml_path,
+            output=output_path_for(eml_path, json_dir),
+        )
+        for eml_path, _record in records
+    )
+    return results
+
+
+def print_result(result: ParseResult, dry_run: bool) -> None:
+    if result.status == "created":
+        print("Would create:" if dry_run else "Created:")
+    elif result.status == "recreated":
+        print("Would recreate:" if dry_run else "Recreated:")
+    elif result.status == "skipped":
+        print("Skipped:")
+    else:
+        print(result.status)
+
+    if result.output is not None:
+        print(f"  {result.output}")
+    if result.status == "skipped":
+        print("From:")
+        print(f"  {result.source}")
+    if result.reason:
+        print("Reason:")
+        print(f"  {result.reason}")
+
+
+def print_summary(results: list[ParseResult]) -> None:
+    processed = sum(
+        1 for result in results if result.status in {"created", "recreated"}
+    )
+    skipped = sum(1 for result in results if result.status == "skipped")
+    print(f"Processed: {processed}; skipped: {skipped}; failed: 0")
 
 
 def main() -> None:
@@ -259,14 +322,14 @@ def main() -> None:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
     args = parse_args()
-    outputs = parse_raw_dir(default_raw_dir(), dry_run=args.dry_run)
-    if not outputs:
+    results = parse_raw_dir(default_raw_dir(), dry_run=args.dry_run, force=args.force)
+    if not results:
         print("No .eml files found.")
         return
 
-    for output_path in outputs:
-        print("Would create:" if args.dry_run else "Created:")
-        print(f"  {output_path}")
+    for result in results:
+        print_result(result, args.dry_run)
+    print_summary(results)
 
 
 if __name__ == "__main__":

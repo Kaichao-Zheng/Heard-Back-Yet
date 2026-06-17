@@ -17,7 +17,7 @@ from constants import (
 )
 
 
-JSON_DIR = "data/raw/json"
+JSON_DIR = "data/raw/eml/parsed"
 DEFAULT_MODEL = "qwen3.5:9b"
 DEFAULT_OLLAMA_URL = "http://localhost:11434"
 MAX_BODY_CHARS = 1500
@@ -82,7 +82,7 @@ def parse_args() -> argparse.Namespace:
         "--limit",
         type=int,
         default=None,
-        help="Classify at most this many JSON files from data/raw/json.",
+        help="Classify at most this many JSON files from data/raw/eml/parsed.",
     )
     return parser.parse_args()
 
