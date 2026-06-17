@@ -39,6 +39,7 @@ Use this for:
 - Test or validation results.
 
 Each file should describe one coherent work session.
+For small related edits made on the same day, append to an existing same-day progress note instead of creating many tiny files.
 
 ### `decisions/`
 
@@ -51,7 +52,7 @@ Use this for:
 - Privacy and retention rules.
 - Workflow conventions.
 
-Each file should contain one decision and its reasoning.
+Each file should contain one decision and its reasoning. Do not only record the final result; include why the decision was made and what trade-offs or consequences it creates.
 
 ## Suggested File Names
 
@@ -61,6 +62,7 @@ Each file should contain one decision and its reasoning.
 - `decisions/0001-short-decision-title.md`
 
 Use lowercase words separated by hyphens.
+Reuse an existing same-day `progress` file when the change is a minor follow-up to the same workflow.
 
 ## Entry Templates
 
@@ -124,6 +126,10 @@ Accepted
 - ...
 
 ## Decision
+
+- ...
+
+## Reasons
 
 - ...
 

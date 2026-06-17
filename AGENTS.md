@@ -15,24 +15,20 @@ The project focuses on email parsing, classification, and state tracking, while 
 ## Rules
 
 * Keep raw `.eml` files unchanged
-* Store processed outputs under `/data/processed`
 * Use modular scripts
 * Add comments for non-trivial logic
 * Avoid hardcoded absolute paths
 
 ## Agent Logs
 
-To reduce context loss across sessions, update `agent-logs` in Chinese after every meaningful project change.
-
-After changing code, scripts, docs, data schemas, or workflow decisions, update at least one of:
-
-* `agent-logs/handoffs/latest.md` for current recovery context
-* `agent-logs/progress/YYYY-MM-DD-short-topic.md` for completed work
-* `agent-logs/decisions/NNNN-short-title.md` for durable decisions
+After every meaningful project change, update `agent-logs` in Chinese.
+Use `agent-logs/README.md` for log types, naming, templates, and maintenance rules.
 
 ## Folder Structure
 
 * `/data/raw/eml` for source emails
+* `/data/raw/jd` for source job descriptions
+* `/data/raw/json` for parsed email JSON intermediates
 * `/scripts` for parsing scripts
 * `/docs` for architecture notes
 
