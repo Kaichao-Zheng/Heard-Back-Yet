@@ -180,7 +180,7 @@ def clean_raw(value: Any) -> str | None:
         return None
 
     text = re.sub(r"\s+", " ", value).strip()
-    text = text.strip(" \t\r\n\"'`[](){}<>:;,.")
+    text = text.strip(" \t\r\n\"'`[]{}<>:;,.")
     return text or None
 
 
