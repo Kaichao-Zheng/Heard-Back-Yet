@@ -225,10 +225,9 @@ agent-logs/*
 !agent-logs/README.md
 
 # =========================
-# Raw Emails / Privacy
+# Raw source and parsed data / Privacy
 # =========================
 data/raw/
-data/temp/
 
 # =========================
 # Temporary Scripts

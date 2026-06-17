@@ -3,6 +3,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import re
+import shutil
+import sys
+from dataclasses import dataclass
 from datetime import datetime
 from email import policy
 from email.parser import BytesParser
@@ -14,12 +17,21 @@ HASH_PREFIX_LENGTH = 8
 WINDOWS_DEDUPE_SUFFIX_PATTERN = re.compile(r"\s*\(\s*\d+\s*\)\s*$")
 
 
+@dataclass(frozen=True)
+class RenameResult:
+    status: str
+    source: Path
+    target: Path | None = None
+    email_hash: str | None = None
+    reason: str | None = None
+
+
 def project_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-def default_temp_dir() -> Path:
-    return project_root() / "data" / "temp"
+def default_source_dir() -> Path:
+    return project_root() / "data" / "raw" / "eml" / "source"
 
 
 def default_output_dir() -> Path:
@@ -28,12 +40,12 @@ def default_output_dir() -> Path:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Move imported .eml files into data/raw/eml with stable names."
+        description="Copy imported .eml files from data/raw/eml/source into data/raw/eml with stable names."
     )
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Show planned file moves without changing files.",
+        help="Show planned file copies without changing files.",
     )
     return parser.parse_args()
 
@@ -103,17 +115,24 @@ def build_target_path(
 
 
 def rename_eml_files(
-    temp_dir: Path, output_dir: Path, dry_run: bool = False
-) -> list[tuple[Path, Path, str]]:
-    if not temp_dir.exists():
-        raise FileNotFoundError(f"Temp directory does not exist: {temp_dir}")
+    source_dir: Path, output_dir: Path, dry_run: bool = False
+) -> list[RenameResult]:
+    if not source_dir.exists():
+        raise FileNotFoundError(f"Source directory does not exist: {source_dir}")
 
     if not dry_run:
         output_dir.mkdir(parents=True, exist_ok=True)
 
-    renamed: list[tuple[Path, Path, str]] = []
-    for eml_path in sorted(temp_dir.glob("*.eml")):
+    results: list[RenameResult] = []
+    for eml_path in sorted(source_dir.glob("*.eml")):
         if has_processed_prefix(eml_path):
+            results.append(
+                RenameResult(
+                    status="skipped",
+                    source=eml_path,
+                    reason="already has stable naming prefix",
+                )
+            )
             continue
 
         try:
@@ -121,35 +140,129 @@ def rename_eml_files(
         except Exception:
             timestamp = fallback_timestamp(eml_path)
 
-        message_id = parse_message_id(eml_path)
-        email_hash = calculate_message_id_hash(message_id)
-        target = build_target_path(eml_path, output_dir, timestamp, email_hash)
-        renamed.append((eml_path, target, email_hash))
+        try:
+            message_id = parse_message_id(eml_path)
+            email_hash = calculate_message_id_hash(message_id)
+            target = build_target_path(eml_path, output_dir, timestamp, email_hash)
+        except (OSError, ValueError) as error:
+            results.append(
+                RenameResult(status="failed", source=eml_path, reason=str(error))
+            )
+            continue
+
+        if target.exists():
+            try:
+                target_message_id = parse_message_id(target)
+                status = "duplicate" if target_message_id == message_id else "conflict"
+                reason = (
+                    "target already exists with same Message-ID"
+                    if status == "duplicate"
+                    else "target already exists with a different Message-ID"
+                )
+            except (OSError, ValueError) as error:
+                status = "conflict"
+                reason = f"target already exists and cannot be verified: {error}"
+
+            results.append(
+                RenameResult(
+                    status=status,
+                    source=eml_path,
+                    target=target,
+                    email_hash=email_hash,
+                    reason=reason,
+                )
+            )
+            continue
 
         if not dry_run:
-            eml_path.rename(target)
+            try:
+                shutil.copy2(eml_path, target)
+            except OSError as error:
+                results.append(
+                    RenameResult(
+                        status="failed",
+                        source=eml_path,
+                        target=target,
+                        email_hash=email_hash,
+                        reason=str(error),
+                    )
+                )
+                continue
 
-    return renamed
+        results.append(
+            RenameResult(
+                status="copied",
+                source=eml_path,
+                target=target,
+                email_hash=email_hash,
+            )
+        )
+
+    return results
+
+
+def print_result(result: RenameResult, dry_run: bool) -> None:
+    labels = {
+        "copied": "Would create:" if dry_run else "Created:",
+        "duplicate": "Skipped:",
+        "conflict": "Skipped:",
+        "failed": "Failed:",
+        "skipped": "Skipped:",
+    }
+    print(labels.get(result.status, result.status))
+    if result.target is not None:
+        print(f"  {result.target}")
+    print("From:")
+    print(f"  {result.source}")
+    if result.status in {"duplicate", "conflict"}:
+        print("Status:")
+        print(f"  {result.status}")
+    if result.email_hash is not None:
+        print("Message-ID SHA-256:")
+        print(f"  {result.email_hash}")
+    if result.reason:
+        print("Reason:")
+        print(f"  {result.reason}")
+
+
+def print_summary(results: list[RenameResult]) -> None:
+    counts = {
+        "copied": 0,
+        "duplicate": 0,
+        "conflict": 0,
+        "failed": 0,
+        "skipped": 0,
+    }
+    for result in results:
+        counts[result.status] = counts.get(result.status, 0) + 1
+
+    processed = counts["copied"]
+    skipped = counts["duplicate"] + counts["conflict"] + counts["skipped"]
+    print(
+        f"Processed: {processed}; "
+        f"skipped: {skipped}; "
+        f"failed: {counts['failed']}; "
+        f"duplicates: {counts['duplicate']}; "
+        f"conflicts: {counts['conflict']}"
+    )
 
 
 def main() -> None:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
     args = parse_args()
-    renamed = rename_eml_files(
-        default_temp_dir(), default_output_dir(), dry_run=args.dry_run
+    results = rename_eml_files(
+        default_source_dir(), default_output_dir(), dry_run=args.dry_run
     )
 
-    if not renamed:
-        print("No .eml files needed moving.")
+    if not results:
+        print("No .eml files needed copying.")
         return
 
-    for source, target, email_hash in renamed:
-        print("Would create:" if args.dry_run else "Created:")
-        print(f"  {target}")
-        if args.dry_run:
-            print("From:")
-            print(f"  {source}")
-        print(f"Message-ID SHA-256:")
-        print(f"  {email_hash}")
+    for result in results:
+        print_result(result, args.dry_run)
+    print_summary(results)
 
 
 if __name__ == "__main__":

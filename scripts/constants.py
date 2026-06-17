@@ -3,19 +3,25 @@ from __future__ import annotations
 
 CATEGORY_LABEL_UNKNOWN = "unknown"
 
-ALLOWED_CATEGORY_LABELS = (
+# Labels that can represent an application progress stage.
+# profile-update is included because it is often an applicant TODO after applying,
+# not just a passive notification.
+APPLICATION_PROGRESS_LABELS = (
     "applied",
+    "profile-update",
     "assessment",
+    "interview",
+    "offer",
+    "rejection",
+)
+
+ALLOWED_CATEGORY_LABELS = (
     "auth",
     "delivery-failure",
-    "interview",
     "logistics",
-    "offer",
-    "profile-update",
-    "rejection",
     "unrelated",
     CATEGORY_LABEL_UNKNOWN,
-)
+) + APPLICATION_PROGRESS_LABELS
 
 CATEGORY_EVIDENCE = {
     "subject_sender": "subject_sender",
@@ -23,7 +29,6 @@ CATEGORY_EVIDENCE = {
 }
 
 ENTITY_EVIDENCE = {
-    "sender": "sender",
     "subject": "subject",
     "body_text": "body_text",
 }
