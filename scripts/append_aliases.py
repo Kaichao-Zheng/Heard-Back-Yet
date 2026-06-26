@@ -76,11 +76,11 @@ def append_unique(values: list[str], seen: set[str], raw: str | None) -> None:
 
 
 def collect_eml_raw_values(eml_json_dir: Path) -> dict[str, list[str]]:
-    if not eml_json_dir.is_dir():
-        raise FileNotFoundError(f"EML JSON directory does not exist: {eml_json_dir}")
-
     values: dict[str, list[str]] = {entity_name: [] for entity_name in ALIAS_FILES}
     seen: dict[str, set[str]] = {entity_name: set() for entity_name in ALIAS_FILES}
+
+    if not eml_json_dir.is_dir():
+        return values
 
     for path in sorted(eml_json_dir.glob("*.json")):
         record = load_record(path)
@@ -95,12 +95,11 @@ def collect_eml_raw_values(eml_json_dir: Path) -> dict[str, list[str]]:
 
 
 def collect_jd_raw_values(jd_json_dir: Path) -> dict[str, list[str]]:
-    if not jd_json_dir.is_dir():
-        raise FileNotFoundError(f"JD JSON directory does not exist: {jd_json_dir}")
-
     values: dict[str, list[str]] = {entity_name: [] for entity_name in ALIAS_FILES}
     seen: dict[str, set[str]] = {entity_name: set() for entity_name in ALIAS_FILES}
 
+    if not jd_json_dir.is_dir():
+        return values
     for path in sorted(jd_json_dir.glob("*.json")):
         record = load_record(path)
         append_unique(values["company"], seen["company"], clean_raw(record.get("Company")))
@@ -158,7 +157,7 @@ def alias_additions(
     raw_values: list[str],
 ) -> list[dict[str, str]]:
     existing_raw = {
-        row.get("raw", "").casefold()
+        row.get("raw", "").strip().casefold()
         for row in rows
         if row.get("raw", "").strip()
     }
