@@ -147,7 +147,7 @@ def read_alias_rows(path: Path) -> list[dict[str, str]]:
 
 def write_alias_rows(path: Path, rows: list[dict[str, str]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as file:
+    with path.open("w", encoding="utf-8-sig", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=ALIAS_COLUMNS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
