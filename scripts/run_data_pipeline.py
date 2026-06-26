@@ -12,7 +12,10 @@ def project_root() -> Path:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run the email import pipeline: rename, parse, classify, extract."
+        description=(
+            "Run the source processing pipeline: EML rename/parse/classify/extract, "
+            "JD parse, and alias append."
+        )
     )
     parser.add_argument(
         "--dry-run",
@@ -23,11 +26,6 @@ def parse_args() -> argparse.Namespace:
         "--verbose",
         action="store_true",
         help="Print full output from each pipeline step.",
-    )
-    parser.add_argument(
-        "--force-parse",
-        action="store_true",
-        help="Recreate parsed JSON files that already exist.",
     )
     parser.add_argument(
         "--force-classify",
@@ -47,6 +45,14 @@ def step_command(script_name: str, *flags: str) -> list[str]:
 
 
 def summary_line(output: str) -> str:
+    alias_lines = [
+        line
+        for line in output.splitlines()
+        if line.startswith("company: ") or line.startswith("position: ")
+    ]
+    if alias_lines:
+        return "; ".join(alias_lines)
+
     for line in reversed(output.splitlines()):
         if line.startswith("Processed: ") or (
             line.startswith("No ") and (" found" in line or " needed" in line)
@@ -93,10 +99,7 @@ def main() -> None:
 
     run_step("rename", step_command("rename_eml.py", *dry_run_flag), args.verbose)
 
-    parse_flags = [*dry_run_flag]
-    if args.force_parse:
-        parse_flags.append("--force")
-    run_step("parse", step_command("parse_eml.py", *parse_flags), args.verbose)
+    run_step("parse", step_command("parse_eml.py", *dry_run_flag), args.verbose)
 
     classify_flags = [*dry_run_flag]
     if args.force_classify:
@@ -110,6 +113,14 @@ def main() -> None:
         extract_flags.append("--force")
     run_step(
         "extract", step_command("extract_entities.py", *extract_flags), args.verbose
+    )
+
+    run_step("parse_jd", step_command("parse_jd.py", *dry_run_flag), args.verbose)
+
+    run_step(
+        "append_aliases",
+        step_command("append_aliases.py", *dry_run_flag),
+        args.verbose,
     )
 
 
