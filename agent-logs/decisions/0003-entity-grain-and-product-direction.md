@@ -17,6 +17,7 @@ Proposed
 - `candidates` 保留邮件中识别出的原始候选，数量不限，但需要满足候选阈值。
 - `raw` 保留邮件原文或模型看到的候选表述。
 - `normalized` 暂按 alias mapping 后的归一化别名理解；LLM 可以辅助维护 alias mapping，但最终 canonical company / position 由人工确认。
+- alias mapping 也可以覆盖更细粒度的人工格式规范化，例如把 `Global Graduate-AI` 映射到 `Global Graduate - AI`；这类规则当前只存在于人工维护的 CSV 中，不存在于脚本逻辑。
 - job seeking state 暂按 position 粒度管理，而不是 company 粒度。
 - dashboard 中重复 company 是合法的，因为多个 position 的状态和时间线应相互独立。
 - `category.label` 是状态来源之一，但不是所有 label 都应转成 job state。
@@ -32,3 +33,4 @@ Proposed
 - 后续 schema 设计需要避免把 company 当作唯一状态主体。
 - NER 输出与人工确认实体需要分层，避免把模型候选误当作真实投递事实。
 - RAG 应结合邮件标签、实体候选、alias mapping、人工 JD，而不是只检索邮件正文。
+- 后续 typo 检查需要区分人工确认的格式映射和真实拼写错误；如果要脚本化格式规范化，应单独实现并补测试。

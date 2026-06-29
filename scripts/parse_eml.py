@@ -18,7 +18,7 @@ from typing import Any
 
 RAW_EMAIL_DIR = "data/raw/eml"
 PARSED_JSON_DIR = "data/raw/eml/parsed"
-CURRENT_USER_ID = "001"
+CURRENT_USER_ID = "default recipient"
 
 
 @dataclass(frozen=True)
@@ -58,7 +58,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def calculate_email_id(message_id: str) -> str:
+def hash_message_id(message_id: str) -> str:
     return hashlib.sha256(message_id.encode("utf-8")).hexdigest()
 
 
@@ -172,11 +172,11 @@ def parse_eml(eml_path: Path, user_id: str) -> dict[str, Any]:
     message_id = required_header(message, "Message-ID", eml_path)
 
     return {
-        "email_id": calculate_email_id(message_id),
         "message_id": message_id,
-        "user_id": user_id,
+        "message_id_hash": hash_message_id(message_id),
         "sender": format_address_header(message, "From"),
         "recipient": format_address_header(message, "To"),
+        "user_id": user_id,                                             # mocked multi-user support
         "received_at": parse_received_at(message, eml_path),
         "subject": str(message.get("Subject", "")).strip(),
         "body_text": extract_body_text(message),
@@ -210,11 +210,11 @@ def parse_eml(eml_path: Path, user_id: str) -> dict[str, Any]:
 
 def validate_unique(records: list[tuple[Path, dict[str, Any]]]) -> None:
     message_ids: dict[str, Path] = {}
-    email_ids: dict[str, tuple[str, Path]] = {}
+    message_id_hashes: dict[str, tuple[str, Path]] = {}
 
     for eml_path, record in records:
         message_id = str(record["message_id"])
-        email_id = str(record["email_id"])
+        message_id_hash = str(record["message_id_hash"])
 
         existing_message_path = message_ids.get(message_id)
         if existing_message_path is not None:
@@ -224,14 +224,14 @@ def validate_unique(records: list[tuple[Path, dict[str, Any]]]) -> None:
             )
         message_ids[message_id] = eml_path
 
-        existing_email = email_ids.get(email_id)
-        if existing_email is not None and existing_email[0] != message_id:
+        existing_hash = message_id_hashes.get(message_id_hash)
+        if existing_hash is not None and existing_hash[0] != message_id:
             raise ValueError(
-                "Email ID hash collision: "
-                f"{email_id} maps to {existing_email[0]} in {existing_email[1]} "
+                "Message-ID hash collision: "
+                f"{message_id_hash} maps to {existing_hash[0]} in {existing_hash[1]} "
                 f"and {message_id} in {eml_path}"
             )
-        email_ids[email_id] = (message_id, eml_path)
+        message_id_hashes[message_id_hash] = (message_id, eml_path)
 
 
 def output_path_for(eml_path: Path, json_dir: Path) -> Path:

@@ -22,7 +22,7 @@ class RenameResult:
     status: str
     source: Path
     target: Path | None = None
-    email_hash: str | None = None
+    message_id_hash: str | None = None
     reason: str | None = None
 
 
@@ -81,7 +81,7 @@ def parse_message_id(eml_path: Path) -> str:
     return str(message_id).strip()
 
 
-def calculate_message_id_hash(message_id: str) -> str:
+def hash_message_id(message_id: str) -> str:
     return hashlib.sha256(message_id.encode("utf-8")).hexdigest()
 
 
@@ -108,9 +108,9 @@ def has_processed_prefix(eml_path: Path) -> bool:
 
 
 def build_target_path(
-    eml_path: Path, output_dir: Path, timestamp: str, email_hash: str
+    eml_path: Path, output_dir: Path, timestamp: str, message_id_hash: str
 ) -> Path:
-    hash_prefix = email_hash[:HASH_PREFIX_LENGTH]
+    hash_prefix = message_id_hash[:HASH_PREFIX_LENGTH]
     return output_dir / f"{timestamp}_{hash_prefix} - {normalized_source_name(eml_path)}"
 
 
@@ -142,8 +142,10 @@ def rename_eml_files(
 
         try:
             message_id = parse_message_id(eml_path)
-            email_hash = calculate_message_id_hash(message_id)
-            target = build_target_path(eml_path, output_dir, timestamp, email_hash)
+            message_id_hash = hash_message_id(message_id)
+            target = build_target_path(
+                eml_path, output_dir, timestamp, message_id_hash
+            )
         except (OSError, ValueError) as error:
             results.append(
                 RenameResult(status="failed", source=eml_path, reason=str(error))
@@ -168,7 +170,7 @@ def rename_eml_files(
                     status=status,
                     source=eml_path,
                     target=target,
-                    email_hash=email_hash,
+                    message_id_hash=message_id_hash,
                     reason=reason,
                 )
             )
@@ -183,7 +185,7 @@ def rename_eml_files(
                         status="failed",
                         source=eml_path,
                         target=target,
-                        email_hash=email_hash,
+                        message_id_hash=message_id_hash,
                         reason=str(error),
                     )
                 )
@@ -194,7 +196,7 @@ def rename_eml_files(
                 status="copied",
                 source=eml_path,
                 target=target,
-                email_hash=email_hash,
+                message_id_hash=message_id_hash,
             )
         )
 
@@ -217,9 +219,9 @@ def print_result(result: RenameResult, dry_run: bool) -> None:
     if result.status in {"duplicate", "conflict"}:
         print("Status:")
         print(f"  {result.status}")
-    if result.email_hash is not None:
+    if result.message_id_hash is not None:
         print("Message-ID SHA-256:")
-        print(f"  {result.email_hash}")
+        print(f"  {result.message_id_hash}")
     if result.reason:
         print("Reason:")
         print(f"  {result.reason}")
@@ -238,13 +240,7 @@ def print_summary(results: list[RenameResult]) -> None:
 
     processed = counts["copied"]
     skipped = counts["duplicate"] + counts["conflict"] + counts["skipped"]
-    print(
-        f"Processed: {processed}; "
-        f"skipped: {skipped}; "
-        f"failed: {counts['failed']}; "
-        f"duplicates: {counts['duplicate']}; "
-        f"conflicts: {counts['conflict']}"
-    )
+    print(f"Processed: {processed}; skipped: {skipped}; failed: {counts['failed']}")
 
 
 def main() -> None:
