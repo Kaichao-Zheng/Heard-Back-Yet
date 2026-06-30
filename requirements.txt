@@ -1,0 +1,5 @@
+sqlalchemy
+psycopg[binary]
+alembic
+pgvector
+python-dotenv

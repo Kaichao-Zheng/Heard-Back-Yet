@@ -2,14 +2,14 @@
 erDiagram
     COMPANY_ALIAS {
         int company_alias_id PK
-        string raw_name
-        int company_id FK
+        string raw_name UK
+        int company_id FK "NOT NULL"
     }
 
     POSITION_ALIAS {
         int position_alias_id PK
-        string raw_name
-        int position_id FK
+        string raw_name UK
+        int position_id FK "NOT NULL"
     }
 
     COMPANY {
@@ -25,6 +25,8 @@ erDiagram
     APPLICATION {
         int application_id PK
         string latest_status "derived snapshot"
+        datetime latest_status_received_at "derived snapshot"
+        int latest_status_email_id "future FK"
         int company_id FK
         int position_id FK
     }
@@ -32,9 +34,9 @@ erDiagram
     EMAIL {
         int email_id PK
         string message_id UK
-        datetime received_at
-        string recipient "candidate entity"
-        string sender
+        datetime received_at "NOT NULL"
+        string recipient "candidate entity; NOT NULL"
+        string sender "NOT NULL"
         string subject
         string body_text
         string source_path
