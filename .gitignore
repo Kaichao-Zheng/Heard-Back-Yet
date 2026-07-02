@@ -225,11 +225,11 @@ agent-logs/*
 !agent-logs/README.md
 
 # =========================
-# Raw source and parsed data / Privacy
+# Source and generated data
 # =========================
-data/raw/
+data/
 
 # =========================
 # Temporary Scripts
 # =========================
-scripts/temp/
+scripts/diag/

@@ -4,16 +4,15 @@ import argparse
 import sys
 from pathlib import Path
 
-from db_config import (
-    ENV_PATH,
+from db.config import (
     MAINTENANCE_DATABASE,
-    PROJECT_ROOT,
     PostgresConfig,
     load_postgres_config,
 )
+from paths import ENV_PATH, SQL_SCHEMA_PATH
 
 
-INIT_SCHEMA_PATH = PROJECT_ROOT / "sql" / "init_schema.sql"
+INIT_SCHEMA_PATH = SQL_SCHEMA_PATH
 
 
 def parse_args() -> argparse.Namespace:

@@ -15,9 +15,8 @@ from email.utils import getaddresses, parsedate_to_datetime
 from pathlib import Path
 from typing import Any
 
+from paths import EML_PARSED_DIR, EML_RENAMED_DIR, PROJECT_ROOT
 
-RAW_EMAIL_DIR = "data/raw/eml"
-PARSED_JSON_DIR = "data/raw/eml/parsed"
 CURRENT_USER_ID = "default recipient"
 
 
@@ -29,16 +28,12 @@ class ParseResult:
     reason: str | None = None
 
 
-def project_root() -> Path:
-    return Path(__file__).resolve().parents[1]
-
-
 def default_raw_dir() -> Path:
-    return project_root() / RAW_EMAIL_DIR
+    return EML_RENAMED_DIR
 
 
 def default_json_dir() -> Path:
-    return project_root() / PARSED_JSON_DIR
+    return EML_PARSED_DIR
 
 
 def parse_args() -> argparse.Namespace:
@@ -180,7 +175,7 @@ def parse_eml(eml_path: Path, user_id: str) -> dict[str, Any]:
         "received_at": parse_received_at(message, eml_path),
         "subject": str(message.get("Subject", "")).strip(),
         "body_text": extract_body_text(message),
-        "source_path": eml_path.relative_to(project_root()).as_posix(),
+        "source_path": eml_path.relative_to(PROJECT_ROOT).as_posix(),
         "category": {
             "label": None,
             "confidence": None,

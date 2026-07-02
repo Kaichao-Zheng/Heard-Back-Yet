@@ -15,6 +15,10 @@ def project_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
+def script_root() -> Path:
+    return Path(__file__).resolve().parent
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
@@ -46,7 +50,8 @@ def parse_args() -> argparse.Namespace:
 
 
 def step_command(script_name: str, *flags: str) -> list[str]:
-    return [sys.executable, str(project_root() / "scripts" / script_name), *flags]
+    module_name = f"etl.{Path(script_name).stem}"
+    return [sys.executable, "-m", module_name, *flags]
 
 
 def summary_line(output: str) -> str:
@@ -74,12 +79,12 @@ def run_step(
         ensure_ollama_available(label)
 
     if verbose:
-        subprocess.run(command, cwd=project_root(), check=True)
+        subprocess.run(command, cwd=script_root(), check=True)
         return
 
     result = subprocess.run(
         command,
-        cwd=project_root(),
+        cwd=script_root(),
         capture_output=True,
         text=True,
         encoding="utf-8",

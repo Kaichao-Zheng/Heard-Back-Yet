@@ -12,6 +12,8 @@ from email.parser import BytesParser
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
+from paths import EML_IMPORT_DIR, EML_RENAMED_DIR
+
 TIMESTAMP_FORMAT = "%Y%m%d_%H%M%S"
 HASH_PREFIX_LENGTH = 8
 WINDOWS_DEDUPE_SUFFIX_PATTERN = re.compile(r"\s*\(\s*\d+\s*\)\s*$")
@@ -26,21 +28,9 @@ class RenameResult:
     reason: str | None = None
 
 
-def project_root() -> Path:
-    return Path(__file__).resolve().parents[1]
-
-
-def default_source_dir() -> Path:
-    return project_root() / "data" / "raw" / "eml" / "source"
-
-
-def default_output_dir() -> Path:
-    return project_root() / "data" / "raw" / "eml"
-
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Copy imported .eml files from data/raw/eml/source into data/raw/eml with stable names."
+        description="Copy imported .eml files into the stable renamed email directory."
     )
     parser.add_argument(
         "--dry-run",
@@ -249,7 +239,7 @@ def main() -> None:
 
     args = parse_args()
     results = rename_eml_files(
-        default_source_dir(), default_output_dir(), dry_run=args.dry_run
+        EML_IMPORT_DIR, EML_RENAMED_DIR, dry_run=args.dry_run
     )
 
     if not results:

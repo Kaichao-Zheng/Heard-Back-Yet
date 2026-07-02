@@ -7,10 +7,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from sqlalchemy.engine import URL
 
+from paths import ENV_PATH
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DATA_ROOT = PROJECT_ROOT / "data" / "raw"
-ENV_PATH = PROJECT_ROOT / ".env"
 MAINTENANCE_DATABASE = "postgres"
 POSTGRES_DRIVER = "postgresql+psycopg"
 

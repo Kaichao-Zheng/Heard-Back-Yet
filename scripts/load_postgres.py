@@ -6,8 +6,8 @@ import sys
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from db_config import load_postgres_config
-from postgres_loader import (
+from db.config import load_postgres_config
+from db.postgres_loader import (
     LoadStats,
     PostgresLoader,
 )

@@ -10,9 +10,17 @@ from typing import Any
 from sqlalchemy import Select, select
 from sqlalchemy.orm import Session
 
-from constants import APPLICATION_PROGRESS_LABELS, ALLOWED_CATEGORY_LABELS
-from db_config import DATA_ROOT
-from postgres_models import (
+from constants import (
+    APPLICATION_PROGRESS_LABELS,
+    ALLOWED_CATEGORY_LABELS
+)
+from paths import (
+    COMPANY_ALIASES_PATH,
+    EML_PARSED_DIR,
+    JD_PARSED_DIR,
+    POSITION_ALIASES_PATH,
+)
+from db.postgres_models import (
     CompanyAlias,
     Company,
     PositionAlias,
@@ -21,12 +29,6 @@ from postgres_models import (
     Email,
     JobDescription,
 )
-
-
-EML_PARSED_JSON_DIR = DATA_ROOT / "eml" / "parsed"
-JD_PARSED_JSON_DIR = DATA_ROOT / "jd" / "parsed"
-COMPANY_ALIAS_PATH = DATA_ROOT / "entity_aliases" / "company_aliases.csv"
-POSITION_ALIAS_PATH = DATA_ROOT / "entity_aliases" / "position_aliases.csv"
 
 
 @dataclass
@@ -80,7 +82,7 @@ class PostgresLoader:
         return self.stats
 
     def load_alias_csv(self) -> None:
-        for row in read_alias_rows(COMPANY_ALIAS_PATH):
+        for row in read_alias_rows(COMPANY_ALIASES_PATH):
             raw = clean_text(row.get("raw"))
             canonical = clean_text(row.get("normalized"))
             if raw is None or canonical is None:
@@ -90,7 +92,7 @@ class PostgresLoader:
             self.record_company_alias_result(result)
             self.stats.company_alias_rows_loaded += 1
 
-        for row in read_alias_rows(POSITION_ALIAS_PATH):
+        for row in read_alias_rows(POSITION_ALIASES_PATH):
             raw = clean_text(row.get("raw"))
             canonical = clean_text(row.get("normalized"))
             if raw is None or canonical is None:
@@ -101,7 +103,7 @@ class PostgresLoader:
             self.stats.position_alias_rows_loaded += 1
 
     def load_email_json(self) -> None:
-        records = [load_json(path) for path in iter_json_files(EML_PARSED_JSON_DIR)]
+        records = [load_json(path) for path in iter_json_files(EML_PARSED_DIR)]
         records.sort(key=email_sort_key)
 
         for record in records:
@@ -153,7 +155,7 @@ class PostgresLoader:
                     self.stats.email_company_singleton_links += 1
 
     def load_jd_json(self) -> None:
-        for path in iter_json_files(JD_PARSED_JSON_DIR):
+        for path in iter_json_files(JD_PARSED_DIR):
             record = load_json(path)
             self.stats.jd_records += 1
             company_raw = clean_text(record.get("Company"))
