@@ -36,6 +36,7 @@ INSERT INTO email (
     email_type,
     company_raw,
     position_raw,
+    application_link_method,
     application_id
 )
 SELECT
@@ -49,6 +50,7 @@ SELECT
     'applied',
     'Example Co',
     'Example Position Alias',
+    'exact',
     a.application_id
 FROM application a
 JOIN company c ON c.company_id = a.company_id

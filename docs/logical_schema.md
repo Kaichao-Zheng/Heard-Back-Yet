@@ -43,6 +43,7 @@ erDiagram
         string email_type "TC label"
         string company_raw "IE output"
         string position_raw "IE output"
+        string application_link_method "enum"
         int application_id FK "nullable"
     }
 

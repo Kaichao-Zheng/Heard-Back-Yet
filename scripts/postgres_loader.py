@@ -45,6 +45,8 @@ class LoadStats:
     position_aliases_updated: int = 0
     applications_created: int = 0
     application_statuses_updated: int = 0
+    email_exact_links: int = 0
+    email_company_singleton_links: int = 0
     emails_inserted: int = 0
     emails_updated: int = 0
     job_descriptions_inserted: int = 0
@@ -72,9 +74,9 @@ class PostgresLoader:
 
     def load(self) -> LoadStats:
         self.load_alias_csv()
+        self.load_jd_json()
         self.load_email_json()
         self.refresh_latest_statuses()
-        self.load_jd_json()
         return self.stats
 
     def load_alias_csv(self) -> None:
@@ -109,7 +111,11 @@ class PostgresLoader:
             company = self.company_for_raw(company_raw)
             position = self.position_for_raw(position_raw)
             email_type = category_label(record)
-            application = self.application_for(company, position)
+            application, application_link_method = self.application_for_email(
+                company,
+                position,
+                email_type,
+            )
 
             values = {
                 "message_id": required_text(record.get("message_id"), "message_id"),
@@ -124,6 +130,7 @@ class PostgresLoader:
                 "email_type": email_type,
                 "company_raw": company_raw,
                 "position_raw": position_raw,
+                "application_link_method": application_link_method,
                 "application_id": application.application_id if application else None,
             }
             existing = self.scalar(
@@ -140,6 +147,10 @@ class PostgresLoader:
                 self.stats.emails_updated += 1
             if values["application_id"] is not None:
                 self.touched_email_application_ids.add(values["application_id"])
+                if application_link_method == "exact":
+                    self.stats.email_exact_links += 1
+                elif application_link_method == "company_singleton":
+                    self.stats.email_company_singleton_links += 1
 
     def load_jd_json(self) -> None:
         for path in iter_json_files(JD_PARSED_JSON_DIR):
@@ -308,6 +319,45 @@ class PostgresLoader:
                 self.stats.applications_created += 1
             self.application_cache[key] = application
 
+        return application
+
+    def application_for_email(
+        self,
+        company: Company | None,
+        position: Position | None,
+        email_type: str | None,
+    ) -> tuple[Application | None, str | None]:
+        if company is None:
+            return None, None
+        if position is not None:
+            return (
+                self.application_for(company, position),
+                "exact",
+            )
+        if email_type not in APPLICATION_PROGRESS_LABELS:
+            return None, None
+
+        application = self.singleton_application_for_company(company)
+        if application is None:
+            return None, None
+        return application, "company_singleton"
+
+    def singleton_application_for_company(self, company: Company) -> Application | None:
+        self.session.flush()
+        applications = list(
+            self.session.execute(
+                select(Application)
+                .where(Application.company_id == company.company_id)
+                .order_by(Application.application_id)
+                .limit(2)
+            ).scalars()
+        )
+        if len(applications) != 1:
+            return None
+
+        application = applications[0]
+        key = (application.company_id, application.position_id)
+        self.application_cache[key] = application
         return application
 
     def refresh_latest_statuses(self) -> None:

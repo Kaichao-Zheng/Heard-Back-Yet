@@ -62,6 +62,15 @@ def print_summary(stats: LoadStats, dry_run: bool) -> None:
     print(f"table position_alias created/updated {stats.position_aliases_created}/{stats.position_aliases_updated};")
     print(f"table position created {stats.positions_created};")
 
+    print("== load_job_descriptions ==")
+    print(
+        f"loaded {stats.jd_records} records from parsed JD JSON;"
+    )
+    print(
+        "table job_description inserted/updated "
+        f"{stats.job_descriptions_inserted}/{stats.job_descriptions_updated};"
+    )
+
     print("== load_emails ==")
     print(
         f"loaded {stats.eml_records} records from parsed EML JSON;"
@@ -70,14 +79,10 @@ def print_summary(stats: LoadStats, dry_run: bool) -> None:
         "table email inserted/updated "
         f"{stats.emails_inserted}/{stats.emails_updated};"
     )
-
-    print("== load_job_descriptions ==")
+    print(f"table email exact links {stats.email_exact_links};")
     print(
-        f"loaded {stats.jd_records} records from parsed JD JSON;"
-    )
-    print(
-        "table job_description inserted/updated "
-        f"{stats.job_descriptions_inserted}/{stats.job_descriptions_updated};"
+        "table email company_singleton links "
+        f"{stats.email_company_singleton_links};"
     )
 
     print("== sync_applications ==")

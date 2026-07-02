@@ -67,6 +67,7 @@ class Email(Base):
     email_type: Mapped[str | None]
     company_raw: Mapped[str | None]
     position_raw: Mapped[str | None]
+    application_link_method: Mapped[str | None]
     application_id: Mapped[int | None] = mapped_column(
         ForeignKey("application.application_id")
     )

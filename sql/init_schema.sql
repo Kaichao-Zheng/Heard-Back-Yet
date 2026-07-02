@@ -28,7 +28,6 @@ CREATE TABLE application (
     CHECK (
         latest_status IS NULL OR latest_status IN (
             'applied',
-            'profile-update',
             'assessment',
             'interview',
             'offer',
@@ -67,6 +66,14 @@ CREATE TABLE email (
     ),
     company_raw TEXT,
     position_raw TEXT,
+    application_link_method TEXT,
+    CHECK (
+        application_link_method IS NULL OR application_link_method IN (
+            'exact',
+            'company_singleton',
+            'manual'
+        )
+    ),
     application_id INTEGER REFERENCES application(application_id)
 );
 
