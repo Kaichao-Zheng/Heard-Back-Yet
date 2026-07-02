@@ -7,19 +7,13 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from paths import EML_PARSED_DIR, ENTITY_ALIASES_DIR, JD_PARSED_DIR
 
-EML_JSON_DIR = "data/raw/eml/parsed"
-JD_JSON_DIR = "data/raw/jd/parsed"
-ALIAS_DIR = "data/raw/entity_aliases"
 ALIAS_FILES = {
     "company": "company_aliases.csv",
     "position": "position_aliases.csv",
 }
 ALIAS_COLUMNS = ("normalized", "raw")
-
-
-def project_root() -> Path:
-    return Path(__file__).resolve().parents[1]
 
 
 def parse_args() -> argparse.Namespace:
@@ -108,15 +102,15 @@ def collect_jd_raw_values(jd_json_dir: Path) -> dict[str, list[str]]:
     return values
 
 
-def collect_raw_values(root: Path) -> dict[str, list[str]]:
+def collect_raw_values() -> dict[str, list[str]]:
     values: dict[str, list[str]] = {entity_name: [] for entity_name in ALIAS_FILES}
     seen: dict[str, set[str]] = {entity_name: set() for entity_name in ALIAS_FILES}
 
     # EML selected.raw values come first because they are grounded in application
     # emails; JD raw values fill in broader known company/position aliases.
     for source_values in (
-        collect_eml_raw_values(root / EML_JSON_DIR),
-        collect_jd_raw_values(root / JD_JSON_DIR),
+        collect_eml_raw_values(EML_PARSED_DIR),
+        collect_jd_raw_values(JD_PARSED_DIR),
     ):
         for entity_name, raw_values in source_values.items():
             for raw in raw_values:
@@ -169,11 +163,10 @@ def alias_additions(
 
 
 def append_aliases(dry_run: bool) -> int:
-    root = project_root()
-    raw_values = collect_raw_values(root)
+    raw_values = collect_raw_values()
 
     for entity_name, file_name in ALIAS_FILES.items():
-        alias_path = root / ALIAS_DIR / file_name
+        alias_path = ENTITY_ALIASES_DIR / file_name
         rows = read_alias_rows(alias_path)
         additions = alias_additions(rows, raw_values[entity_name])
 

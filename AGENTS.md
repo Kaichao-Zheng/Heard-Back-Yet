@@ -26,11 +26,16 @@ Use `agent-logs/README.md` for log types, naming, templates, and maintenance rul
 
 ## Folder Structure
 
-* `/data/raw/eml` for stable-named source emails
-* `/data/raw/eml/source` for newly imported `.eml` files before stable renaming
-* `/data/raw/eml/parsed` for parsed email JSON intermediates
-* `/data/raw/jd` for source job descriptions
-* `/scripts` for parsing scripts
+* `/data/eml` for newly imported `.eml` files before stable renaming
+* `/data/eml/renamed` for stable-named source email copies
+* `/data/eml/parsed` for parsed email JSON intermediates
+* `/data/jd` for source job descriptions
+* `/data/jd/parsed` for parsed JD JSON intermediates
+* `/data/entity_aliases` for local alias CSV files before manual normalization
+* `/scripts` for runnable entrypoints and manual workflow checkpoints
+* `/scripts/etl` for ETL implementation scripts
+* `/scripts/db` for database configuration, models, and loader implementation
+* `/scripts/constants.py` for domain labels and workflow constants
 * `/docs` for architecture notes
 
 ## Current Stage

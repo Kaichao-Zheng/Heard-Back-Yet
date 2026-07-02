@@ -7,11 +7,11 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from paths import JD_DIR, JD_PARSED_DIR, PROJECT_ROOT
 
-RAW_JD_DIR = "data/raw/jd"
-PARSED_JD_DIR = "data/raw/jd/parsed"
 JD_EXTENSIONS = {".md", ".markdown"}
 JD_FILENAME_PATTERN = re.compile(r"^\d{8}_.+")
+SOURCE_PATH_FIELD = "source_path"
 
 
 @dataclass(frozen=True)
@@ -22,16 +22,12 @@ class ParseResult:
     reason: str | None = None
 
 
-def project_root() -> Path:
-    return Path(__file__).resolve().parents[1]
-
-
 def default_raw_dir() -> Path:
-    return project_root() / RAW_JD_DIR
+    return JD_DIR
 
 
 def default_json_dir() -> Path:
-    return project_root() / PARSED_JD_DIR
+    return JD_PARSED_DIR
 
 
 def parse_args() -> argparse.Namespace:
@@ -96,7 +92,17 @@ def parse_jd_markdown(markdown_text: str, source_path: Path) -> dict[str, str]:
 
 def parse_jd_file(jd_path: Path) -> dict[str, str]:
     markdown_text = jd_path.read_text(encoding="utf-8")
-    return parse_jd_markdown(markdown_text, jd_path)
+    record = parse_jd_markdown(markdown_text, jd_path)
+    if SOURCE_PATH_FIELD in record:
+        raise ValueError(f"Reserved heading '{SOURCE_PATH_FIELD}': {jd_path}")
+
+    # JD JSON is still the structured input for SQL import. In this demo path,
+    # manually collected Markdown mocks the fields a production crawler would
+    # extract from returned HTML, and source_path keeps that mock traceable.
+    return {
+        **record,
+        SOURCE_PATH_FIELD: jd_path.resolve().relative_to(PROJECT_ROOT).as_posix(),
+    }
 
 
 def output_path_for(jd_path: Path, json_dir: Path) -> Path:

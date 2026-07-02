@@ -12,9 +12,8 @@ from pathlib import Path
 from typing import Any
 
 from constants import ENTITY_EVIDENCE
+from paths import EML_PARSED_DIR
 
-
-JSON_DIR = "data/raw/eml/parsed"
 DEFAULT_MODEL = "qwen3.5:9b"
 DEFAULT_OLLAMA_URL = "http://localhost:11434"
 MODEL_RESPONSE_RETRIES = 1
@@ -43,12 +42,8 @@ Entities:
 """.strip()
 
 
-def project_root() -> Path:
-    return Path(__file__).resolve().parents[1]
-
-
 def default_json_dir() -> Path:
-    return project_root() / JSON_DIR
+    return EML_PARSED_DIR
 
 
 def parse_args() -> argparse.Namespace:
@@ -69,7 +64,7 @@ def parse_args() -> argparse.Namespace:
         "--limit",
         type=int,
         default=None,
-        help="Extract entities from at most this many JSON files from data/raw/eml/parsed.",
+        help="Extract entities from at most this many parsed email JSON files.",
     )
     return parser.parse_args()
 

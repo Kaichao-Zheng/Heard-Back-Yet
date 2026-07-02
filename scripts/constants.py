@@ -4,11 +4,8 @@ from __future__ import annotations
 CATEGORY_LABEL_UNKNOWN = "unknown"
 
 # Labels that can represent an application progress stage.
-# profile-update is included because it is often an applicant TODO after applying,
-# not just a passive notification.
 APPLICATION_PROGRESS_LABELS = (
     "applied",
-    "profile-update",
     "assessment",
     "interview",
     "offer",
@@ -19,6 +16,7 @@ ALLOWED_CATEGORY_LABELS = (
     "auth",
     "delivery-failure",
     "logistics",
+    "profile-update",
     "unrelated",
     CATEGORY_LABEL_UNKNOWN,
 ) + APPLICATION_PROGRESS_LABELS
@@ -32,3 +30,9 @@ ENTITY_EVIDENCE = {
     "subject": "subject",
     "body_text": "body_text",
 }
+
+APPLICATION_LINK_METHODS = (
+    "exact",
+    "company_singleton",
+    "manual",
+)
