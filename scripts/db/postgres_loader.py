@@ -375,7 +375,7 @@ class PostgresLoader:
                     Email.application_id == application_id,
                     Email.email_type.in_(APPLICATION_PROGRESS_LABELS),
                 )
-                .order_by(Email.received_at.desc(), Email.email_id.asc())
+                .order_by(Email.received_at.desc(), Email.email_id.desc())
                 .limit(1)
             )
             latest_status = latest_email.email_type if latest_email else None
