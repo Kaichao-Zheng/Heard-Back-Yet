@@ -1,0 +1,15 @@
+section,label,expected,expected_share,predicted,correct,precision,recall,f1
+Status-driving labels,applied,22,0.2821,28,22,0.7857,1.0000,0.8800
+Status-driving labels,assessment,8,0.1026,8,8,1.0000,1.0000,1.0000
+Status-driving labels,interview,1,0.0128,1,1,1.0000,1.0000,1.0000
+Status-driving labels,offer,0,0.0000,0,0,N/A,N/A,N/A
+Status-driving labels,rejection,6,0.0769,2,2,1.0000,0.3333,0.5000
+Status-driving labels,subtotal,37,0.4744,39,33,0.8462,0.8919,0.8684
+Non-status-driving labels,auth,28,0.3590,28,28,1.0000,1.0000,1.0000
+Non-status-driving labels,delivery-failure,1,0.0128,1,1,1.0000,1.0000,1.0000
+Non-status-driving labels,logistics,3,0.0385,2,2,1.0000,0.6667,0.8000
+Non-status-driving labels,profile-update,7,0.0897,6,6,1.0000,0.8571,0.9231
+Non-status-driving labels,unrelated,2,0.0256,2,2,1.0000,1.0000,1.0000
+Non-status-driving labels,unknown,0,0.0000,0,0,N/A,N/A,N/A
+Non-status-driving labels,subtotal,41,0.5256,39,39,1.0000,0.9512,0.9750
+Overall,overall,78,1.0000,78,72,0.9231,0.9231,0.9231
