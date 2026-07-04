@@ -34,6 +34,7 @@ Rules:
 - source must be "subject" or "body_text", generally "subject" >= "body_text".
 - keep distinct aliases or brands as separate candidates.
 - return candidates whose confidence is at least 0.75. If none exists, return an empty list.
+- Ignore unrelated sections such as job recommendations, whose headings imply guess, recommendation, or similarity.
 
 Entities:
 - Company: employer, recruiting brand, company display name, or company domain brand. Generic words such as recruitment, hiring, zhaopin, noreply, mail, system, assessment, interview, or campus recruitment are not company names by themselves.

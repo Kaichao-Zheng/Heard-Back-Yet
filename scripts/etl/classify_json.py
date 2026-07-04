@@ -35,13 +35,13 @@ LABEL_GUIDE = """
 Use exactly one label:
 - delivery-failure: bounce, undelivered, failed delivery, mail system error.
 - offer: offer, acceptance, contract, compensation, formal hire decision.
-- rejection: declined, not selected, will not proceed.
+- rejection: the application will not continue for this role, regardless of wording. Includes direct rejection, indirect rejection, role filled, another candidate selected, or no longer under consideration.
 - interview: interview invitation, confirmation, scheduling, rescheduling, feedback related to an interview.
 - assessment: online assessment, coding test, questionnaire, test invitation or reminder.
 - applied: application submitted, received, under review, application confirmation.
 - auth: login, verification code, account creation, password, MFA, identity verification.
 - profile-update: candidate profile, resume/CV, candidate information, or personal information was updated or needs completion.
-- logistics: recruiting process notices, arrangements, reminders, events, instructions, or next-step information that do not clearly change application status.
+- logistics: recruiting process notices, arrangements, reminders, instructions, consent/privacy authorization, or next-step prerequisites that do not clearly change application status.
 - unknown: job/recruiting related, but the category is unclear from available evidence.
 - unrelated: not related to job applications, recruiting, hiring, or career platforms.
 
