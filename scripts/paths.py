@@ -5,6 +5,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SQL_SCHEMA_PATH = PROJECT_ROOT / "sql" / "init_schema.sql"
+SQL_VIEWS_PATH = PROJECT_ROOT / "sql" / "init_views.sql"
 ENV_PATH = PROJECT_ROOT / ".env"
 
 DATA_ROOT = PROJECT_ROOT / "data"

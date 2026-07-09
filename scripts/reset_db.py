@@ -9,10 +9,11 @@ from db.config import (
     PostgresConfig,
     load_postgres_config,
 )
-from paths import ENV_PATH, SQL_SCHEMA_PATH
+from paths import ENV_PATH, SQL_SCHEMA_PATH, SQL_VIEWS_PATH
 
 
 INIT_SCHEMA_PATH = SQL_SCHEMA_PATH
+INIT_VIEWS_PATH = SQL_VIEWS_PATH
 
 
 def parse_args() -> argparse.Namespace:
@@ -86,14 +87,29 @@ def create_tables(config: PostgresConfig) -> None:
         engine.dispose()
 
 
+def create_views(config: PostgresConfig) -> None:
+    from sqlalchemy import create_engine
+
+    engine = create_engine(config.database_url())
+    try:
+        with engine.begin() as conn:
+            for statement in read_sql_statements(INIT_VIEWS_PATH):
+                conn.exec_driver_sql(statement)
+    finally:
+        engine.dispose()
+
+
 def print_reset_context(config: PostgresConfig) -> None:
     schema_statement_count = len(read_sql_statements(INIT_SCHEMA_PATH))
+    view_statement_count = len(read_sql_statements(INIT_VIEWS_PATH))
 
     print(f"- Load connection settings from: {ENV_PATH}")
     print(f"- Recreate database: {config.database}")
     print(f"- Maintenance database: {MAINTENANCE_DATABASE}")
     print(f"- Create schema from: {INIT_SCHEMA_PATH}")
     print(f"- Schema statements: {schema_statement_count}")
+    print(f"- Create views from: {INIT_VIEWS_PATH}")
+    print(f"- View statements: {view_statement_count}")
 
 
 def main() -> int:
@@ -108,6 +124,7 @@ def main() -> int:
 
         recreate_database(config)
         create_tables(config)
+        create_views(config)
     except Exception as exc:
         print(f"reset_db failed: {exc}", file=sys.stderr)
         return 1
