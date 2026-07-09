@@ -73,6 +73,7 @@ WHERE e.application_id = a.application_id
   AND p.position_name = 'Example Position';
 
 INSERT INTO job_description (
+    captured_at,
     company_raw,
     position_raw,
     location_raw,
@@ -85,6 +86,7 @@ INSERT INTO job_description (
     application_id
 )
 SELECT
+    DATE '2026-01-01',
     'Example Co',
     'Example Position Alias',
     'Example Location',

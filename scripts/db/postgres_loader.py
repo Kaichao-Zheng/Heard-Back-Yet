@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 import json
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -165,6 +165,7 @@ class PostgresLoader:
             application = self.application_for(company, position)
 
             values = {
+                "captured_at": parse_date(clean_text(record.get("Captured At"))),
                 "company_raw": company_raw,
                 "position_raw": position_raw,
                 "location_raw": clean_text(record.get("Location")),
@@ -450,6 +451,12 @@ def required_text(value: Any, field_name: str) -> str:
 
 def parse_datetime(value: str) -> datetime:
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def parse_date(value: str | None) -> date | None:
+    if value is None:
+        return None
+    return date.fromisoformat(value)
 
 
 def selected_entity_raw(record: dict[str, Any], entity_name: str) -> str | None:

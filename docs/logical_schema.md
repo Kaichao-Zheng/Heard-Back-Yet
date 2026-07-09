@@ -49,6 +49,7 @@ erDiagram
 
     JOB_DESCRIPTION {
         int jd_id PK
+        date captured_at
         string company_raw
         string position_raw
         string location_raw "candidate entity"

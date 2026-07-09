@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -77,6 +77,7 @@ class JobDescription(Base):
     __tablename__ = "job_description"
 
     jd_id: Mapped[int] = mapped_column(primary_key=True)
+    captured_at: Mapped[date | None]
     company_raw: Mapped[str | None]
     position_raw: Mapped[str | None]
     location_raw: Mapped[str | None]

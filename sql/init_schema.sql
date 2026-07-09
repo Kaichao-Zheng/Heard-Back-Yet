@@ -79,6 +79,7 @@ CREATE TABLE email (
 
 CREATE TABLE job_description (
     jd_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    captured_at DATE,
     company_raw TEXT,
     position_raw TEXT,
     location_raw TEXT,
