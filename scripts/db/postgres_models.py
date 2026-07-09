@@ -49,6 +49,7 @@ class Application(Base):
     latest_status: Mapped[str | None]
     latest_status_received_at: Mapped[datetime | None]
     latest_status_email_id: Mapped[int | None]
+    latest_jd_id: Mapped[int | None]
     company_id: Mapped[int] = mapped_column(ForeignKey("company.company_id"))
     position_id: Mapped[int] = mapped_column(ForeignKey("position.position_id"))
 

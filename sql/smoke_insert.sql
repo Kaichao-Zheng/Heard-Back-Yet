@@ -59,19 +59,6 @@ WHERE c.company_name = 'Example Company'
   AND p.position_name = 'Example Position'
 ON CONFLICT (message_id) DO NOTHING;
 
-UPDATE application a
-SET
-    latest_status = e.email_type,
-    latest_status_received_at = e.received_at,
-    latest_status_email_id = e.email_id
-FROM email e, company c, position p
-WHERE e.application_id = a.application_id
-  AND c.company_id = a.company_id
-  AND p.position_id = a.position_id
-  AND e.message_id = 'smoke-message-id'
-  AND c.company_name = 'Example Company'
-  AND p.position_name = 'Example Position';
-
 INSERT INTO job_description (
     captured_at,
     company_raw,
@@ -107,3 +94,22 @@ WHERE c.company_name = 'Example Company'
       FROM job_description jd
       WHERE jd.source_path = 'smoke/jd/example-position.md'
   );
+
+UPDATE application a
+SET
+    latest_status = e.email_type,
+    latest_status_received_at = e.received_at,
+    latest_status_email_id = e.email_id
+FROM email e, company c, position p
+WHERE e.application_id = a.application_id
+  AND c.company_id = a.company_id
+  AND p.position_id = a.position_id
+  AND e.message_id = 'smoke-message-id'
+  AND c.company_name = 'Example Company'
+  AND p.position_name = 'Example Position';
+
+UPDATE application a
+SET latest_jd_id = jd.jd_id
+FROM job_description jd
+WHERE jd.application_id = a.application_id
+  AND jd.source_path = 'smoke/jd/example-position.md';
