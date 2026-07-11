@@ -99,6 +99,19 @@ def parse_jd_file(jd_path: Path) -> dict[str, str]:
     if CAPTURED_AT_FIELD not in record:
         raise ValueError(f"Missing level-one heading '{CAPTURED_AT_FIELD}': {jd_path}")
 
+    captured_at_raw = record.get(CAPTURED_AT_FIELD, "").strip()
+    if not captured_at_raw:
+        raise ValueError(f"Empty level-one heading '{CAPTURED_AT_FIELD}': {jd_path}")
+
+    try:
+        from datetime import date as _date
+
+        _date.fromisoformat(captured_at_raw)
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid '{CAPTURED_AT_FIELD}' (expected YYYY-MM-DD): {jd_path}"
+        ) from exc
+
     # JD JSON is still the structured input for SQL import. In this demo path,
     # manually collected Markdown mocks the fields a production crawler would
     # extract from returned HTML, and source_path keeps that mock traceable.
