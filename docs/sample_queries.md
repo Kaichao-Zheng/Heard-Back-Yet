@@ -4,7 +4,7 @@ v_application_overview
 回答：我投了哪些岗位，现在各自是什么状态？作为业务查询主入口，它是快照而不是历史
 
 v_application_timeline
-回答：某家公司是怎么一步步推进的？以归一化 company 为粒度，仅保留 `applied`、`assessment`、`interview`、`offer`、`rejection` 状态事件。
+回答：某家公司是怎么一步步推进的？以归一化 company 为最低识别粒度，仅保留 `applied`、`assessment`、`interview`、`offer`、`rejection` 状态事件。
 
 v_application_evidence
 回答：为什么系统认为这个 application 是这个状态 / 这个公司 / 这个岗位？作为explainability layer
@@ -14,6 +14,109 @@ v_inconsistent_status_snapshot
 
 v_unlinked_status_email
 回答：哪些 status-driving 邮件还没成功挂到 application 上，需要人工 review
+
+
+# Sample Queries
+
+- Latest N status updates
+  最新的N条进展
+
+  ```powershell
+  python scripts\query_applications.py overview --limit 3
+  ```
+
+  Uses `v_application_overview`.
+
+- Current status with a company
+  某家公司的所有岗位的进展
+
+  ```powershell
+  python scripts\query_applications.py overview --company 平安科技
+  ```
+
+  Uses `v_application_overview`.
+
+- Timeline for a company
+  某家公司的推进过程
+
+  ```powershell
+  python scripts\query_applications.py timeline --company 平安科技
+  ```
+
+  Uses `v_application_timeline`.
+
+- Timeline for one application
+  某个岗位的推进过程
+
+  ```powershell
+  python scripts\query_applications.py timeline --application-id 41
+  ```
+
+  Uses `v_application_timeline`, filtered to rows already linked to that
+  application.
+
+- Applications submitted in the last N days
+  过去N天投递的岗位数量
+
+  ```powershell
+  python scripts\query_applications.py timeline --email-type applied --last-days 90
+  ```
+
+  Uses `v_application_timeline`, filtered to `email_type = 'applied'`.
+
+- Companies submitted to in one month
+  某月投递的公司数量
+
+  ```powershell
+  python scripts\query_applications.py timeline --email-type applied --month 2026-05
+  ```
+
+  Uses `v_application_timeline`, filtered to one calendar month.
+
+- Evidence for a company
+  某家公司的关联证据
+
+  ```powershell
+  python scripts\query_applications.py evidence --company 平安科技
+  ```
+
+  Uses `v_application_evidence`.
+
+- Evidence for one application
+  某个岗位的关联证据
+
+  ```powershell
+  python scripts\query_applications.py evidence --application-id 41
+  ```
+
+  Uses `v_application_evidence`.
+
+- Status snapshot review queue
+  需要人工审核的进度快照不一致性
+
+  ```powershell
+  python scripts\query_applications.py inconsistent-snapshot --limit 20
+  ```
+
+  Uses `v_inconsistent_status_snapshot`.
+
+- Unlinked status email review queue
+  需要人工审核的无归属的进度邮件
+
+  ```powershell
+  python scripts\query_applications.py unlinked-email --limit 20
+  ```
+
+  Uses `v_unlinked_status_email`.
+
+- Job description source for a company
+  某家公司的职位描述的关联证据
+
+  ```powershell
+  python scripts\query_applications.py evidence --company 平安科技 --source-type job_description
+  ```
+
+  Uses `v_application_evidence`; exposes JD `source_path` and `source_url`.
 
 
 # Sample Questions
@@ -66,10 +169,10 @@ v_unlinked_status_email
 
   `application_id`, `company_name`, `position_name`, `latest_status`, `latest_status_received_at`, `subject`
 
-- What are the requirements for `company`?
+- Where is the JD source for `company`?
 
-  `company`的工作有什么要求？
+  `company` 的 JD 来源在哪里？
 
   Key fields:
 
-  `company_name`, `position_name`, `captured_at`, `responsibilities`, `qualifications`, `source_url`
+  `company_name`, `position_name`, `source_type`, `source_path`, `source_url`
