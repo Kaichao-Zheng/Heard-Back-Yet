@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 import json
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -47,6 +47,7 @@ class LoadStats:
     position_aliases_updated: int = 0
     applications_created: int = 0
     application_statuses_updated: int = 0
+    application_latest_jds_updated: int = 0
     email_exact_links: int = 0
     email_company_singleton_links: int = 0
     emails_inserted: int = 0
@@ -73,12 +74,14 @@ class PostgresLoader:
         self.position_alias_cache: dict[str, PositionAlias] = {}
         self.application_cache: dict[tuple[int, int], Application] = {}
         self.touched_email_application_ids: set[int] = set()
+        self.touched_jd_application_ids: set[int] = set()
 
     def load(self) -> LoadStats:
         self.load_alias_csv()
         self.load_jd_json()
         self.load_email_json()
-        self.refresh_latest_statuses()
+        self.sync_latest_emails()
+        self.sync_latest_jds()
         return self.stats
 
     def load_alias_csv(self) -> None:
@@ -165,6 +168,7 @@ class PostgresLoader:
             application = self.application_for(company, position)
 
             values = {
+                "captured_at": parse_date(clean_text(record.get("Captured At"))),
                 "company_raw": company_raw,
                 "position_raw": position_raw,
                 "location_raw": clean_text(record.get("Location")),
@@ -187,9 +191,13 @@ class PostgresLoader:
                 self.session.add(JobDescription(**values))
                 self.stats.job_descriptions_inserted += 1
             else:
+                if existing.application_id is not None:
+                    self.touched_jd_application_ids.add(existing.application_id)
                 for key, value in values.items():
                     setattr(existing, key, value)
                 self.stats.job_descriptions_updated += 1
+            if values["application_id"] is not None:
+                self.touched_jd_application_ids.add(values["application_id"])
 
     def company_for_raw(self, raw: str | None) -> Company | None:
         if raw is None:
@@ -315,6 +323,7 @@ class PostgresLoader:
                     latest_status=None,
                     latest_status_received_at=None,
                     latest_status_email_id=None,
+                    latest_jd_id=None,
                 )
                 self.session.add(application)
                 self.session.flush()
@@ -362,7 +371,7 @@ class PostgresLoader:
         self.application_cache[key] = application
         return application
 
-    def refresh_latest_statuses(self) -> None:
+    def sync_latest_emails(self) -> None:
         self.session.flush()
         for application_id in sorted(self.touched_email_application_ids):
             application = self.session.get(Application, application_id)
@@ -391,6 +400,28 @@ class PostgresLoader:
                 application.latest_status_received_at = latest_status_received_at
                 application.latest_status_email_id = latest_status_email_id
                 self.stats.application_statuses_updated += 1
+
+    def sync_latest_jds(self) -> None:
+        self.session.flush()
+        for application_id in sorted(self.touched_jd_application_ids):
+            application = self.session.get(Application, application_id)
+            if application is None:
+                continue
+
+            latest_jd = self.scalar(
+                select(JobDescription)
+                .where(JobDescription.application_id == application_id)
+                .order_by(
+                    JobDescription.captured_at.desc().nulls_last(),
+                    JobDescription.jd_id.desc(),
+                )
+                .limit(1)
+            )
+            latest_jd_id = latest_jd.jd_id if latest_jd else None
+
+            if application.latest_jd_id != latest_jd_id:
+                application.latest_jd_id = latest_jd_id
+                self.stats.application_latest_jds_updated += 1
 
     def record_company_alias_result(self, result: AliasResolution) -> None:
         if result.entity_created:
@@ -450,6 +481,12 @@ def required_text(value: Any, field_name: str) -> str:
 
 def parse_datetime(value: str) -> datetime:
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def parse_date(value: str | None) -> date | None:
+    if value is None:
+        return None
+    return date.fromisoformat(value)
 
 
 def selected_entity_raw(record: dict[str, Any], entity_name: str) -> str | None:

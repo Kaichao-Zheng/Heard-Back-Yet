@@ -87,7 +87,8 @@ def print_summary(stats: LoadStats, dry_run: bool) -> None:
 
     print("== sync_applications ==")
     print(f"table application created {stats.applications_created};")
-    print(f"table application latest_status updated {stats.application_statuses_updated};")
+    print(f"table application latest_status snapshot updated {stats.application_statuses_updated};")
+    print(f"table application latest_jd_id snapshot pointer updated {stats.application_latest_jds_updated};")
     if dry_run:
         print("Dry run complete; transaction was rolled back.")
     else:

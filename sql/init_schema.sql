@@ -25,6 +25,7 @@ CREATE TABLE application (
     latest_status TEXT,
     latest_status_received_at TIMESTAMPTZ,
     latest_status_email_id INTEGER,
+    latest_jd_id INTEGER,
     CHECK (
         latest_status IS NULL OR latest_status IN (
             'applied',
@@ -79,6 +80,7 @@ CREATE TABLE email (
 
 CREATE TABLE job_description (
     jd_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    captured_at DATE,
     company_raw TEXT,
     position_raw TEXT,
     location_raw TEXT,

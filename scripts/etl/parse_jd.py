@@ -11,6 +11,7 @@ from paths import JD_DIR, JD_PARSED_DIR, PROJECT_ROOT
 
 JD_EXTENSIONS = {".md", ".markdown"}
 JD_FILENAME_PATTERN = re.compile(r"^\d{8}_.+")
+CAPTURED_AT_FIELD = "Captured At"
 SOURCE_PATH_FIELD = "source_path"
 
 
@@ -95,6 +96,21 @@ def parse_jd_file(jd_path: Path) -> dict[str, str]:
     record = parse_jd_markdown(markdown_text, jd_path)
     if SOURCE_PATH_FIELD in record:
         raise ValueError(f"Reserved heading '{SOURCE_PATH_FIELD}': {jd_path}")
+    if CAPTURED_AT_FIELD not in record:
+        raise ValueError(f"Missing level-one heading '{CAPTURED_AT_FIELD}': {jd_path}")
+
+    captured_at_raw = record.get(CAPTURED_AT_FIELD, "").strip()
+    if not captured_at_raw:
+        raise ValueError(f"Empty level-one heading '{CAPTURED_AT_FIELD}': {jd_path}")
+
+    try:
+        from datetime import date as _date
+
+        _date.fromisoformat(captured_at_raw)
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid '{CAPTURED_AT_FIELD}' (expected YYYY-MM-DD): {jd_path}"
+        ) from exc
 
     # JD JSON is still the structured input for SQL import. In this demo path,
     # manually collected Markdown mocks the fields a production crawler would

@@ -26,7 +26,8 @@ erDiagram
         int application_id PK
         string latest_status "derived snapshot"
         datetime latest_status_received_at "derived snapshot"
-        int latest_status_email_id "future FK"
+        int latest_status_email_id "snapshot pointer"
+        int latest_jd_id "snapshot pointer"
         int company_id FK
         int position_id FK
     }
@@ -49,6 +50,7 @@ erDiagram
 
     JOB_DESCRIPTION {
         int jd_id PK
+        date captured_at
         string company_raw
         string position_raw
         string location_raw "candidate entity"
