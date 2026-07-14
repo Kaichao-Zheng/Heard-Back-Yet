@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 
+EMBEDDING_DIMENSION = 1024
+
 CATEGORY_LABEL_UNKNOWN = "unknown"
 
 # Labels that can represent an application progress stage.
