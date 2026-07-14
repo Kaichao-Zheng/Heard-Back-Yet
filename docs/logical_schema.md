@@ -63,6 +63,20 @@ erDiagram
         int application_id FK "nullable"
     }
 
+    RETRIEVAL_CHUNK {
+        int chunk_id PK
+        string source_type "NOT NULL; email | job_description"
+        int source_id "NOT NULL; polymorphic reference"
+        int application_id FK "nullable"
+        int company_id FK "nullable"
+        int position_id FK "nullable"
+        string email_type
+        string semantic_fields
+        string content
+        vector embedding
+        string embedding_model
+        datetime embedded_at
+    }
     
     COMPANY_ALIAS }o--|| COMPANY : maps_to
     POSITION_ALIAS }o--|| POSITION : maps_to

@@ -19,11 +19,11 @@ for import_path in (SCRIPT_ROOT, ETL_ROOT):
         sys.path.insert(0, str(import_path))
 
 from classify_json import (  # noqa: E402
-    DEFAULT_MODEL,
     DEFAULT_OLLAMA_URL,
     MAX_BODY_CHARS,
     OLLAMA_TIMEOUT_SECONDS,
     SYSTEM_PROMPT,
+    TEXT_CLASSIFICATION_MODEL,
     build_prompt,
     load_record,
     parse_model_json,
@@ -42,7 +42,7 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         help="Parsed email JSON path. Defaults to the first parsed EML JSON file.",
     )
-    parser.add_argument("--model", default=DEFAULT_MODEL)
+    parser.add_argument("--model", default=TEXT_CLASSIFICATION_MODEL)
     parser.add_argument("--ollama-url", default=DEFAULT_OLLAMA_URL)
     parser.add_argument(
         "--timeout",

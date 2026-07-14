@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import socket
 import sys
 import time
@@ -10,16 +11,24 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
+
 from constants import (
     ALLOWED_CATEGORY_LABELS,
     CATEGORY_EVIDENCE,
     CATEGORY_LABEL_UNKNOWN,
 )
-from paths import EML_PARSED_DIR
+from paths import EML_PARSED_DIR, ENV_PATH
 
 
-DEFAULT_MODEL = "qwen3.5:9b"
-DEFAULT_OLLAMA_URL = "http://localhost:11434"
+load_dotenv(ENV_PATH)
+
+TEXT_CLASSIFICATION_MODEL = os.getenv("TEXT_CLASSIFICATION_MODEL")
+if not TEXT_CLASSIFICATION_MODEL:
+    raise RuntimeError(
+        "TEXT_CLASSIFICATION_MODEL is required. Configure it in the project .env file."
+    )
+DEFAULT_OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 MAX_BODY_CHARS = 1500
 MODEL_RESPONSE_RETRIES = 1
 REVIEW_THRESHOLD = 0.75
@@ -345,7 +354,7 @@ def classify_files(args: argparse.Namespace) -> int:
             classification = classify_record(
                 record=record,
                 ollama_url=DEFAULT_OLLAMA_URL,
-                model=DEFAULT_MODEL,
+                model=TEXT_CLASSIFICATION_MODEL,
                 max_body_chars=MAX_BODY_CHARS,
                 retries=MODEL_RESPONSE_RETRIES,
                 timeout_seconds=OLLAMA_TIMEOUT_SECONDS,
@@ -357,7 +366,12 @@ def classify_files(args: argparse.Namespace) -> int:
             print("Reason:")
             print(f"  {error}")
             continue
-        update_category(record, classification, DEFAULT_MODEL, REVIEW_THRESHOLD)
+        update_category(
+            record,
+            classification,
+            TEXT_CLASSIFICATION_MODEL,
+            REVIEW_THRESHOLD,
+        )
 
         category = record["category"]
         print(

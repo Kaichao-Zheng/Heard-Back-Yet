@@ -61,7 +61,7 @@ def append_unique(values: list[str], seen: set[str], raw: str | None) -> None:
     if raw is None:
         return
 
-    dedupe_key = raw.casefold()
+    dedupe_key = raw
     if dedupe_key in seen:
         return
 
@@ -151,14 +151,14 @@ def alias_additions(
     raw_values: list[str],
 ) -> list[dict[str, str]]:
     existing_raw = {
-        row.get("raw", "").strip().casefold()
+        row.get("raw", "").strip()
         for row in rows
         if row.get("raw", "").strip()
     }
     return [
         {"normalized": "", "raw": raw}
         for raw in raw_values
-        if raw.casefold() not in existing_raw
+        if raw not in existing_raw
     ]
 
 

@@ -19,8 +19,8 @@ for import_path in (SCRIPT_ROOT, ETL_ROOT):
         sys.path.insert(0, str(import_path))
 
 from extract_entities import (  # noqa: E402
-    DEFAULT_MODEL,
     DEFAULT_OLLAMA_URL,
+    ENTITY_EXTRACTION_MODEL,
     OLLAMA_TIMEOUT_SECONDS,
     SYSTEM_PROMPT,
     build_prompt,
@@ -41,7 +41,7 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         help="Parsed email JSON path. Defaults to the first parsed EML JSON file.",
     )
-    parser.add_argument("--model", default=DEFAULT_MODEL)
+    parser.add_argument("--model", default=ENTITY_EXTRACTION_MODEL)
     parser.add_argument("--ollama-url", default=DEFAULT_OLLAMA_URL)
     parser.add_argument(
         "--timeout",

@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS vector;
+
 CREATE TABLE company (
     company_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     company_name TEXT NOT NULL UNIQUE
@@ -91,4 +93,39 @@ CREATE TABLE job_description (
     source_url TEXT,
     source_path TEXT,
     application_id INTEGER REFERENCES application(application_id)
+);
+
+CREATE TABLE retrieval_chunk (
+    chunk_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    source_type TEXT NOT NULL CHECK (
+        source_type IN ('email', 'job_description')
+    ),
+    source_id INTEGER NOT NULL,
+    application_id INTEGER REFERENCES application(application_id),
+    company_id INTEGER REFERENCES company(company_id),
+    position_id INTEGER REFERENCES position(position_id),
+    email_type TEXT,
+    CHECK (
+        (
+            source_type = 'email'
+            AND email_type IN (
+                'applied',
+                'assessment',
+                'interview',
+                'offer',
+                'rejection',
+                'logistics',
+                'profile-update'
+            )
+        ) OR (
+            source_type = 'job_description'
+            AND email_type IS NULL
+        )
+    ),
+    semantic_fields TEXT[] NOT NULL,
+    content TEXT NOT NULL,
+    embedding VECTOR(1024) NOT NULL,    -- Keep in sync with scripts.constants.EMBEDDING_DIMENSION.
+    embedding_model TEXT NOT NULL,
+    embedded_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (source_type, source_id)
 );
