@@ -2,6 +2,8 @@ from __future__ import annotations
 
 
 EMBEDDING_DIMENSION = 1024
+EMAIL_BODY_CHAR_LIMIT = 2000
+JD_SEMANTIC_CHAR_LIMIT = 2000
 
 CATEGORY_LABEL_UNKNOWN = "unknown"
 
@@ -12,6 +14,11 @@ APPLICATION_PROGRESS_LABELS = (
     "interview",
     "offer",
     "rejection",
+)
+
+RETRIEVAL_EMAIL_LABELS = APPLICATION_PROGRESS_LABELS + (
+    "logistics",
+    "profile-update",
 )
 
 ALLOWED_CATEGORY_LABELS = (

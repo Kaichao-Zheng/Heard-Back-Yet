@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from sqlalchemy import ForeignKey
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import ARRAY, ForeignKey, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+from constants import EMBEDDING_DIMENSION
 
 
 class Base(DeclarativeBase):
@@ -91,3 +94,24 @@ class JobDescription(Base):
     application_id: Mapped[int | None] = mapped_column(
         ForeignKey("application.application_id")
     )
+
+
+class RetrievalChunk(Base):
+    __tablename__ = "retrieval_chunk"
+
+    chunk_id: Mapped[int] = mapped_column(primary_key=True)
+    source_type: Mapped[str]
+    source_id: Mapped[int]
+    application_id: Mapped[int | None] = mapped_column(
+        ForeignKey("application.application_id")
+    )
+    company_id: Mapped[int | None] = mapped_column(ForeignKey("company.company_id"))
+    position_id: Mapped[int | None] = mapped_column(
+        ForeignKey("position.position_id")
+    )
+    email_type: Mapped[str | None]
+    semantic_fields: Mapped[list[str]] = mapped_column(ARRAY(String))
+    content: Mapped[str]
+    embedding: Mapped[list[float]] = mapped_column(Vector(EMBEDDING_DIMENSION))
+    embedding_model: Mapped[str]
+    embedded_at: Mapped[datetime]
