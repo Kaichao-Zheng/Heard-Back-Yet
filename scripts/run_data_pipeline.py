@@ -1,13 +1,20 @@
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
 
-OLLAMA_URL = "http://localhost:11434"
+from dotenv import load_dotenv
+
+from paths import ENV_PATH
+
+load_dotenv(ENV_PATH)
+
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_CHECK_TIMEOUT_SECONDS = 3
 
 

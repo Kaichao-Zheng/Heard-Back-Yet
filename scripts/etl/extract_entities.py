@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import socket
 import sys
@@ -11,11 +12,19 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-from constants import ENTITY_EVIDENCE
-from paths import EML_PARSED_DIR
+from dotenv import load_dotenv
 
-DEFAULT_MODEL = "qwen3.5:9b"
-DEFAULT_OLLAMA_URL = "http://localhost:11434"
+from constants import ENTITY_EVIDENCE
+from paths import EML_PARSED_DIR, ENV_PATH
+
+load_dotenv(ENV_PATH)
+
+ENTITY_EXTRACTION_MODEL = os.getenv("ENTITY_EXTRACTION_MODEL")
+if not ENTITY_EXTRACTION_MODEL:
+    raise RuntimeError(
+        "ENTITY_EXTRACTION_MODEL is required. Configure it in the project .env file."
+    )
+DEFAULT_OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 MODEL_RESPONSE_RETRIES = 1
 MAX_BODY_CHARS = 2000
 MIN_CANDIDATE_CONFIDENCE = 0.60
@@ -404,7 +413,7 @@ def extract_files(args: argparse.Namespace) -> int:
             extraction = extract_record(
                 record=record,
                 ollama_url=DEFAULT_OLLAMA_URL,
-                model=DEFAULT_MODEL,
+                model=ENTITY_EXTRACTION_MODEL,
                 retries=MODEL_RESPONSE_RETRIES,
                 timeout_seconds=OLLAMA_TIMEOUT_SECONDS,
             )
