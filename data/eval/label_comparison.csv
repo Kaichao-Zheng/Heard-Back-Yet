@@ -7,9 +7,9 @@
 20260425_131109_a90598b2,applied,applied,TRUE,
 20260425_131806_46b1518f,auth,auth,TRUE,
 20260425_165823_ebd95be8,applied,applied,TRUE,
-20260426_105652_44ef5d76,rejection,applied,FALSE,subtle_rejection_signal
+20260426_105652_44ef5d76,rejection,rejection,TRUE,subtle_rejection_signal
 20260427_154534_c34a1265,auth,auth,TRUE,
-20260427_233811_33537a6b,rejection,applied,FALSE,subtle_rejection_signal
+20260427_233811_33537a6b,rejection,rejection,TRUE,subtle_rejection_signal
 20260428_114053_231feab0,profile-update,profile-update,TRUE,
 20260428_114222_dd76e527,profile-update,profile-update,TRUE,
 20260428_120803_901ad3da,auth,auth,TRUE,
@@ -23,9 +23,9 @@
 20260429_133927_c26d0b44,assessment,assessment,TRUE,
 20260429_133955_4c5d75e4,assessment,assessment,TRUE,
 20260429_150433_bee34417,assessment,assessment,TRUE,
-20260501_064019_ad336c3f,rejection,applied,FALSE,subtle_rejection_signal
-20260502_154457_c4ed8c08,rejection,rejection,TRUE,
-20260507_143039_e81e26c1,rejection,applied,FALSE,subtle_rejection_signal
+20260501_064019_ad336c3f,rejection,rejection,TRUE,subtle_rejection_signal
+20260502_154457_c4ed8c08,rejection,rejection,TRUE,subtle_rejection_signal
+20260507_143039_e81e26c1,rejection,logistics,FALSE,subtle_rejection_signal
 20260507_162248_a48d120b,profile-update,profile-update,TRUE,
 20260507_162426_84834091,auth,auth,TRUE,
 20260507_162531_1384554e,auth,auth,TRUE,
@@ -35,11 +35,11 @@
 20260508_222306_ec315777,applied,applied,TRUE,
 20260510_180127_a5490ac6,logistics,logistics,TRUE,
 20260510_180134_bffc7aea,applied,applied,TRUE,
-20260510_181831_3bc1766f,applied,applied,TRUE,html_logo
+20260510_181831_3bc1766f,applied,rejection,FALSE,html_logo
 20260515_151358_f93679c8,auth,auth,TRUE,html_logo
 20260515_151432_edf6e138,auth,auth,TRUE,
 20260515_154342_5740d65a,applied,applied,TRUE,
-20260515_175522_d855579f,assessment,assessment,TRUE,
+20260515_175522_d855579f,assessment,assessment,TRUE,weak_signal
 20260515_202848_ced4a95f,interview,interview,TRUE,
 20260515_213145_2c1d6847,auth,auth,TRUE,
 20260515_213326_1e36e868,auth,auth,TRUE,
@@ -62,7 +62,7 @@
 20260520_214319_2f8d7bb0,auth,auth,TRUE,
 20260520_215705_c820cbb0,applied,applied,TRUE,html_logo
 20260520_231717_0e5be33d,auth,auth,TRUE,
-20260520_234121_f809198e,profile-update,profile-update,TRUE,
+20260520_234121_f809198e,profile-update,profile-update,TRUE,html_logo
 20260520_234142_5e4d7aec,assessment,assessment,TRUE,html_logo
 20260520_234151_f651cadd,applied,applied,TRUE,html_logo
 20260522_165321_8a3a7181,applied,applied,TRUE,
