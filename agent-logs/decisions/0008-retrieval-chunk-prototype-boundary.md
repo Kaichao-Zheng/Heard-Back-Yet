@@ -22,6 +22,7 @@ Accepted
 - Prototype embedding column 使用 `VECTOR(1024)`，Python 侧必须校验输出维度。
 - Search prototype 在 metadata pre-filter 后执行 exact cosine Top-K search；当前不建立 HNSW、IVFFlat 等 ANN index。
 - Search hit 按 `retrieval`、`metadata`、`snapshot` 顺序组织，当前结果集内的 `rank` 与 distance、metric、embedding model 一起归入 `retrieval`；hydrated `source` 作为可选末尾字段。
+- Top-K hit 使用 `snapshot.content` 返回实际参与 embedding 与 ranking 的 context-enriched `retrieval_chunk.content`；可按需通过 `(source_type, source_id)` 批量 hydration 回 Email/JD 权威记录，不强制每次回查 source。
 
 ## Reasons
 

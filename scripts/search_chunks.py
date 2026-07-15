@@ -4,7 +4,9 @@ import argparse
 import json
 import sys
 from dataclasses import asdict
+from datetime import date, datetime
 from pathlib import Path
+from typing import Any
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -22,6 +24,7 @@ from retrieval.semantic_search import (
     SearchRequest,
     search_retrieval,
 )
+from retrieval.source_hydration import hydrate_search_hits
 from retrieval.text_embedder import OllamaTextEmbedder, load_embedding_config
 
 
@@ -74,6 +77,11 @@ def parse_args() -> argparse.Namespace:
         default=10,
         help="Maximum filtered results to return (default: 10).",
     )
+    parser.add_argument(
+        "--hydrate",
+        action="store_true",
+        help="Attach authoritative Email/JD source fields to each search hit.",
+    )
     return parser.parse_args()
 
 
@@ -119,11 +127,13 @@ def main() -> int:
         engine = create_engine(load_postgres_config().database_url())
         with Session(engine) as session:
             hits = search_retrieval(session, embedder, request)
+            results = hydrate_search_hits(session, hits) if args.hydrate else hits
         print(
             json.dumps(
-                [asdict(hit) for hit in hits],
+                [asdict(hit) for hit in results],
                 ensure_ascii=False,
                 indent=2,
+                default=json_default,
             )
         )
     except Exception as exc:
@@ -133,6 +143,12 @@ def main() -> int:
         if engine is not None:
             engine.dispose()
     return 0
+
+
+def json_default(value: Any) -> str:
+    if isinstance(value, (date, datetime)):
+        return value.isoformat()
+    return str(value)
 
 
 if __name__ == "__main__":
