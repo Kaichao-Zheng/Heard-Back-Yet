@@ -4,3 +4,5 @@ alembic
 pgvector
 python-dotenv
 pandas
+numpy
+matplotlib
