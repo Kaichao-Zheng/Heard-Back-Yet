@@ -46,7 +46,7 @@ class OllamaTextEmbedder:
 
     @property
     def model_ref(self) -> str:
-        return f"ollama:{self.config.model}"
+        return f"ollama:{self.model}"
 
     def embed(self, texts: list[str]) -> list[list[float]]:
         embeddings: list[list[float]] = []

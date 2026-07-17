@@ -20,6 +20,9 @@ Accepted
 - JD 仅在至少一个 semantic field 有效时生成 chunk。Email/JD content 使用固定字段顺序确定性渲染，以 canonical identity、extracted alias 和 source-specific semantic fields 丰富上下文，并设置有限文本预算。
 - Missing sentinel 不进入结构化 content；canonical 与 extracted identity 相同时不重复。完整 source facts 留在源表中，通过 source identity hydrate。
 - Prototype embedding column 使用 `VECTOR(1024)`，Python 侧必须校验输出维度。
+- Search prototype 在 metadata pre-filter 后执行 exact cosine Top-K search；当前不建立 HNSW、IVFFlat 等 ANN index。
+- Search hit 按 `retrieval`、`metadata`、`snapshot` 顺序组织，当前结果集内的 `rank` 与 distance、metric、embedding model 一起归入 `retrieval`；hydrated `source` 作为可选末尾字段。
+- Top-K hit 使用 `snapshot.content` 返回实际参与 embedding 与 ranking 的 context-enriched `retrieval_chunk.content`；可按需通过 `(source_type, source_id)` 批量 hydration 回 Email/JD 权威记录，不强制每次回查 source。
 
 ## Reasons
 
@@ -27,6 +30,8 @@ Accepted
 - `logistics` 与 `profile-update` 虽不驱动 status，但仍包含申请行动信息，也能降低它们与 progress labels 互相错分造成的漏索引。
 - Content 承担语义理解，metadata 承担精确过滤、聚合和调试。
 - 单 chunk 与全量重建符合当前 corpus 和 prototype 规模。
+- 当前 corpus 预计为数百至数千个 chunk，查询并发较低；exact search 能保留完整的向量近邻召回，也避免在缺少 latency benchmark 与 retrieval evaluation 时提前承担 ANN 的召回损失和索引维护成本。
+- 可选 hydration 保留 snapshot 与 source facts 的职责差异，也让未来 router/orchestrator 决定是否需要完整业务事实，而不把 polymorphic table routing 泄漏到调度层。
 
 ## Consequences
 
@@ -34,4 +39,6 @@ Accepted
 - Polymorphic source reference 没有跨 source tables 的数据库外键保证，hydration 必须按 `source_type` 选择表。
 - Renderer、embedding model 或维度变化时默认全量重建；维度变化还需同步修改 SQL schema。
 - 改用 paragraph、window 或其他 multi-chunk strategy 属于 retrieval contract 变更，需要全量重建 corpus、重新评估 retrieval quality，并重新决定 chunk identity 与结果 hydration 契约。
-- Distance metric、threshold 与 ANN index 留给 search implementation 和 evaluation 决定。
+- Exact search 的距离计算量随 metadata 过滤后的候选数量线性增长；在 retrieval evaluation 与 `EXPLAIN ANALYZE` 表明延迟不可接受后，再评估 HNSW/IVFFlat。
+- Distance threshold 仍由后续正负样本 evaluation 决定。
+- Hydration 最多按 source type 批量查询 Email 与 JD 两组记录；缺失 source 视为 retrieval integrity error，不将 unlinked hit 自动提升为 application evidence。

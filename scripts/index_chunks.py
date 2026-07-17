@@ -306,7 +306,7 @@ def main() -> int:
             print_preview_samples(candidates, args.limit)
         print_summary(stats, args.preview, args.dry_run)
     except Exception as exc:
-        print(f"index_retrieval failed: {exc}", file=sys.stderr)
+        print(f"index_chunks failed: {exc}", file=sys.stderr)
         return 1
     return 0
 

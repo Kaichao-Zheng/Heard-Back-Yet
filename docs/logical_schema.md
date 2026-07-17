@@ -62,7 +62,18 @@ erDiagram
         string source_path
         int application_id FK "nullable"
     }
+    
+    COMPANY_ALIAS }o--|| COMPANY : maps_to
+    POSITION_ALIAS }o--|| POSITION : maps_to
+    
+    COMPANY ||--o{ APPLICATION : identifies
+    POSITION ||--o{ APPLICATION : identifies
 
+    APPLICATION |o--o{ EMAIL : groups
+    APPLICATION |o--o{ JOB_DESCRIPTION : documented_by
+```
+```mermaid
+erDiagram
     RETRIEVAL_CHUNK {
         int chunk_id PK
         string source_type "NOT NULL; email | job_description"
@@ -77,13 +88,4 @@ erDiagram
         string embedding_model
         datetime embedded_at
     }
-    
-    COMPANY_ALIAS }o--|| COMPANY : maps_to
-    POSITION_ALIAS }o--|| POSITION : maps_to
-    
-    COMPANY ||--o{ APPLICATION : identifies
-    POSITION ||--o{ APPLICATION : identifies
-
-    APPLICATION |o--o{ EMAIL : groups
-    APPLICATION |o--o{ JOB_DESCRIPTION : documented_by
 ```
