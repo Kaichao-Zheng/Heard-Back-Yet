@@ -5,27 +5,25 @@ import json
 import sys
 from dataclasses import asdict
 from datetime import date, datetime
-from pathlib import Path
 from typing import Any
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-if str(SCRIPT_DIR) not in sys.path:
-    sys.path.insert(0, str(SCRIPT_DIR))
-
-from constants import RETRIEVAL_EMAIL_LABELS
-from db.config import load_postgres_config
-from retrieval.semantic_search import (
+from heardbackyet.constants import RETRIEVAL_EMAIL_LABELS
+from heardbackyet.db.config import load_postgres_config
+from heardbackyet.retrieval.semantic_search import (
     RETRIEVAL_SOURCE_TYPES,
     SearchFilters,
     SearchRequest,
     search_retrieval,
 )
-from retrieval.source_hydration import hydrate_search_hits
-from retrieval.text_embedder import OllamaTextEmbedder, load_embedding_config
+from heardbackyet.retrieval.source_hydration import hydrate_search_hits
+from heardbackyet.retrieval.text_embedder import (
+    OllamaTextEmbedder,
+    load_embedding_config,
+)
 
 
 def parse_args() -> argparse.Namespace:

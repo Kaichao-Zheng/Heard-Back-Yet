@@ -14,8 +14,8 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-from constants import ENTITY_EVIDENCE
-from paths import EML_PARSED_DIR, ENV_PATH
+from heardbackyet.constants import ENTITY_EVIDENCE
+from heardbackyet.paths import EML_PARSED_DIR, ENV_PATH
 
 load_dotenv(ENV_PATH)
 

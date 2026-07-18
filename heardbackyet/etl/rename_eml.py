@@ -12,7 +12,7 @@ from email.parser import BytesParser
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
-from paths import EML_IMPORT_DIR, EML_RENAMED_DIR
+from heardbackyet.paths import EML_IMPORT_DIR, EML_RENAMED_DIR
 
 TIMESTAMP_FORMAT = "%Y%m%d_%H%M%S"
 HASH_PREFIX_LENGTH = 8

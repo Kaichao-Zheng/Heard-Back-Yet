@@ -7,7 +7,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from paths import JD_DIR, JD_PARSED_DIR, PROJECT_ROOT
+from heardbackyet.paths import JD_DIR, JD_PARSED_DIR, PROJECT_ROOT
 
 JD_EXTENSIONS = {".md", ".markdown"}
 JD_FILENAME_PATTERN = re.compile(r"^\d{8}_.+")

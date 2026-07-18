@@ -7,8 +7,8 @@ from typing import Sequence
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from db.postgres_models import Email, JobDescription
-from retrieval.semantic_search import SearchHit
+from heardbackyet.db.postgres_models import Email, JobDescription
+from heardbackyet.retrieval.semantic_search import SearchHit
 
 
 @dataclass(frozen=True)

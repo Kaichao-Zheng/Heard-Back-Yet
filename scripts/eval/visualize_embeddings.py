@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import os
-import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -22,11 +21,12 @@ matplotlib.rcParams["font.family"] = ["Microsoft YaHei", "DejaVu Sans"]
 from matplotlib import pyplot as plt
 from matplotlib.colors import TABLEAU_COLORS
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
-from db.config import load_postgres_config
-from db.postgres_models import RetrievalChunk
-from retrieval.text_embedder import OllamaTextEmbedder, load_embedding_config
+from heardbackyet.db.config import load_postgres_config
+from heardbackyet.db.postgres_models import RetrievalChunk
+from heardbackyet.retrieval.text_embedder import (
+    OllamaTextEmbedder,
+    load_embedding_config,
+)
 
 
 DEFAULT_OUTPUT_PATH = (

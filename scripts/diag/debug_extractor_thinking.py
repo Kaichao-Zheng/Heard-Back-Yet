@@ -9,16 +9,7 @@ from pathlib import Path
 from typing import Any
 
 
-SCRIPT_PATH = Path(__file__).resolve()
-REPO_ROOT = SCRIPT_PATH.parents[2]
-SCRIPT_ROOT = REPO_ROOT / "scripts"
-ETL_ROOT = SCRIPT_ROOT / "etl"
-
-for import_path in (SCRIPT_ROOT, ETL_ROOT):
-    if str(import_path) not in sys.path:
-        sys.path.insert(0, str(import_path))
-
-from extract_entities import (  # noqa: E402
+from heardbackyet.etl.extract_entities import (
     DEFAULT_OLLAMA_URL,
     ENTITY_EXTRACTION_MODEL,
     OLLAMA_TIMEOUT_SECONDS,
@@ -28,7 +19,7 @@ from extract_entities import (  # noqa: E402
     parse_model_json,
     validate_extraction,
 )
-from paths import EML_PARSED_DIR  # noqa: E402
+from heardbackyet.paths import EML_PARSED_DIR
 
 
 def parse_args() -> argparse.Namespace:
