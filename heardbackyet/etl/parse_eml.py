@@ -15,7 +15,7 @@ from email.utils import getaddresses, parsedate_to_datetime
 from pathlib import Path
 from typing import Any
 
-from paths import EML_PARSED_DIR, EML_RENAMED_DIR, PROJECT_ROOT
+from heardbackyet.paths import EML_PARSED_DIR, EML_RENAMED_DIR, PROJECT_ROOT
 
 CURRENT_USER_ID = "default recipient"
 

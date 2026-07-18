@@ -10,8 +10,8 @@ from urllib.request import Request, urlopen
 
 from dotenv import load_dotenv
 
-from constants import EMBEDDING_DIMENSION
-from paths import ENV_PATH
+from heardbackyet.constants import EMBEDDING_DIMENSION
+from heardbackyet.paths import ENV_PATH
 
 EMBEDDING_BATCH_SIZE = 32
 EMBEDDING_TIMEOUT_SECONDS = 120

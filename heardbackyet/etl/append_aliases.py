@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from paths import EML_PARSED_DIR, ENTITY_ALIASES_DIR, JD_PARSED_DIR
+from heardbackyet.paths import EML_PARSED_DIR, ENTITY_ALIASES_DIR, JD_PARSED_DIR
 
 ALIAS_FILES = {
     "company": "company_aliases.csv",

@@ -1,31 +1,17 @@
 from __future__ import annotations
 
-import argparse
-import sys
 from pathlib import Path
 
-from db.config import (
+from heardbackyet.db.config import (
     MAINTENANCE_DATABASE,
     PostgresConfig,
     load_postgres_config,
 )
-from paths import ENV_PATH, SQL_SCHEMA_PATH, SQL_VIEWS_PATH
+from heardbackyet.paths import ENV_PATH, SQL_SCHEMA_PATH, SQL_VIEWS_PATH
 
 
 INIT_SCHEMA_PATH = SQL_SCHEMA_PATH
 INIT_VIEWS_PATH = SQL_VIEWS_PATH
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Drop and recreate the local PostgreSQL database, then initialize schema."
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Read configuration and schema without connecting to PostgreSQL.",
-    )
-    return parser.parse_args()
 
 
 def quote_identifier(identifier: str) -> str:
@@ -99,6 +85,15 @@ def create_views(config: PostgresConfig) -> None:
         engine.dispose()
 
 
+def reset_database(config: PostgresConfig | None = None) -> PostgresConfig:
+    """Recreate the configured database, schema, and read-only views."""
+    resolved_config = config or load_postgres_config()
+    recreate_database(resolved_config)
+    create_tables(resolved_config)
+    create_views(resolved_config)
+    return resolved_config
+
+
 def print_reset_context(config: PostgresConfig) -> None:
     schema_statement_count = len(read_sql_statements(INIT_SCHEMA_PATH))
     view_statement_count = len(read_sql_statements(INIT_VIEWS_PATH))
@@ -110,28 +105,3 @@ def print_reset_context(config: PostgresConfig) -> None:
     print(f"- Schema statements: {schema_statement_count}")
     print(f"- Create views from: {INIT_VIEWS_PATH}")
     print(f"- View statements: {view_statement_count}")
-
-
-def main() -> int:
-    args = parse_args()
-
-    try:
-        config = load_postgres_config()
-        print_reset_context(config)
-        if args.dry_run:
-            print("Dry run complete; database was not changed.")
-            return 0
-
-        recreate_database(config)
-        create_tables(config)
-        create_views(config)
-    except Exception as exc:
-        print(f"reset_db failed: {exc}", file=sys.stderr)
-        return 1
-
-    print(f"Database {config.database!r} reset successfully.")
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

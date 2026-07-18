@@ -5,9 +5,9 @@ from dataclasses import dataclass, field
 from sqlalchemy import Select, select
 from sqlalchemy.orm import Session
 
-from constants import RETRIEVAL_EMAIL_LABELS
-from db.postgres_models import RetrievalChunk
-from retrieval.text_embedder import OllamaTextEmbedder
+from heardbackyet.constants import RETRIEVAL_EMAIL_LABELS
+from heardbackyet.db.postgres_models import RetrievalChunk
+from heardbackyet.retrieval.text_embedder import OllamaTextEmbedder
 
 
 RETRIEVAL_SOURCE_TYPES = ("email", "job_description")

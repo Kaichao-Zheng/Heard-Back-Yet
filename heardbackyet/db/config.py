@@ -7,7 +7,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from sqlalchemy.engine import URL
 
-from paths import ENV_PATH
+from heardbackyet.paths import ENV_PATH
 
 MAINTENANCE_DATABASE = "postgres"
 POSTGRES_DRIVER = "postgresql+psycopg"

@@ -10,17 +10,17 @@ from typing import Any
 from sqlalchemy import Select, select
 from sqlalchemy.orm import Session
 
-from constants import (
+from heardbackyet.constants import (
     APPLICATION_PROGRESS_LABELS,
     ALLOWED_CATEGORY_LABELS
 )
-from paths import (
+from heardbackyet.paths import (
     COMPANY_ALIASES_PATH,
     EML_PARSED_DIR,
     JD_PARSED_DIR,
     POSITION_ALIASES_PATH,
 )
-from db.postgres_models import (
+from heardbackyet.db.postgres_models import (
     CompanyAlias,
     Company,
     PositionAlias,

@@ -4,17 +4,10 @@ import json
 import sys
 from pathlib import Path
 
-SCRIPT_PATH = Path(__file__).resolve()
-REPO_ROOT = SCRIPT_PATH.parents[2]
-SCRIPT_ROOT = REPO_ROOT / "scripts"
-
-if str(SCRIPT_ROOT) not in sys.path:
-    sys.path.insert(0, str(SCRIPT_ROOT))
-
 import pandas as pd
 
-from constants import ALLOWED_CATEGORY_LABELS, APPLICATION_PROGRESS_LABELS
-from paths import EML_PARSED_DIR, PROJECT_ROOT
+from heardbackyet.constants import ALLOWED_CATEGORY_LABELS, APPLICATION_PROGRESS_LABELS
+from heardbackyet.paths import EML_PARSED_DIR, PROJECT_ROOT
 
 
 EVAL_CSV_PATH = PROJECT_ROOT / "data" / "eval" / "label_comparison.csv"

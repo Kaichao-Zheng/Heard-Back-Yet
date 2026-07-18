@@ -6,7 +6,7 @@ from pgvector.sqlalchemy import Vector
 from sqlalchemy import ARRAY, ForeignKey, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
-from constants import EMBEDDING_DIMENSION
+from heardbackyet.constants import EMBEDDING_DIMENSION
 
 
 class Base(DeclarativeBase):

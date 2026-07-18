@@ -10,7 +10,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from paths import ENV_PATH
+from heardbackyet.paths import ENV_PATH
 
 load_dotenv(ENV_PATH)
 
@@ -20,10 +20,6 @@ OLLAMA_CHECK_TIMEOUT_SECONDS = 3
 
 def project_root() -> Path:
     return Path(__file__).resolve().parents[1]
-
-
-def script_root() -> Path:
-    return Path(__file__).resolve().parent
 
 
 def parse_args() -> argparse.Namespace:
@@ -57,7 +53,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def step_command(script_name: str, *flags: str) -> list[str]:
-    module_name = f"etl.{Path(script_name).stem}"
+    module_name = f"heardbackyet.etl.{Path(script_name).stem}"
     return [sys.executable, "-m", module_name, *flags]
 
 
@@ -86,12 +82,12 @@ def run_step(
         ensure_ollama_available(label)
 
     if verbose:
-        subprocess.run(command, cwd=script_root(), check=True)
+        subprocess.run(command, cwd=project_root(), check=True)
         return
 
     result = subprocess.run(
         command,
-        cwd=script_root(),
+        cwd=project_root(),
         capture_output=True,
         text=True,
         encoding="utf-8",

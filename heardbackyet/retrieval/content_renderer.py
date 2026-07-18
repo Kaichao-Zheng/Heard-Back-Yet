@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from constants import (
+from heardbackyet.constants import (
     EMAIL_BODY_CHAR_LIMIT,
     JD_SEMANTIC_CHAR_LIMIT,
     RETRIEVAL_EMAIL_LABELS,
 )
-from db.postgres_models import Email, JobDescription
+from heardbackyet.db.postgres_models import Email, JobDescription
 
 TRUNCATION_MARKER = "[TRUNCATED]"
 MISSING_SENTINELS = frozenset(

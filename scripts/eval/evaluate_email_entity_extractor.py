@@ -6,17 +6,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-SCRIPT_PATH = Path(__file__).resolve()
-REPO_ROOT = SCRIPT_PATH.parents[2]
-SCRIPT_ROOT = REPO_ROOT / "scripts"
-
-if str(SCRIPT_ROOT) not in sys.path:
-    sys.path.insert(0, str(SCRIPT_ROOT))
-
 import pandas as pd
 
-from constants import ALLOWED_CATEGORY_LABELS, APPLICATION_PROGRESS_LABELS
-from paths import EML_PARSED_DIR, PROJECT_ROOT
+from heardbackyet.constants import ALLOWED_CATEGORY_LABELS, APPLICATION_PROGRESS_LABELS
+from heardbackyet.paths import EML_PARSED_DIR, PROJECT_ROOT
 
 
 REQUIRED_COLUMNS = ("email", "expected_label", "expected_entities")

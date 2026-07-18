@@ -13,12 +13,12 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-from constants import (
+from heardbackyet.constants import (
     ALLOWED_CATEGORY_LABELS,
     CATEGORY_EVIDENCE,
     CATEGORY_LABEL_UNKNOWN,
 )
-from paths import EML_PARSED_DIR, ENV_PATH
+from heardbackyet.paths import EML_PARSED_DIR, ENV_PATH
 
 
 load_dotenv(ENV_PATH)

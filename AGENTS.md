@@ -33,24 +33,28 @@ Use `agent-logs/README.md` for log types, naming, templates, and maintenance rul
 * `/data/jd/parsed` for parsed JD JSON intermediates
 * `/data/entity_aliases` for local alias CSV files before manual normalization
 * `/data/eval` for evaluation CSV inputs and generated quality metrics
-* `/scripts` for runnable entrypoints and manual workflow checkpoints
-* `/scripts/etl` for ETL implementation scripts
-* `/scripts/db` for database configuration, models, and loader implementation
+* `/heardbackyet` for importable application and domain implementation
+* `/heardbackyet/etl` for ETL implementation
+* `/heardbackyet/db` for database configuration, models, and loader implementation
+* `/heardbackyet/query` for structured application query functions
+* `/heardbackyet/retrieval` for semantic indexing, search, and hydration
+* `/scripts` for thin runnable entrypoints and manual workflow checkpoints
 * `/scripts/eval` for evaluation scripts and offline quality checks
 * `/scripts/diag` for diagnostics and debugging helpers
-* `/scripts/constants.py` for domain labels and workflow constants
 * `/docs` for architecture notes
 
 ## Current Stage
 
-Stage 4: Query Layer
-The project is adding read-only SQL views and Python query functions for common
-application tracking questions, built on top of the V3 PostgreSQL foundation.
-This layer should preserve evidence provenance and prepare stable query
-contracts for future CLI, FastAPI, and chatbot consumers.
+Stage 5: Query Orchestration
+The project is adding an orchestration layer over the completed structured query
+and semantic retrieval foundations. It should classify query intent, build the
+appropriate structured and/or semantic requests, coordinate hybrid execution,
+merge results without weakening evidence provenance, and expose stable contracts
+for future CLI, FastAPI, and chatbot consumers.
 
 ## Stage History
 
+* Stage 4: Read-only query views/functions and pgvector semantic retrieval
 * Stage 3: PostgreSQL schema, loader, derived `latest_status`, and validation SQL
 * Stage 2: EML/JD evidence model and application grouping
 * Stage 1: classification, entity extraction, and alias normalization
