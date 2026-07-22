@@ -9,6 +9,7 @@ from typing import Any
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Connection
 
+from heardbackyet.constants import RETRIEVAL_SOURCE_TYPES, APPLICATION_EVIDENCE_KINDS
 from heardbackyet.db.config import load_postgres_config
 from heardbackyet.query.view_queries import (
     query_application_evidence,
@@ -61,8 +62,16 @@ def parse_args() -> argparse.Namespace:
     evidence.set_defaults(query_name="evidence")
     evidence.add_argument("--application-id", type=int, help="Filter one application.")
     evidence.add_argument("--company", help="Filter company_name with ILIKE.")
-    evidence.add_argument("--evidence-kind", help="Filter by evidence_kind.")
-    evidence.add_argument("--source-type", help="Filter by source_type.")
+    evidence.add_argument(
+        "--evidence-kind",
+        choices=APPLICATION_EVIDENCE_KINDS,
+        help="Filter by evidence_kind.",
+    )
+    evidence.add_argument(
+        "--source-type",
+        choices=RETRIEVAL_SOURCE_TYPES,
+        help="Filter by source_type.",
+    )
     add_limit_argument(evidence)
 
     inconsistent = subparsers.add_parser(

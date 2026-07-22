@@ -5,7 +5,16 @@ EMBEDDING_DIMENSION = 1024
 EMAIL_BODY_CHAR_LIMIT = 2000
 JD_SEMANTIC_CHAR_LIMIT = 2000
 
-CATEGORY_LABEL_UNKNOWN = "unknown"
+RETRIEVAL_SOURCE_TYPES = (
+    "email",
+    "job_description",
+)
+
+APPLICATION_EVIDENCE_KINDS = (
+    "latest_status_email",
+    "linked_email",
+    "linked_job_description",
+)
 
 # Labels that can represent an application progress stage.
 APPLICATION_PROGRESS_LABELS = (
@@ -16,10 +25,18 @@ APPLICATION_PROGRESS_LABELS = (
     "rejection",
 )
 
-RETRIEVAL_EMAIL_LABELS = APPLICATION_PROGRESS_LABELS + (
+SUPPLEMENTARY_INFO_LABELS = (
     "logistics",
     "profile-update",
 )
+
+# Email categories admitted to the vector-backed semantic index by retrieval policy.
+SEMANTIC_INDEX_EMAIL_LABELS = (
+    APPLICATION_PROGRESS_LABELS
+    + SUPPLEMENTARY_INFO_LABELS
+)
+
+CATEGORY_LABEL_UNKNOWN = "unknown"
 
 ALLOWED_CATEGORY_LABELS = (
     "auth",

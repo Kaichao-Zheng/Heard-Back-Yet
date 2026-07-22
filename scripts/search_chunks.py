@@ -11,10 +11,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 
-from heardbackyet.constants import RETRIEVAL_EMAIL_LABELS
+from heardbackyet.constants import RETRIEVAL_SOURCE_TYPES, SEMANTIC_INDEX_EMAIL_LABELS
 from heardbackyet.db.config import load_postgres_config
 from heardbackyet.retrieval.semantic_search import (
-    RETRIEVAL_SOURCE_TYPES,
     SearchFilters,
     SearchRequest,
     search_retrieval,
@@ -55,8 +54,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--email-type",
         action="append",
-        choices=RETRIEVAL_EMAIL_LABELS,
-        help="Filter an eligible email label; repeat to select more than one.",
+        choices=SEMANTIC_INDEX_EMAIL_LABELS,
+        help=(
+            "Filter an email label included in the semantic index; "
+            "repeat to select more than one."
+        ),
     )
     link_scope = parser.add_mutually_exclusive_group()
     link_scope.add_argument(

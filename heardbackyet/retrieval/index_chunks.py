@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from sqlalchemy import create_engine, delete, select
 from sqlalchemy.orm import Session
 
-from heardbackyet.constants import RETRIEVAL_EMAIL_LABELS
+from heardbackyet.constants import SEMANTIC_INDEX_EMAIL_LABELS
 from heardbackyet.db.config import load_postgres_config
 from heardbackyet.db.postgres_models import (
     Application,
@@ -69,7 +69,7 @@ def collect_candidates(
             .outerjoin(Application, Email.application_id == Application.application_id)
             .outerjoin(Company, Application.company_id == Company.company_id)
             .outerjoin(Position, Application.position_id == Position.position_id)
-            .where(Email.email_type.in_(RETRIEVAL_EMAIL_LABELS))
+            .where(Email.email_type.in_(SEMANTIC_INDEX_EMAIL_LABELS))
             .order_by(Email.email_id)
         )
         for email, application, company, position in session.execute(email_query):

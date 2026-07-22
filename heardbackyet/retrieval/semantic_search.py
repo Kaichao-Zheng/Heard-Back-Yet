@@ -5,12 +5,9 @@ from dataclasses import dataclass, field
 from sqlalchemy import Select, select
 from sqlalchemy.orm import Session
 
-from heardbackyet.constants import RETRIEVAL_EMAIL_LABELS
+from heardbackyet.constants import RETRIEVAL_SOURCE_TYPES, SEMANTIC_INDEX_EMAIL_LABELS
 from heardbackyet.db.postgres_models import RetrievalChunk
 from heardbackyet.retrieval.text_embedder import OllamaTextEmbedder
-
-
-RETRIEVAL_SOURCE_TYPES = ("email", "job_description")
 
 
 # Search contract components.
@@ -173,7 +170,7 @@ def _validate_request(request: SearchRequest, normalized_query: str) -> None:
             raise ValueError(f"{field_name} must be a positive integer")
 
     _validate_choices("source_types", filters.source_types, RETRIEVAL_SOURCE_TYPES)
-    _validate_choices("email_types", filters.email_types, RETRIEVAL_EMAIL_LABELS)
+    _validate_choices("email_types", filters.email_types, SEMANTIC_INDEX_EMAIL_LABELS)
 
     if filters.application_id is not None and filters.linked_only is False:
         raise ValueError("application_id cannot be combined with linked_only=False")
