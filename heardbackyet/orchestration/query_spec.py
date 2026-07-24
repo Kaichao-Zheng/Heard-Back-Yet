@@ -26,7 +26,6 @@ class QuerySpec:
     company_id: int | None = None
     position_id: int | None = None
     company: str | None = None
-    position_hint: str | None = None
     email_types: tuple[str, ...] | None = None
     source_types: tuple[str, ...] | None = None
     linked_only: bool | None = None
@@ -43,7 +42,5 @@ class QuerySpec:
                 raise ValueError(f"{field_name} must be a positive integer")
         if self.limit is not None and self.limit < 1:
             raise ValueError("limit must be a positive integer")
-        if self.position_hint is not None and not self.position_hint.strip():
-            raise ValueError("position_hint must not be blank")
         if self.intent is QueryIntent.CONTENT_SEARCH and not self.query.strip():
             raise ValueError("content_search requires a non-empty query")
