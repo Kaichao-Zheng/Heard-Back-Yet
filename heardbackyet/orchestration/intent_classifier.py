@@ -23,12 +23,12 @@ from heardbackyet.paths import ENV_PATH
 
 load_dotenv(ENV_PATH)
 
-INTENT_CLASSIFICATION_MODEL = os.getenv("INTENT_CLASSIFICATION_MODEL")
-if not INTENT_CLASSIFICATION_MODEL:
+MODEL = os.getenv("INTENT_CLASSIFICATION_MODEL")
+if not MODEL:
     raise RuntimeError(
         "INTENT_CLASSIFICATION_MODEL is required. Configure it in the project .env file."
     )
-DEFAULT_OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+MODEL_ENDPOINT = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_TIMEOUT_SECONDS = 60
 
 
@@ -262,8 +262,8 @@ class IntentClassifier:
         prompt = build_prompt(normalized_question, effective_reference_time)
 
         content = self._model_caller(
-            DEFAULT_OLLAMA_URL.rstrip("/"),
-            INTENT_CLASSIFICATION_MODEL,
+            MODEL_ENDPOINT.rstrip("/"),
+            MODEL,
             prompt,
             OLLAMA_TIMEOUT_SECONDS,
         )
@@ -430,7 +430,7 @@ def validate_classification(
             question=question,
             spec=None,
             reason_code=reason_code,
-            source=f"ollama:{INTENT_CLASSIFICATION_MODEL}",
+            source=f"ollama:{MODEL}",
         )
 
     intent = _parse_enum(QueryIntent, payload.get("intent"), "intent")
@@ -468,7 +468,7 @@ def validate_classification(
         question=question,
         spec=spec,
         reason_code=None,
-        source=f"ollama:{INTENT_CLASSIFICATION_MODEL}",
+        source=f"ollama:{MODEL}",
     )
 
 

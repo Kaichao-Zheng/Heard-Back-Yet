@@ -19,7 +19,7 @@ EMBEDDING_TIMEOUT_SECONDS = 120
 
 @dataclass(frozen=True)
 class EmbeddingConfig:
-    ollama_url: str
+    endpoint: str
     model: str
 
 
@@ -31,7 +31,7 @@ def load_embedding_config() -> EmbeddingConfig:
             "EMBEDDING_MODEL is required. Configure it in the project .env file."
         )
     return EmbeddingConfig(
-        ollama_url=os.getenv("OLLAMA_URL", "http://localhost:11434").rstrip("/"),
+        endpoint=os.getenv("OLLAMA_URL", "http://localhost:11434").rstrip("/"),
         model=model,
     )
 
@@ -57,7 +57,7 @@ class OllamaTextEmbedder:
 
     def _embed_batch(self, texts: list[str]) -> list[list[float]]:
         request = Request(
-            self.config.ollama_url + "/api/embed",
+            self.config.endpoint + "/api/embed",
             data=json.dumps(
                 {
                     "model": self.config.model,

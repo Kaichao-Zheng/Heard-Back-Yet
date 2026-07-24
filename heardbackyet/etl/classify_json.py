@@ -23,12 +23,12 @@ from heardbackyet.paths import EML_PARSED_DIR, ENV_PATH
 
 load_dotenv(ENV_PATH)
 
-TEXT_CLASSIFICATION_MODEL = os.getenv("TEXT_CLASSIFICATION_MODEL")
-if not TEXT_CLASSIFICATION_MODEL:
+MODEL = os.getenv("TEXT_CLASSIFICATION_MODEL")
+if not MODEL:
     raise RuntimeError(
         "TEXT_CLASSIFICATION_MODEL is required. Configure it in the project .env file."
     )
-DEFAULT_OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+MODEL_ENDPOINT = os.getenv("OLLAMA_URL", "http://localhost:11434")
 MAX_BODY_CHARS = 1500
 MODEL_RESPONSE_RETRIES = 1
 REVIEW_THRESHOLD = 0.75
@@ -353,8 +353,8 @@ def classify_files(args: argparse.Namespace) -> int:
         try:
             classification = classify_record(
                 record=record,
-                ollama_url=DEFAULT_OLLAMA_URL,
-                model=TEXT_CLASSIFICATION_MODEL,
+                ollama_url=MODEL_ENDPOINT,
+                model=MODEL,
                 max_body_chars=MAX_BODY_CHARS,
                 retries=MODEL_RESPONSE_RETRIES,
                 timeout_seconds=OLLAMA_TIMEOUT_SECONDS,
@@ -369,7 +369,7 @@ def classify_files(args: argparse.Namespace) -> int:
         update_category(
             record,
             classification,
-            TEXT_CLASSIFICATION_MODEL,
+            MODEL,
             REVIEW_THRESHOLD,
         )
 
