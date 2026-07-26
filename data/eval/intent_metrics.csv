@@ -1,0 +1,7 @@
+﻿outcome,expected,expected_share,predicted,correct,precision,recall,f1
+resolved,5,0.4167,5,5,1.0000,1.0000,1.0000
+direct_answer,1,0.0833,1,1,1.0000,1.0000,1.0000
+needs_clarification,2,0.1667,3,2,0.6667,1.0000,0.8000
+requires_decomposition,1,0.0833,1,1,1.0000,1.0000,1.0000
+unsupported,3,0.2500,2,2,1.0000,0.6667,0.8000
+overall,12,1.0000,12,11,0.9167,0.9167,0.9167
