@@ -17,7 +17,7 @@ class StructuredOperation(StrEnum):
     RESOLVE_COMPANY = "resolve_company"
     APPLICATION_OVERVIEW = "application_overview"
     APPLICATION_TIMELINE = "application_timeline"
-    APPLICATION_EVIDENCE = "application_evidence"
+    APPLICATION_PROVENANCE = "application_provenance"
     INCONSISTENT_STATUS_SNAPSHOT = "inconsistent_status_snapshot"
     UNLINKED_STATUS_EMAIL = "unlinked_status_email"
 
@@ -41,7 +41,7 @@ class StructuredQueryParameters:
     email_type: str | None = None
     since: datetime | None = None
     before: datetime | None = None
-    evidence_kind: str | None = None
+    provenance_kind: str | None = None
     source_type: str | None = None
     limit: int | None = None
 
@@ -120,7 +120,7 @@ class RetrievalPlan:
 INTENT_OPERATIONS = {
     QueryIntent.APPLICATION_OVERVIEW: StructuredOperation.APPLICATION_OVERVIEW,
     QueryIntent.APPLICATION_TIMELINE: StructuredOperation.APPLICATION_TIMELINE,
-    QueryIntent.APPLICATION_EVIDENCE: StructuredOperation.APPLICATION_EVIDENCE,
+    QueryIntent.APPLICATION_PROVENANCE: StructuredOperation.APPLICATION_PROVENANCE,
     QueryIntent.INCONSISTENT_STATUS_SNAPSHOT: (
         StructuredOperation.INCONSISTENT_STATUS_SNAPSHOT
     ),
@@ -186,7 +186,7 @@ class RetrievalPlanner:
             email_type=email_type,
             since=spec.since,
             before=spec.before,
-            evidence_kind=spec.evidence_kind,
+            provenance_kind=spec.provenance_kind,
             source_type=source_type,
             limit=spec.limit,
         )
@@ -310,8 +310,8 @@ class RetrievalPlanner:
                     "timeline planning requires application_id, company, or "
                     "email_type='applied' with since"
                 )
-        elif operation is StructuredOperation.APPLICATION_EVIDENCE:
+        elif operation is StructuredOperation.APPLICATION_PROVENANCE:
             if parameters.application_id is None and not parameters.company:
                 raise ValueError(
-                    "evidence planning requires application_id or company"
+                    "provenance planning requires application_id or company"
                 )

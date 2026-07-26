@@ -9,13 +9,13 @@
 
 ## Decision
 
-- 公共 intent 仅保留 `application_overview`、`application_timeline`、`application_evidence`、`content_search`用于结构化查询与语义检索；两类 review query 只保留为开发者/管理的SQL/CLI操作。
+- 公共 intent 仅保留 `application_overview`、`application_timeline`、`application_provenance`、`content_search`用于结构化查询与语义检索；两类 review query 只保留为开发者/管理的SQL/CLI操作。
 - 简短、上下文无关且不依赖数据库或当前联网信息的稳定概念解释进入 `direct_answer`；它不是 retrieval intent，也不生成 `QuerySpec`。
 - Compound query 进入 `requires_decomposition`，MVP 要求用户拆分，不实现自动分解。
 - 采用 company-first scope：明确 company 即为合法 broad scope，不因同公司存在多个 application 自动判为歧义。
 - Position 默认作为结果分组和 provenance，不作为 MVP hard filter；Classifier 不输出 position constraint，content search 仅通过原始问题保留岗位文字。
 - Classifier 不接受 `application_id`、`company_id`、`position_id`、`position_hint` 或 `linked_only` 等内部或不可执行约束。
-- Timeline 只接受 progress email labels；content search 接受 semantic-index labels（progress + supplementary info）；application evidence 最多接受一个 source type。
+- Timeline 只接受 progress email labels；content search 接受 semantic-index labels（progress + supplementary info）；application provenance 最多接受一个 source type。
 - Classifier 只提取用户可表达的约束；Planner 为 company-scoped content search 编排确定性的 company SQL resolution step，并把唯一 `company_id` 绑定到 semantic filter。
 
 ## Assumptions

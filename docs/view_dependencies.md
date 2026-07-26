@@ -11,7 +11,7 @@ flowchart LR
 
     %% Query Views
     V1[v_application_overview]
-    V2[v_application_evidence]
+    V2[v_application_provenance]
     V3[v_application_timeline]
 
     %% Review Queue

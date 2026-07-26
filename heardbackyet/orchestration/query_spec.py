@@ -10,7 +10,7 @@ class QueryIntent(StrEnum):
 
     APPLICATION_OVERVIEW = "application_overview"
     APPLICATION_TIMELINE = "application_timeline"
-    APPLICATION_EVIDENCE = "application_evidence"
+    APPLICATION_PROVENANCE = "application_provenance"
     CONTENT_SEARCH = "content_search"
     INCONSISTENT_STATUS_SNAPSHOT = "inconsistent_status_snapshot"
     UNLINKED_STATUS_EMAIL = "unlinked_status_email"
@@ -31,7 +31,7 @@ class QuerySpec:
     linked_only: bool | None = None
     since: datetime | None = None
     before: datetime | None = None
-    evidence_kind: str | None = None
+    provenance_kind: str | None = None
     limit: int | None = None
     hydrate: bool = True
 

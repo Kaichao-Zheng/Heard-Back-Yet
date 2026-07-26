@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-- Query views 负责结构化事实和已关联 application evidence；未来还需要从 email 与 JD 文本中定位语义相关的 source。
+- Query views 负责结构化事实和已关联 application provenance；未来还需要从 email 与 JD 文本中定位语义相关的 source。
 - Semantic retrieval 需要覆盖符合条件但尚未链接 application 的 source，同时不能改变 evidence 的可信边界。
 - 当前 corpus 较小，prototype 应避免多 chunk、增量版本和复杂索引生命周期。
 
@@ -15,7 +15,7 @@ Accepted
 - 使用统一的 PostgreSQL `retrieval_chunk` 存储 email/JD rendered content、metadata 与 pgvector embedding。
 - Prototype 采用 **context-enriched, single-chunk-per-source document strategy with deterministic truncation**：每个 source document 生成 0/1 个 chunk，不进行段落切分、滑动窗口或 overlap；不保存 chunk index、builder version 或 content hash，刷新时全量重建。
 - `(source_type, source_id)` 唯一定位原始 source。Row 保存 nullable application/company/position identity、email classification、实际参与渲染的 `semantic_fields`、content、embedding model 和时间。
-- `application_id` 允许为空；retrieval 命中 unlinked source 只表示文本相关，不自动提升为 application evidence。
+- `application_id` 允许为空；retrieval 命中 unlinked source 只表示文本相关，不自动提升为 application provenance。
 - Email eligibility 包含 `applied`、`assessment`、`interview`、`offer`、`rejection`、`logistics`、`profile-update`；`auth`、`delivery-failure`、`unrelated`、`unknown` 不进入 corpus。
 - JD 仅在至少一个 semantic field 有效时生成 chunk。Email/JD content 使用固定字段顺序确定性渲染，以 canonical identity、extracted alias 和 source-specific semantic fields 丰富上下文，并设置有限文本预算。
 - Missing sentinel 不进入结构化 content；canonical 与 extracted identity 相同时不重复。完整 source facts 留在源表中，通过 source identity hydrate。
@@ -41,4 +41,4 @@ Accepted
 - 改用 paragraph、window 或其他 multi-chunk strategy 属于 retrieval contract 变更，需要全量重建 corpus、重新评估 retrieval quality，并重新决定 chunk identity 与结果 hydration 契约。
 - Exact search 的距离计算量随 metadata 过滤后的候选数量线性增长；在 retrieval evaluation 与 `EXPLAIN ANALYZE` 表明延迟不可接受后，再评估 HNSW/IVFFlat。
 - Distance threshold 仍由后续正负样本 evaluation 决定。
-- Hydration 最多按 source type 批量查询 Email 与 JD 两组记录；缺失 source 视为 retrieval integrity error，不将 unlinked hit 自动提升为 application evidence。
+- Hydration 最多按 source type 批量查询 Email 与 JD 两组记录；缺失 source 视为 retrieval integrity error，不将 unlinked hit 自动提升为 application provenance。

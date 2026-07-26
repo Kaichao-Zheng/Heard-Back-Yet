@@ -29,7 +29,7 @@ Accepted
 ## Input/Output Contract
 
 - 调用方输入为非空 `question: str`，以及可选、必须带时区的 `reference_time: datetime`；未提供时间时使用当前 UTC 时间。
-- 模型输入由原始问题、时间基准和受支持的 email/source/evidence 词汇组成。
+- 模型输入由原始问题、时间基准和受支持的 email/source/provenance 词汇组成。
 - 模型原始输出是 strict JSON；`outcome`、`intent`、`reason_code` 必须出现，查询约束槽位必须来自 allowlist。
 - 模块最终输出为 `IntentClassification`，而不是未经校验的模型 JSON。
 - `resolved` outcome 携带经过校验的 `QuerySpec` 且 `reason_code` 为 `None`；`direct_answer` 的 `spec` 与 `reason_code` 均为 `None`；其余 outcome 的 `spec` 为 `None`，并携带受限枚举中的非空 `reason_code`。

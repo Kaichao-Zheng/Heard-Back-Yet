@@ -15,7 +15,7 @@ from heardbackyet.orchestration.retrieval_planner import (
 )
 from heardbackyet.query.table_queries import query_company_matches
 from heardbackyet.query.view_queries import (
-    query_application_evidence,
+    query_application_provenance,
     query_application_overview,
     query_application_timeline,
     query_inconsistent_status_snapshots,
@@ -85,12 +85,12 @@ def _execute_structured_step(
                 before=parameters.before,
                 limit=parameters.limit,
             )
-        case StructuredOperation.APPLICATION_EVIDENCE:
-            return query_application_evidence(
+        case StructuredOperation.APPLICATION_PROVENANCE:
+            return query_application_provenance(
                 conn,
                 application_id=parameters.application_id,
                 company=parameters.company,
-                evidence_kind=parameters.evidence_kind,
+                provenance_kind=parameters.provenance_kind,
                 source_type=parameters.source_type,
                 limit=parameters.limit,
             )

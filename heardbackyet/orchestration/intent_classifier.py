@@ -12,7 +12,7 @@ from typing import Any
 from dotenv import load_dotenv
 
 from heardbackyet.constants import (
-    APPLICATION_EVIDENCE_KINDS,
+    APPLICATION_PROVENANCE_KINDS,
     APPLICATION_PROGRESS_LABELS,
     RETRIEVAL_SOURCE_TYPES,
     SEMANTIC_INDEX_EMAIL_LABELS,
@@ -67,7 +67,7 @@ ALLOWED_MODEL_RESPONSE_FIELDS = REQUIRED_MODEL_RESPONSE_FIELDS | frozenset(
         "source_types",
         "since",
         "before",
-        "evidence_kind",
+        "provenance_kind",
         "limit",
     }
 )
@@ -89,7 +89,7 @@ MODEL_RESPONSE_SCHEMA = {
             "enum": [
                 "application_overview",
                 "application_timeline",
-                "application_evidence",
+                "application_provenance",
                 "content_search",
                 None,
             ],
@@ -113,9 +113,9 @@ MODEL_RESPONSE_SCHEMA = {
         },
         "since": {"type": ["string", "null"]},
         "before": {"type": ["string", "null"]},
-        "evidence_kind": {
+        "provenance_kind": {
             "type": ["string", "null"],
-            "enum": [*APPLICATION_EVIDENCE_KINDS, None],
+            "enum": [*APPLICATION_PROVENANCE_KINDS, None],
         },
         "limit": {"type": ["integer", "null"], "minimum": 1},
     },
@@ -135,7 +135,7 @@ Classification:
     recent/current progress across applications.
   - application_timeline: an explicitly chronological history, a time-bounded submission
     list, or progress scoped to one company.
-  - application_evidence: provenance, linkage reasons, or source locations.
+  - application_provenance: linkage reasons or source locations.
   - content_search: what indexed recruitment emails or job descriptions say.
 - outcome=direct_answer:
   Use only for a short, context-independent definition or explanation that can be
@@ -170,8 +170,8 @@ Scope and extraction rules:
   chronological wording are application_overview, with email_types null.
 - application_timeline email_types use progress labels only and contain at most one value.
 - application_timeline requires company unless it is an applied query with a since value.
-- application_evidence requires company.
-- application_evidence source_types contain at most one value.
+- application_provenance requires company.
+- application_provenance source_types contain at most one value.
 - If a structured request explicitly needs multiple result sets that cannot fit one
   intent, return requires_decomposition rather than dropping any part.
 - content_search uses the original question and semantic-index email labels only.
@@ -187,7 +187,7 @@ Return exactly this JSON object:
   "source_types": null,
   "since": null,
   "before": null,
-  "evidence_kind": null,
+  "provenance_kind": null,
   "limit": null
 }
 
@@ -287,7 +287,7 @@ def build_prompt(question: str, reference_time: datetime) -> str:
         "allowed_timeline_email_types": list(APPLICATION_PROGRESS_LABELS),
         "allowed_content_search_email_types": list(SEMANTIC_INDEX_EMAIL_LABELS),
         "allowed_source_types": list(RETRIEVAL_SOURCE_TYPES),
-        "allowed_evidence_kinds": list(APPLICATION_EVIDENCE_KINDS),
+        "allowed_provenance_kinds": list(APPLICATION_PROVENANCE_KINDS),
     }
     return (
         f"{INTENT_GUIDE}\n\n"
@@ -455,10 +455,10 @@ def validate_classification(
         ),
         since=_optional_datetime(payload.get("since"), "since"),
         before=_optional_datetime(payload.get("before"), "before"),
-        evidence_kind=_optional_choice(
-            payload.get("evidence_kind"),
-            "evidence_kind",
-            APPLICATION_EVIDENCE_KINDS,
+        provenance_kind=_optional_choice(
+            payload.get("provenance_kind"),
+            "provenance_kind",
+            APPLICATION_PROVENANCE_KINDS,
         ),
         limit=_optional_positive_int(payload.get("limit"), "limit"),
     )
@@ -483,10 +483,10 @@ def _validate_intent_slots(spec: QuerySpec) -> None:
             "before",
             "limit",
         },
-        QueryIntent.APPLICATION_EVIDENCE: {
+        QueryIntent.APPLICATION_PROVENANCE: {
             "company",
             "source_types",
-            "evidence_kind",
+            "provenance_kind",
             "limit",
         },
         QueryIntent.CONTENT_SEARCH: {
@@ -504,7 +504,7 @@ def _validate_intent_slots(spec: QuerySpec) -> None:
             "source_types",
             "since",
             "before",
-            "evidence_kind",
+            "provenance_kind",
             "limit",
         )
         if getattr(spec, field_name) is not None
@@ -518,7 +518,7 @@ def _validate_intent_slots(spec: QuerySpec) -> None:
 
     if spec.intent in {
         QueryIntent.APPLICATION_TIMELINE,
-        QueryIntent.APPLICATION_EVIDENCE,
+        QueryIntent.APPLICATION_PROVENANCE,
     }:
         for field_name in ("email_types", "source_types"):
             values = getattr(spec, field_name)
@@ -551,10 +551,10 @@ def _validate_intent_slots(spec: QuerySpec) -> None:
                 "application_timeline requires company or email_types=['applied'] "
                 "with since"
             )
-    elif spec.intent is QueryIntent.APPLICATION_EVIDENCE:
+    elif spec.intent is QueryIntent.APPLICATION_PROVENANCE:
         if not spec.company:
             raise IntentClassificationError(
-                "application_evidence requires company"
+                "application_provenance requires company"
             )
     elif spec.intent is QueryIntent.CONTENT_SEARCH:
         if (

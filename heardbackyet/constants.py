@@ -10,7 +10,7 @@ RETRIEVAL_SOURCE_TYPES = (
     "job_description",
 )
 
-APPLICATION_EVIDENCE_KINDS = (
+APPLICATION_PROVENANCE_KINDS = (
     "latest_status_email",
     "linked_email",
     "linked_job_description",
