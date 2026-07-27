@@ -1,51 +1,23 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from sqlalchemy import Select, select
 from sqlalchemy.orm import Session
 
 from heardbackyet.constants import RETRIEVAL_SOURCE_TYPES, SEMANTIC_INDEX_EMAIL_LABELS
 from heardbackyet.db.postgres_models import RetrievalChunk
+from heardbackyet.retrieval.search_contracts import (
+    RetrievalSnapshot,
+    SearchFilters,
+    SearchMetadata,
+    SearchRequest,
+)
 from heardbackyet.retrieval.text_embedder import OllamaTextEmbedder
 
 
-# Search contract components.
 @dataclass(frozen=True)
-class SearchFilters:
-    """Exact metadata constraints applied before vector ranking."""
-
-    application_id: int | None = None
-    company_id: int | None = None
-    position_id: int | None = None
-    source_types: tuple[str, ...] | None = None
-    email_types: tuple[str, ...] | None = None
-    linked_only: bool | None = None
-
-
-@dataclass(frozen=True)
-class RetrievalSnapshot:
-    """Context-enriched content snapshot actually embedded and ranked."""
-
-    semantic_fields: tuple[str, ...]
-    content: str
-
-
-@dataclass(frozen=True)
-class SearchMetadata:
-    """Chunk identity and business links used for exact filtering."""
-
-    chunk_id: int
-    source_type: str
-    source_id: int
-    application_id: int | None
-    company_id: int | None
-    position_id: int | None
-    email_type: str | None
-
-
-@dataclass(frozen=True)
-class SearchRetrieval:
+class SemanticSearchRetrieval:
     """Similarity calculation details for one ranked hit."""
 
     rank: int
@@ -54,30 +26,20 @@ class SearchRetrieval:
     embedding_model: str
 
 
-# Public request and result contracts
 @dataclass(frozen=True)
-class SearchRequest:
-    """Public search input: natural-language query plus exact filters."""
-
-    query: str
-    filters: SearchFilters = field(default_factory=SearchFilters)
-    limit: int = 10
-
-
-@dataclass(frozen=True)
-class SearchHit:
+class SemanticSearchHit:
     """Ranked search contract; raw embedding vectors remain internal."""
 
-    retrieval: SearchRetrieval
+    retrieval: SemanticSearchRetrieval
     metadata: SearchMetadata
     snapshot: RetrievalSnapshot
 
 
-def search_retrieval(
+def search_semantic(
     session: Session,
     embedder: OllamaTextEmbedder,
     request: SearchRequest,
-) -> list[SearchHit]:
+) -> list[SemanticSearchHit]:
     """Embed one query and return exact cosine-search results."""
     query = request.query.strip()
     _validate_request(request, query)
@@ -98,11 +60,11 @@ def search_retrieval(
     statement = statement.limit(request.limit)
 
     rows = session.execute(statement).all()
-    hits: list[SearchHit] = []
+    hits: list[SemanticSearchHit] = []
     for rank, (chunk, distance_value) in enumerate(rows, start=1):
         hits.append(
-            SearchHit(
-                retrieval=SearchRetrieval(
+            SemanticSearchHit(
+                retrieval=SemanticSearchRetrieval(
                     rank=rank,
                     metric="cosine_distance",
                     distance=float(distance_value),
