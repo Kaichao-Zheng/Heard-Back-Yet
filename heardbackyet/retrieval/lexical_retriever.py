@@ -45,6 +45,8 @@ class LexicalSearchHit:
 def search_lexical(
     session: Session,
     request: SearchRequest,
+    *,
+    embedding_model: str | None = None,
 ) -> list[LexicalSearchHit]:
     """Return BM25-ranked chunks after applying exact metadata filters."""
     query = request.query.strip()
@@ -60,6 +62,10 @@ def search_lexical(
     # Filter before ranking so an unfiltered Top-N cannot discard eligible
     # chunks that should compete inside the requested application/source scope.
     statement = select(RetrievalChunk)
+    if embedding_model is not None:
+        statement = statement.where(
+            RetrievalChunk.embedding_model == embedding_model
+        )
     filters = request.filters
     if filters.application_id is not None:
         statement = statement.where(

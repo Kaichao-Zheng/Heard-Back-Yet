@@ -95,5 +95,10 @@ python -m scripts.search_chunks "AWS" `
   --source-type job_description `
   --hydrate
 
-# TODO:
-# Hybrid retrieval
+# Hydrid retrieval (semantic & lexical fusion score)
+python -m scripts.search_chunks "Which roles require AWS?" `
+  --mode hybrid `
+  --source-type job_description `
+  --semantic-weight 1.0 `
+  --lexical-weight 1.0 `
+  --hydrate

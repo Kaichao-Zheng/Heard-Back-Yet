@@ -20,7 +20,10 @@ from heardbackyet.retrieval.lexical_retriever import (
     LexicalSearchHit,
     LexicalSearchRetrieval,
 )
-
+from heardbackyet.retrieval.hybrid_retriever import (
+    HybridSearchHit,
+    HybridSearchRetrieval,
+)
 
 @dataclass(frozen=True)
 class EmailSourceFacts:
@@ -66,7 +69,7 @@ HydratedSource = EmailSourceFacts | JobDescriptionSourceFacts
 class HydratedSearchHit:
     """Search hit enriched with its current authoritative source row."""
 
-    retrieval: SemanticSearchRetrieval | LexicalSearchRetrieval
+    retrieval: SemanticSearchRetrieval | LexicalSearchRetrieval | HybridSearchRetrieval
     metadata: SearchMetadata
     snapshot: RetrievalSnapshot
     source: HydratedSource
@@ -74,7 +77,7 @@ class HydratedSearchHit:
 
 def hydrate_search_hits(
     session: Session,
-    hits: Sequence[SemanticSearchHit | LexicalSearchHit],
+    hits: Sequence[SemanticSearchHit | LexicalSearchHit | HybridSearchHit],
 ) -> list[HydratedSearchHit]:
     """Batch-load source facts for ranked hits without changing their order."""
     email_ids = {
