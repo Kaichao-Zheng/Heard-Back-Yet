@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from heardbackyet.db.postgres_models import Email, JobDescription
-from heardbackyet.retrieval.semantic_search import SearchHit
+from heardbackyet.retrieval.semantic_retriever import SemanticSearchHit
 
 
 @dataclass(frozen=True)
@@ -52,7 +52,7 @@ HydratedSource = EmailSourceFacts | JobDescriptionSourceFacts
 
 
 @dataclass(frozen=True)
-class HydratedSearchHit(SearchHit):
+class HydratedSearchHit(SemanticSearchHit):
     """Search hit enriched with its current authoritative source row."""
 
     source: HydratedSource
@@ -60,7 +60,7 @@ class HydratedSearchHit(SearchHit):
 
 def hydrate_search_hits(
     session: Session,
-    hits: Sequence[SearchHit],
+    hits: Sequence[SemanticSearchHit],
 ) -> list[HydratedSearchHit]:
     """Batch-load source facts for ranked hits without changing their order."""
     email_ids = {

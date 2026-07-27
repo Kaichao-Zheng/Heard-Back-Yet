@@ -21,12 +21,12 @@ from heardbackyet.query.view_queries import (
     query_inconsistent_status_snapshots,
     query_unlinked_status_emails,
 )
-from heardbackyet.retrieval.semantic_search import (
+from heardbackyet.retrieval.semantic_retriever import (
     SearchFilters,
     SearchRequest,
-    search_retrieval,
+    search_semantic,
 )
-from heardbackyet.retrieval.source_hydration import hydrate_search_hits
+from heardbackyet.retrieval.hit_hydration import hydrate_search_hits
 from heardbackyet.retrieval.text_embedder import OllamaTextEmbedder
 
 
@@ -124,7 +124,7 @@ def _execute_semantic_step(
         filters=_resolve_search_filters(step.filters, results),
         limit=step.limit,
     )
-    hits = search_retrieval(session, embedder, request)
+    hits = search_semantic(session, embedder, request)
     if step.hydrate:
         return hydrate_search_hits(session, hits)
     return hits

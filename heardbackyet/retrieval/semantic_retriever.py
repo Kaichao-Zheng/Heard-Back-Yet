@@ -45,7 +45,7 @@ class SearchMetadata:
 
 
 @dataclass(frozen=True)
-class SearchRetrieval:
+class SemanticSearchRetrieval:
     """Similarity calculation details for one ranked hit."""
 
     rank: int
@@ -65,19 +65,19 @@ class SearchRequest:
 
 
 @dataclass(frozen=True)
-class SearchHit:
+class SemanticSearchHit:
     """Ranked search contract; raw embedding vectors remain internal."""
 
-    retrieval: SearchRetrieval
+    retrieval: SemanticSearchRetrieval
     metadata: SearchMetadata
     snapshot: RetrievalSnapshot
 
 
-def search_retrieval(
+def search_semantic(
     session: Session,
     embedder: OllamaTextEmbedder,
     request: SearchRequest,
-) -> list[SearchHit]:
+) -> list[SemanticSearchHit]:
     """Embed one query and return exact cosine-search results."""
     query = request.query.strip()
     _validate_request(request, query)
@@ -98,11 +98,11 @@ def search_retrieval(
     statement = statement.limit(request.limit)
 
     rows = session.execute(statement).all()
-    hits: list[SearchHit] = []
+    hits: list[SemanticSearchHit] = []
     for rank, (chunk, distance_value) in enumerate(rows, start=1):
         hits.append(
-            SearchHit(
-                retrieval=SearchRetrieval(
+            SemanticSearchHit(
+                retrieval=SemanticSearchRetrieval(
                     rank=rank,
                     metric="cosine_distance",
                     distance=float(distance_value),

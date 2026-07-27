@@ -13,12 +13,12 @@ from sqlalchemy.orm import Session
 
 from heardbackyet.constants import RETRIEVAL_SOURCE_TYPES, SEMANTIC_INDEX_EMAIL_LABELS
 from heardbackyet.db.config import load_postgres_config
-from heardbackyet.retrieval.semantic_search import (
+from heardbackyet.retrieval.semantic_retriever import (
     SearchFilters,
     SearchRequest,
-    search_retrieval,
+    search_semantic,
 )
-from heardbackyet.retrieval.source_hydration import hydrate_search_hits
+from heardbackyet.retrieval.hit_hydration import hydrate_search_hits
 from heardbackyet.retrieval.text_embedder import (
     OllamaTextEmbedder,
     load_embedding_config,
@@ -126,7 +126,7 @@ def main() -> int:
         embedder = OllamaTextEmbedder(load_embedding_config())
         engine = create_engine(load_postgres_config().database_url())
         with Session(engine) as session:
-            hits = search_retrieval(session, embedder, request)
+            hits = search_semantic(session, embedder, request)
             results = hydrate_search_hits(session, hits) if args.hydrate else hits
         print(
             json.dumps(
