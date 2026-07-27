@@ -240,7 +240,7 @@ class RetrievalPlanner:
             step_id="resolve_company",
             operation=StructuredOperation.RESOLVE_COMPANY,
             # Exact canonical/alias matching may still expose conflicting data.
-            # Keep every match so the adapter rejects an ambiguous hard filter.
+            # Keep every match so the executor rejects an ambiguous hard filter.
             parameters=StructuredQueryParameters(company=spec.company),
         )
         search_content = self._semantic_step(

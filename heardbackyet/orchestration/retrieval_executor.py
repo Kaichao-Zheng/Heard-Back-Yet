@@ -39,7 +39,7 @@ def execute_retrieval_plan(
     session: Session,
     embedder: OllamaTextEmbedder | None = None,
 ) -> dict[str, tuple[Any, ...]]:
-    """Adapt planned steps to the existing structured and semantic APIs."""
+    """Execute planned steps through the structured and semantic APIs."""
     results: dict[str, tuple[Any, ...]] = {}
 
     for step in plan.steps:
