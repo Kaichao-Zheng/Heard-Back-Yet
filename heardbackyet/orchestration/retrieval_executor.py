@@ -21,11 +21,11 @@ from heardbackyet.query.view_queries import (
     query_inconsistent_status_snapshots,
     query_unlinked_status_emails,
 )
-from heardbackyet.retrieval.semantic_retriever import (
+from heardbackyet.retrieval.search_contracts import (
     SearchFilters,
     SearchRequest,
-    search_semantic,
 )
+from heardbackyet.retrieval.semantic_retriever import search_semantic
 from heardbackyet.retrieval.hit_hydration import hydrate_search_hits
 from heardbackyet.retrieval.text_embedder import OllamaTextEmbedder
 

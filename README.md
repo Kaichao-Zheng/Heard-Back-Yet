@@ -76,10 +76,24 @@ Follow [`scripts/normalize_aliases.md`](./scripts/normalize_aliases.md).
 python -m scripts.manage_db rebuild
 ```
 
-5. Query application information
+5. Retrieve application information
 
 ```powershell
+# Structured retrieval
 python -m scripts.query_applications overview --limit 3
+
+# Semantic retrieval
 python -m scripts.search_chunks "Which roles sent assessments?" `
-  --source-type email --email-type assessment --hydrate
-```
+  --mode semantic `
+  --source-type email `
+  --email-type assessment `
+  --hydrate
+
+# Lexical retrieval
+python -m scripts.search_chunks "AWS" `
+  --mode lexical `
+  --source-type job_description `
+  --hydrate
+
+# TODO:
+# Hybrid retrieval

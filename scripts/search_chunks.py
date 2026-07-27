@@ -13,11 +13,12 @@ from sqlalchemy.orm import Session
 
 from heardbackyet.constants import RETRIEVAL_SOURCE_TYPES, SEMANTIC_INDEX_EMAIL_LABELS
 from heardbackyet.db.config import load_postgres_config
-from heardbackyet.retrieval.semantic_retriever import (
+from heardbackyet.retrieval.lexical_retriever import search_lexical
+from heardbackyet.retrieval.search_contracts import (
     SearchFilters,
     SearchRequest,
-    search_semantic,
 )
+from heardbackyet.retrieval.semantic_retriever import search_semantic
 from heardbackyet.retrieval.hit_hydration import hydrate_search_hits
 from heardbackyet.retrieval.text_embedder import (
     OllamaTextEmbedder,
@@ -27,9 +28,15 @@ from heardbackyet.retrieval.text_embedder import (
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Search indexed email and JD content with exact cosine distance."
+        description="Search indexed email and JD content with semantic or lexical ranking."
     )
-    parser.add_argument("query", help="Natural-language semantic search query.")
+    parser.add_argument("query", help="Natural-language content search query.")
+    parser.add_argument(
+        "--mode",
+        choices=("semantic", "lexical"),
+        default="semantic",
+        help="Ranking implementation to use (default: semantic).",
+    )
     parser.add_argument(
         "--application-id",
         type=positive_int,
@@ -80,7 +87,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--hydrate",
         action="store_true",
-        help="Attach authoritative Email/JD source fields to each search hit.",
+        help="Attach authoritative Email/JD source fields to search hits.",
     )
     return parser.parse_args()
 
@@ -123,10 +130,13 @@ def main() -> int:
     engine = None
     try:
         request = build_request(args)
-        embedder = OllamaTextEmbedder(load_embedding_config())
         engine = create_engine(load_postgres_config().database_url())
         with Session(engine) as session:
-            hits = search_semantic(session, embedder, request)
+            if args.mode == "lexical":
+                hits = search_lexical(session, request)
+            else:
+                embedder = OllamaTextEmbedder(load_embedding_config())
+                hits = search_semantic(session, embedder, request)
             results = hydrate_search_hits(session, hits) if args.hydrate else hits
         print(
             json.dumps(

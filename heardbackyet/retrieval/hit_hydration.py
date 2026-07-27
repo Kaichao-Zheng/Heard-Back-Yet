@@ -8,12 +8,23 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from heardbackyet.db.postgres_models import Email, JobDescription
-from heardbackyet.retrieval.semantic_retriever import SemanticSearchHit
+from heardbackyet.retrieval.search_contracts import (
+    RetrievalSnapshot,
+    SearchMetadata,
+)
+from heardbackyet.retrieval.semantic_retriever import (
+    SemanticSearchHit,
+    SemanticSearchRetrieval,
+)
+from heardbackyet.retrieval.lexical_retriever import (
+    LexicalSearchHit,
+    LexicalSearchRetrieval,
+)
 
 
 @dataclass(frozen=True)
 class EmailSourceFacts:
-    """Authoritative email fields loaded after semantic ranking."""
+    """Authoritative email fields loaded after retrieval ranking."""
 
     email_id: int
     message_id: str
@@ -32,7 +43,7 @@ class EmailSourceFacts:
 
 @dataclass(frozen=True)
 class JobDescriptionSourceFacts:
-    """Authoritative JD fields loaded after semantic ranking."""
+    """Authoritative JD fields loaded after retrieval ranking."""
 
     jd_id: int
     captured_at: date | None
@@ -52,15 +63,18 @@ HydratedSource = EmailSourceFacts | JobDescriptionSourceFacts
 
 
 @dataclass(frozen=True)
-class HydratedSearchHit(SemanticSearchHit):
+class HydratedSearchHit:
     """Search hit enriched with its current authoritative source row."""
 
+    retrieval: SemanticSearchRetrieval | LexicalSearchRetrieval
+    metadata: SearchMetadata
+    snapshot: RetrievalSnapshot
     source: HydratedSource
 
 
 def hydrate_search_hits(
     session: Session,
-    hits: Sequence[SemanticSearchHit],
+    hits: Sequence[SemanticSearchHit | LexicalSearchHit],
 ) -> list[HydratedSearchHit]:
     """Batch-load source facts for ranked hits without changing their order."""
     email_ids = {
