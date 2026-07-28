@@ -10,11 +10,11 @@ from typing import Any
 
 
 from heardbackyet.etl.classify_json import (
-    DEFAULT_OLLAMA_URL,
+    MODEL,
+    MODEL_ENDPOINT,
     MAX_BODY_CHARS,
     OLLAMA_TIMEOUT_SECONDS,
     SYSTEM_PROMPT,
-    TEXT_CLASSIFICATION_MODEL,
     build_prompt,
     load_record,
     parse_model_json,
@@ -33,8 +33,8 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         help="Parsed email JSON path. Defaults to the first parsed EML JSON file.",
     )
-    parser.add_argument("--model", default=TEXT_CLASSIFICATION_MODEL)
-    parser.add_argument("--ollama-url", default=DEFAULT_OLLAMA_URL)
+    parser.add_argument("--model", default=MODEL)
+    parser.add_argument("--ollama-url", default=MODEL_ENDPOINT)
     parser.add_argument(
         "--timeout",
         type=int,

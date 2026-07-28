@@ -68,7 +68,7 @@ WHERE e.email_type IN (
     'rejection'
 );
 
-CREATE OR REPLACE VIEW v_application_evidence AS
+CREATE OR REPLACE VIEW v_application_provenance AS
 SELECT
     -- Application identity
     a.application_id,
@@ -77,16 +77,16 @@ SELECT
     e.company_raw,
     e.position_raw,
 
-    -- Evidence meaning
+    -- Provenance meaning
     e.application_link_method,
     a.latest_status AS inferred_value,
     'latest_status'::TEXT AS inferred_field,
-    'latest_status_email'::TEXT AS evidence_kind,
+    'latest_status_email'::TEXT AS provenance_kind,
     'email'::TEXT AS source_type,
 
-    -- Evidence source
-    e.email_id AS evidence_id,
-    e.received_at AS evidence_timestamp,
+    -- Provenance source
+    e.email_id AS provenance_id,
+    e.received_at AS provenance_timestamp,
     e.subject,
     e.source_path,
     NULL::TEXT AS source_url
@@ -109,16 +109,16 @@ SELECT
     e.company_raw,
     e.position_raw,
 
-    -- Evidence meaning
+    -- Provenance meaning
     e.application_link_method,
     e.email_type AS inferred_value,
     'application_link'::TEXT AS inferred_field,
-    'linked_email'::TEXT AS evidence_kind,
+    'linked_email'::TEXT AS provenance_kind,
     'email'::TEXT AS source_type,
 
-    -- Evidence source
-    e.email_id AS evidence_id,
-    e.received_at AS evidence_timestamp,
+    -- Provenance source
+    e.email_id AS provenance_id,
+    e.received_at AS provenance_timestamp,
     e.subject,
     e.source_path,
     NULL::TEXT AS source_url
@@ -141,16 +141,16 @@ SELECT
     jd.company_raw,
     jd.position_raw,
 
-    -- Evidence meaning
+    -- Provenance meaning
     NULL::TEXT AS application_link_method,
     NULL::TEXT AS inferred_value,
     'application_link'::TEXT AS inferred_field,
-    'linked_job_description'::TEXT AS evidence_kind,
+    'linked_job_description'::TEXT AS provenance_kind,
     'job_description'::TEXT AS source_type,
 
-    -- Evidence source
-    jd.jd_id AS evidence_id,
-    jd.captured_at::TIMESTAMPTZ AS evidence_timestamp,
+    -- Provenance source
+    jd.jd_id AS provenance_id,
+    jd.captured_at::TIMESTAMPTZ AS provenance_timestamp,
     NULL::TEXT AS subject,
     jd.source_path,
     jd.source_url

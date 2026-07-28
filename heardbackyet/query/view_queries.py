@@ -120,18 +120,20 @@ def query_application_timeline(
     )
 
 
-def query_application_evidence(
+def query_application_provenance(
     conn: Connection,
     *,
     application_id: int | None = None,
     company: str | None = None,
-    evidence_kind: str | None = None,
+    provenance_kind: str | None = None,
     source_type: str | None = None,
     limit: int | None = None,
 ) -> list[dict[str, Any]]:
-    """Return explainability evidence rows from v_application_evidence."""
+    """Return explainability rows from v_application_provenance."""
     if application_id is None and not company:
-        raise ValueError("evidence queries must be scoped by application_id or company")
+        raise ValueError(
+            "provenance queries must be scoped by application_id or company"
+        )
 
     where_clauses: list[str] = []
     params: dict[str, Any] = {}
@@ -142,9 +144,9 @@ def query_application_evidence(
     if company:
         where_clauses.append("company_name ILIKE :company_pattern")
         params["company_pattern"] = f"%{company}%"
-    if evidence_kind:
-        where_clauses.append("evidence_kind = :evidence_kind")
-        params["evidence_kind"] = evidence_kind
+    if provenance_kind:
+        where_clauses.append("provenance_kind = :provenance_kind")
+        params["provenance_kind"] = provenance_kind
     if source_type:
         where_clauses.append("source_type = :source_type")
         params["source_type"] = source_type
@@ -159,21 +161,21 @@ def query_application_evidence(
             application_link_method,
             inferred_value,
             inferred_field,
-            evidence_kind,
+            provenance_kind,
             source_type,
-            evidence_id,
-            evidence_timestamp,
+            provenance_id,
+            provenance_timestamp,
             subject,
             source_path,
             source_url
-        FROM v_application_evidence
+        FROM v_application_provenance
     """
     return _fetch_view_rows(
         conn,
         sql,
         where_clauses,
         """
-        ORDER BY evidence_timestamp ASC NULLS LAST, evidence_id ASC
+        ORDER BY provenance_timestamp ASC NULLS LAST, provenance_id ASC
         """,
         params,
         limit,

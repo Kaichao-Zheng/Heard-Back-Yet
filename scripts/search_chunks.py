@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from dataclasses import asdict
 from datetime import date, datetime
@@ -11,15 +12,16 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 
-from heardbackyet.constants import RETRIEVAL_EMAIL_LABELS
+from heardbackyet.constants import RETRIEVAL_SOURCE_TYPES, SEMANTIC_INDEX_EMAIL_LABELS
 from heardbackyet.db.config import load_postgres_config
-from heardbackyet.retrieval.semantic_search import (
-    RETRIEVAL_SOURCE_TYPES,
+from heardbackyet.retrieval.semantic_retriever import search_semantic
+from heardbackyet.retrieval.lexical_retriever import search_lexical
+from heardbackyet.retrieval.hybrid_retriever import search_hybrid
+from heardbackyet.retrieval.search_contracts import (
     SearchFilters,
     SearchRequest,
-    search_retrieval,
 )
-from heardbackyet.retrieval.source_hydration import hydrate_search_hits
+from heardbackyet.retrieval.hit_hydration import hydrate_search_hits
 from heardbackyet.retrieval.text_embedder import (
     OllamaTextEmbedder,
     load_embedding_config,
@@ -28,9 +30,15 @@ from heardbackyet.retrieval.text_embedder import (
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Search indexed email and JD content with exact cosine distance."
+        description="Search indexed email and JD content with semantic, lexical, or RRF hybrid ranking."
     )
-    parser.add_argument("query", help="Natural-language semantic search query.")
+    parser.add_argument("query", help="Natural-language content search query.")
+    parser.add_argument(
+        "--mode",
+        choices=("semantic", "lexical", "hybrid"),
+        default="semantic",
+        help="Ranking implementation to use (default: semantic).",
+    )
     parser.add_argument(
         "--application-id",
         type=positive_int,
@@ -55,8 +63,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--email-type",
         action="append",
-        choices=RETRIEVAL_EMAIL_LABELS,
-        help="Filter an eligible email label; repeat to select more than one.",
+        choices=SEMANTIC_INDEX_EMAIL_LABELS,
+        help=(
+            "Filter an email label included in the semantic index; "
+            "repeat to select more than one."
+        ),
     )
     link_scope = parser.add_mutually_exclusive_group()
     link_scope.add_argument(
@@ -76,9 +87,21 @@ def parse_args() -> argparse.Namespace:
         help="Maximum filtered results to return (default: 10).",
     )
     parser.add_argument(
+        "--semantic-weight",
+        type=non_negative_float,
+        default=1.0,
+        help="Semantic contribution in hybrid mode (default: 1.0).",
+    )
+    parser.add_argument(
+        "--lexical-weight",
+        type=non_negative_float,
+        default=1.0,
+        help="Lexical contribution in hybrid mode (default: 1.0).",
+    )
+    parser.add_argument(
         "--hydrate",
         action="store_true",
-        help="Attach authoritative Email/JD source fields to each search hit.",
+        help="Attach authoritative Email/JD source fields to search hits.",
     )
     return parser.parse_args()
 
@@ -87,6 +110,15 @@ def positive_int(value: str) -> int:
     parsed = int(value)
     if parsed < 1:
         raise argparse.ArgumentTypeError("value must be a positive integer")
+    return parsed
+
+
+def non_negative_float(value: str) -> float:
+    parsed = float(value)
+    if not math.isfinite(parsed) or parsed < 0:
+        raise argparse.ArgumentTypeError(
+            "value must be a finite non-negative number"
+        )
     return parsed
 
 
@@ -121,10 +153,22 @@ def main() -> int:
     engine = None
     try:
         request = build_request(args)
-        embedder = OllamaTextEmbedder(load_embedding_config())
         engine = create_engine(load_postgres_config().database_url())
         with Session(engine) as session:
-            hits = search_retrieval(session, embedder, request)
+            if args.mode == "lexical":
+                hits = search_lexical(session, request)
+            else:
+                embedder = OllamaTextEmbedder(load_embedding_config())
+                if args.mode == "hybrid":
+                    hits = search_hybrid(
+                        session,
+                        embedder,
+                        request,
+                        semantic_weight=args.semantic_weight,
+                        lexical_weight=args.lexical_weight,
+                    )
+                else:
+                    hits = search_semantic(session, embedder, request)
             results = hydrate_search_hits(session, hits) if args.hydrate else hits
         print(
             json.dumps(

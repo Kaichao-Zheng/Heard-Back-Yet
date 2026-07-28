@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from heardbackyet.constants import (
     EMAIL_BODY_CHAR_LIMIT,
     JD_SEMANTIC_CHAR_LIMIT,
-    RETRIEVAL_EMAIL_LABELS,
+    SEMANTIC_INDEX_EMAIL_LABELS,
 )
 from heardbackyet.db.postgres_models import Email, JobDescription
 
@@ -26,7 +26,7 @@ def render_email_content(
     canonical_company: str | None = None,
     canonical_position: str | None = None,
 ) -> RenderedContent | None:
-    if email.email_type not in RETRIEVAL_EMAIL_LABELS:
+    if email.email_type not in SEMANTIC_INDEX_EMAIL_LABELS:
         return None
 
     lines = _identity_lines(

@@ -12,6 +12,26 @@ from heardbackyet.constants import ALLOWED_CATEGORY_LABELS, APPLICATION_PROGRESS
 from heardbackyet.paths import EML_PARSED_DIR, PROJECT_ROOT
 
 
+@dataclass(frozen=True)
+class EntityEvaluation:
+    entity_name: str
+    eval_path: Path
+    metrics_path: Path
+
+
+EVALUATIONS = (
+    EntityEvaluation(
+        entity_name="company",
+        eval_path=PROJECT_ROOT / "data" / "eval" / "company_comparison.csv",
+        metrics_path=PROJECT_ROOT / "data" / "eval" / "company_metrics.csv",
+    ),
+    EntityEvaluation(
+        entity_name="position",
+        eval_path=PROJECT_ROOT / "data" / "eval" / "position_comparison.csv",
+        metrics_path=PROJECT_ROOT / "data" / "eval" / "position_metrics.csv",
+    ),
+)
+
 REQUIRED_COLUMNS = ("email", "expected_label", "expected_entities")
 OUTPUT_COLUMNS = (
     "section",
@@ -23,27 +43,6 @@ OUTPUT_COLUMNS = (
     "precision",
     "recall",
     "f1",
-)
-
-
-@dataclass(frozen=True)
-class EntityEvaluation:
-    entity_name: str
-    comparison_path: Path
-    metrics_path: Path
-
-
-EVALUATIONS = (
-    EntityEvaluation(
-        entity_name="company",
-        comparison_path=PROJECT_ROOT / "data" / "eval" / "company_comparison.csv",
-        metrics_path=PROJECT_ROOT / "data" / "eval" / "company_metrics.csv",
-    ),
-    EntityEvaluation(
-        entity_name="position",
-        comparison_path=PROJECT_ROOT / "data" / "eval" / "position_comparison.csv",
-        metrics_path=PROJECT_ROOT / "data" / "eval" / "position_metrics.csv",
-    ),
 )
 
 
@@ -323,9 +322,9 @@ def print_metrics_table(entity_name: str, metrics: pd.DataFrame) -> None:
 
 def evaluate_entity(evaluation: EntityEvaluation) -> None:
     predictions = build_prediction_index(EML_PARSED_DIR, evaluation.entity_name)
-    frame = read_eval_frame(evaluation.comparison_path)
+    frame = read_eval_frame(evaluation.eval_path)
     matched_json_count = update_predictions(frame, predictions)
-    write_eval_frame(evaluation.comparison_path, frame)
+    write_eval_frame(evaluation.eval_path, frame)
 
     metrics = calculate_metrics(frame)
     write_metrics(evaluation.metrics_path, metrics)

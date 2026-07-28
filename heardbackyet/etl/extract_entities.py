@@ -19,12 +19,12 @@ from heardbackyet.paths import EML_PARSED_DIR, ENV_PATH
 
 load_dotenv(ENV_PATH)
 
-ENTITY_EXTRACTION_MODEL = os.getenv("ENTITY_EXTRACTION_MODEL")
-if not ENTITY_EXTRACTION_MODEL:
+MODEL = os.getenv("ENTITY_EXTRACTION_MODEL")
+if not MODEL:
     raise RuntimeError(
         "ENTITY_EXTRACTION_MODEL is required. Configure it in the project .env file."
     )
-DEFAULT_OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+MODEL_ENDPOINT = os.getenv("OLLAMA_URL", "http://localhost:11434")
 MODEL_RESPONSE_RETRIES = 1
 MAX_BODY_CHARS = 2000
 MIN_CANDIDATE_CONFIDENCE = 0.60
@@ -412,8 +412,8 @@ def extract_files(args: argparse.Namespace) -> int:
         try:
             extraction = extract_record(
                 record=record,
-                ollama_url=DEFAULT_OLLAMA_URL,
-                model=ENTITY_EXTRACTION_MODEL,
+                ollama_url=MODEL_ENDPOINT,
+                model=MODEL,
                 retries=MODEL_RESPONSE_RETRIES,
                 timeout_seconds=OLLAMA_TIMEOUT_SECONDS,
             )

@@ -1,0 +1,13 @@
+﻿case_id,user_query,reference_time,expected_outcome,expected_intent,expected_reason_code,predicted_outcome,predicted_intent,predicted_reason_code,is_matched,error
+overview_001,我目前有哪些求职申请,2026-05-31T12:00:00+08:00,resolved,application_overview,null,resolved,application_overview,null,TRUE,
+timeline_001,平安的投递是怎么推进的,2026-05-31T12:00:00+08:00,resolved,application_timeline,null,resolved,application_timeline,null,TRUE,
+provenance_001,有没有邮件能证明你投递过平安,2026-05-31T12:00:00+08:00,resolved,application_provenance,null,resolved,application_provenance,null,TRUE,
+content_001,平安的JD里要求会哪些技术,2026-05-31T12:00:00+08:00,resolved,content_search,null,resolved,content_search,null,TRUE,
+content_002,哪些岗位要求AWS,2026-05-31T12:00:00+08:00,resolved,content_search,null,resolved,content_search,null,TRUE,
+direct_001,什么是AWS,2026-05-31T12:00:00+08:00,direct_answer,null,null,direct_answer,null,null,TRUE,
+ambiguous_ref_001,它现在进展如何,2026-05-31T12:00:00+08:00,needs_clarification,null,ambiguous_reference,needs_clarification,null,ambiguous_reference,TRUE,
+missing_scope_001,AI岗当前进展的依据是什么,2026-05-31T12:00:00+08:00,needs_clarification,null,missing_scope,needs_clarification,null,missing_scope,TRUE,
+compound_001,平安的进展如何，它要求会哪些技术,2026-05-31T12:00:00+08:00,requires_decomposition,null,compound_query,requires_decomposition,null,compound_query,TRUE,
+out_of_domain_001,明天会不会下雨,2026-05-31T12:00:00+08:00,unsupported,null,out_of_domain,unsupported,null,out_of_domain,TRUE,
+unsupported_capability_001,我什么时候能收到下一封跟进邮件,2026-05-31T12:00:00+08:00,unsupported,null,unsupported_capability,needs_clarification,null,missing_scope,FALSE,
+restricted_001,当前数据库有哪些tables和views,2026-05-31T12:00:00+08:00,unsupported,null,restricted_request,unsupported,null,restricted_request,TRUE,

@@ -92,7 +92,7 @@ def preflight_rebuild() -> PostgresConfig:
 
 
 def ensure_embedding_model_available(config: EmbeddingConfig) -> None:
-    endpoint = config.ollama_url + "/api/tags"
+    endpoint = config.endpoint + "/api/tags"
     request = Request(endpoint, method="GET")
     try:
         with urlopen(request, timeout=OLLAMA_PREFLIGHT_TIMEOUT_SECONDS) as response:

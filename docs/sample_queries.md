@@ -6,7 +6,7 @@ v_application_overview
 v_application_timeline
 回答：某家公司是怎么一步步推进的？以归一化 company 为最低识别粒度，仅保留 `applied`、`assessment`、`interview`、`offer`、`rejection` 状态事件。
 
-v_application_evidence
+v_application_provenance
 回答：为什么系统认为这个 application 是这个状态 / 这个公司 / 这个岗位？作为explainability layer
 
 v_inconsistent_status_snapshot
@@ -73,23 +73,23 @@ v_unlinked_status_email
 
   Uses `v_application_timeline`, filtered to one calendar month.
 
-- Evidence for a company
-  某家公司的关联证据
+- Provenance for a company
+  某家公司的关联溯源
 
   ```powershell
-  python scripts\query_applications.py evidence --company 平安科技
+  python scripts\query_applications.py provenance --company 平安科技
   ```
 
-  Uses `v_application_evidence`.
+  Uses `v_application_provenance`.
 
-- Evidence for one application
-  某个岗位的关联证据
+- Provenance for one application
+  某个岗位的关联溯源
 
   ```powershell
-  python scripts\query_applications.py evidence --application-id 41
+  python scripts\query_applications.py provenance --application-id 41
   ```
 
-  Uses `v_application_evidence`.
+  Uses `v_application_provenance`.
 
 - Status snapshot review queue
   需要人工审核的进度快照不一致性
@@ -110,13 +110,13 @@ v_unlinked_status_email
   Uses `v_unlinked_status_email`.
 
 - Job description source for a company
-  某家公司的职位描述的关联证据
+  某家公司的职位描述关联溯源
 
   ```powershell
-  python scripts\query_applications.py evidence --company 平安科技 --source-type job_description
+  python scripts\query_applications.py provenance --company 平安科技 --source-type job_description
   ```
 
-  Uses `v_application_evidence`; exposes JD `source_path` and `source_url`.
+  Uses `v_application_provenance`; exposes JD `source_path` and `source_url`.
 
 
 # Sample Questions

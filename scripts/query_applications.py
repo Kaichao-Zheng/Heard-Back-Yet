@@ -9,9 +9,10 @@ from typing import Any
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Connection
 
+from heardbackyet.constants import APPLICATION_PROVENANCE_KINDS, RETRIEVAL_SOURCE_TYPES
 from heardbackyet.db.config import load_postgres_config
 from heardbackyet.query.view_queries import (
-    query_application_evidence,
+    query_application_provenance,
     query_application_overview,
     query_application_timeline,
     query_inconsistent_status_snapshots,
@@ -55,15 +56,25 @@ def parse_args() -> argparse.Namespace:
     )
     add_limit_argument(timeline)
 
-    evidence = subparsers.add_parser(
-        "evidence", help="List evidence rows for one application or company."
+    provenance = subparsers.add_parser(
+        "provenance", help="List provenance rows for one application or company."
     )
-    evidence.set_defaults(query_name="evidence")
-    evidence.add_argument("--application-id", type=int, help="Filter one application.")
-    evidence.add_argument("--company", help="Filter company_name with ILIKE.")
-    evidence.add_argument("--evidence-kind", help="Filter by evidence_kind.")
-    evidence.add_argument("--source-type", help="Filter by source_type.")
-    add_limit_argument(evidence)
+    provenance.set_defaults(query_name="provenance")
+    provenance.add_argument(
+        "--application-id", type=int, help="Filter one application."
+    )
+    provenance.add_argument("--company", help="Filter company_name with ILIKE.")
+    provenance.add_argument(
+        "--provenance-kind",
+        choices=APPLICATION_PROVENANCE_KINDS,
+        help="Filter by provenance_kind.",
+    )
+    provenance.add_argument(
+        "--source-type",
+        choices=RETRIEVAL_SOURCE_TYPES,
+        help="Filter by source_type.",
+    )
+    add_limit_argument(provenance)
 
     inconsistent = subparsers.add_parser(
         "inconsistent-snapshot", help="List inconsistent latest status snapshots."
@@ -112,12 +123,12 @@ def run_query_command(conn: Connection, args: argparse.Namespace) -> list[dict[s
             before=before,
             limit=args.limit,
         )
-    if args.query_name == "evidence":
-        return query_application_evidence(
+    if args.query_name == "provenance":
+        return query_application_provenance(
             conn,
             application_id=args.application_id,
             company=args.company,
-            evidence_kind=args.evidence_kind,
+            provenance_kind=args.provenance_kind,
             source_type=args.source_type,
             limit=args.limit,
         )
