@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from heardbackyet.orchestration.retrieval_planner import (
     BoundId,
+    RetrievalBackend,
     RetrievalPlan,
     SemanticFilterPlan,
     SemanticRetrievalStep,
@@ -26,12 +27,14 @@ from heardbackyet.retrieval.search_contracts import (
     SearchRequest,
 )
 from heardbackyet.retrieval.semantic_retriever import search_semantic
+from heardbackyet.retrieval.lexical_retriever import search_lexical
+from heardbackyet.retrieval.hybrid_retriever import search_hybrid
 from heardbackyet.retrieval.hit_hydration import hydrate_search_hits
 from heardbackyet.retrieval.text_embedder import OllamaTextEmbedder
 
 
 class RetrievalScopeError(LookupError):
-    """A hybrid filter could not be resolved to exactly one scalar value."""
+    """A late-bound filter could not be resolved to exactly one scalar value."""
 
 
 def execute_retrieval_plan(
@@ -39,7 +42,7 @@ def execute_retrieval_plan(
     session: Session,
     embedder: OllamaTextEmbedder | None = None,
 ) -> dict[str, tuple[Any, ...]]:
-    """Execute planned steps through the structured and semantic APIs."""
+    """Execute planned steps through structured and semantic APIs."""
     results: dict[str, tuple[Any, ...]] = {}
 
     for step in plan.steps:
@@ -116,15 +119,25 @@ def _execute_semantic_step(
     embedder: OllamaTextEmbedder | None,
     results: Mapping[str, tuple[Any, ...]],
 ) -> list[Any]:
-    if embedder is None:
-        raise ValueError("semantic retrieval requires an embedder")
-
     request = SearchRequest(
         query=step.query,
         filters=_resolve_search_filters(step.filters, results),
         limit=step.limit,
     )
-    hits = search_semantic(session, embedder, request)
+    if step.backend is RetrievalBackend.SEMANTIC:
+        if embedder is None:
+            raise ValueError("semantic backend requires an embedder")
+        hits = search_semantic(session, embedder, request)
+    elif step.backend is RetrievalBackend.LEXICAL:
+        hits = search_lexical(session, request)
+    elif step.backend is RetrievalBackend.HYBRID:
+        if embedder is None:
+            raise ValueError("hybrid backend requires an embedder")
+        hits = search_hybrid(session, embedder, request)
+    else:
+        raise ValueError(
+            f"unsupported semantic retrieval backend: {step.backend}"
+        )
     if step.hydrate:
         return hydrate_search_hits(session, hits)
     return hits

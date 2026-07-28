@@ -8,8 +8,18 @@ from heardbackyet.orchestration.query_spec import QueryIntent, QuerySpec
 
 
 class RetrievalMode(StrEnum):
+    """Retrieval-plan topology selected by the Planner."""
+
     STRUCTURED = "structured"
     SEMANTIC = "semantic"
+    HYBRID = "hybrid"
+
+
+class RetrievalBackend(StrEnum):
+    """Lower-level ranking implementation for a semantic retrieval step."""
+
+    SEMANTIC = "semantic"
+    LEXICAL = "lexical"
     HYBRID = "hybrid"
 
 
@@ -79,12 +89,15 @@ class StructuredRetrievalStep:
 
 @dataclass(frozen=True)
 class SemanticRetrievalStep:
+    """A semantic information need with an explicit lower-level backend."""
+
     step_id: str
     query: str
     filters: SemanticFilterPlan = field(default_factory=SemanticFilterPlan)
     limit: int = 10
     hydrate: bool = True
     depends_on: tuple[str, ...] = ()
+    backend: RetrievalBackend = RetrievalBackend.SEMANTIC
 
 
 RetrievalStep = StructuredRetrievalStep | SemanticRetrievalStep
@@ -155,6 +168,15 @@ def _decide_retrieval_route(spec: QuerySpec) -> RouteDecision:
 
 class RetrievalPlanner:
     """Route an analyzed query and compile it into retrieval steps."""
+
+    def __init__(
+        self,
+        *,
+        semantic_backend: RetrievalBackend = RetrievalBackend.HYBRID,
+    ) -> None:
+        if not isinstance(semantic_backend, RetrievalBackend):
+            raise TypeError("semantic_backend must be a RetrievalBackend")
+        self._semantic_backend = semantic_backend
 
     def plan(self, spec: QuerySpec) -> RetrievalPlan:
         route = _decide_retrieval_route(spec)
@@ -258,8 +280,8 @@ class RetrievalPlanner:
         )
         return resolve_company, search_content
 
-    @staticmethod
     def _semantic_step(
+        self,
         spec: QuerySpec,
         *,
         filters: SemanticFilterPlan,
@@ -272,6 +294,7 @@ class RetrievalPlanner:
             limit=spec.limit or 10,
             hydrate=spec.hydrate,
             depends_on=depends_on,
+            backend=self._semantic_backend,
         )
 
     @staticmethod
