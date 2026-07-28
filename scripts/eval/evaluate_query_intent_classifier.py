@@ -52,8 +52,6 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Score saved intent predictions and optionally regenerate them."
     )
-    parser.add_argument("--input", type=Path, default=EVAL_CSV_PATH)
-    parser.add_argument("--limit", type=int, help="Evaluate only the first N cases.")
     parser.add_argument(
         "--force",
         action="store_true",
@@ -297,21 +295,19 @@ def main() -> int:
 
     args = parse_args()
     try:
-        if args.limit is not None and args.limit < 1:
-            raise ValueError("limit must be a positive integer")
-        cases = load_cases(args.input)
-        selected_cases = cases if args.limit is None else cases[: args.limit]
+        cases = load_cases(EVAL_CSV_PATH)
         if args.force:
-            evaluated_rows = evaluate_cases(selected_cases, IntentClassifier())
-            rows = evaluated_rows + cases[len(evaluated_rows) :]
-            with args.input.open("w", encoding="utf-8-sig", newline="") as file:
+            evaluated_rows = evaluate_cases(cases, IntentClassifier())
+            with EVAL_CSV_PATH.open(
+                "w", encoding="utf-8-sig", newline=""
+            ) as file:
                 writer = csv.DictWriter(
                     file,
                     fieldnames=COMPARISON_COLUMNS,
                     lineterminator="\n",
                 )
                 writer.writeheader()
-                for row in rows:
+                for row in evaluated_rows:
                     csv_row = dict(row)
                     for column in (
                         "expected_outcome",
@@ -328,7 +324,7 @@ def main() -> int:
                             csv_row[column] = csv_row[column] or NULL_VALUE
                     writer.writerow(csv_row)
         else:
-            evaluated_rows = score_saved_cases(selected_cases)
+            evaluated_rows = score_saved_cases(cases)
         metrics = calculate_metrics(evaluated_rows)
         METRICS_CSV_PATH.parent.mkdir(parents=True, exist_ok=True)
         write_metrics(metrics)
@@ -340,7 +336,7 @@ def main() -> int:
     print()
     print_metrics(metrics)
     print(f"Exact matches: {matched}/{len(evaluated_rows)}")
-    print(f"Comparison: {args.input}")
+    print(f"Comparison: {EVAL_CSV_PATH}")
     print(f"Metrics: {METRICS_CSV_PATH}")
     has_errors = any(row["error"] for row in evaluated_rows)
     return 0 if not has_errors and matched == len(evaluated_rows) else 2

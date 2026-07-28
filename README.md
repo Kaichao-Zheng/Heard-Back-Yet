@@ -116,3 +116,70 @@ python -m scripts.search_chunks "Which roles require AWS" `
   --lexical-weight 1.0 `
   --hydrate
 ```
+
+## Evaluation
+
+Run the commands from the repository root after
+[activating the virtual environment](#create-a-virtual-environment).
+
+### 1. Evaluate saved email classification results
+
+- Expected columns require manual annotation.
+
+```powershell
+python -m scripts.eval.evaluate_email_classifier
+```
+
+**Overwrites:**
+
+- [`data/eval/label_comparison.csv`](./data/eval/label_comparison.csv)
+- [`data/eval/label_metrics.csv`](./data/eval/label_metrics.csv)
+
+### 2. Evaluate saved email entity extraction results
+
+- Expected columns require manual annotation.
+
+```powershell
+python -m scripts.eval.evaluate_email_entity_extractor
+```
+
+**Overwrites:**
+
+- [`data/eval/company_comparison.csv`](./data/eval/company_comparison.csv)
+- [`data/eval/company_metrics.csv`](./data/eval/company_metrics.csv)
+- [`data/eval/position_comparison.csv`](./data/eval/position_comparison.csv)
+- [`data/eval/position_metrics.csv`](./data/eval/position_metrics.csv)
+
+### 3. Visualize the embedding-space PCA
+
+- Requires indexed PostgreSQL retrieval chunks and the configured embedding model.
+
+```powershell
+python -m scripts.eval.visualize_embeddings
+```
+
+**Overwrites:**
+
+- [`data/eval/embedding_space_pca.png`](./data/eval/embedding_space_pca.png)
+
+### 4. Evaluate query intent classification
+
+Score saved predictions:
+
+```powershell
+python -m scripts.eval.evaluate_query_intent_classifier
+```
+
+Regenerate predictions:
+
+- Expected columns require manual annotation.
+- This command calls the configured LLM.
+
+```powershell
+python -m scripts.eval.evaluate_query_intent_classifier --force
+```
+
+**Overwrites:**
+
+- [`data/eval/intent_comparison.csv`](./data/eval/intent_comparison.csv)
+- [`data/eval/intent_metrics.csv`](./data/eval/intent_metrics.csv)
