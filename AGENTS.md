@@ -45,15 +45,19 @@ Use `agent-logs/README.md` for log types, naming, templates, and maintenance rul
 
 ## Current Stage
 
-Stage 5: Query Orchestration
-The project is adding an orchestration layer over the completed structured query
-and semantic retrieval foundations. It should classify query intent, build the
-appropriate structured and/or semantic requests, coordinate hybrid execution,
-merge results without weakening evidence provenance, and expose stable contracts
-for future CLI, FastAPI, and chatbot consumers.
+Stage 6: Evidence-Grounded Response Generation
+
+The project is turning `QueryOrchestrationResult` into concise user-facing
+responses. Resolved queries must answer only from returned evidence and preserve
+provenance; other outcomes must return an appropriate direct answer,
+clarification request, decomposition notice, or unsupported notice.
+`scripts.run_query` remains the first presentation surface. FastAPI, frontend,
+multi-turn state, and repository-wide Ollama seeding are outside this stage.
 
 ## Stage History
 
+* Stage 5: Natural-language query orchestration, deterministic retrieval
+  planning, structured/RRF execution, and CLI entry point
 * Stage 4: Read-only query views/functions and pgvector semantic retrieval
 * Stage 3: PostgreSQL schema, loader, derived `latest_status`, and validation SQL
 * Stage 2: EML/JD evidence model and application grouping
