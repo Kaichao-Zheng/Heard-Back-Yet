@@ -4,7 +4,6 @@ import argparse
 import json
 import sys
 import time
-import urllib.request
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +19,7 @@ from heardbackyet.etl.extract_entities import (
     validate_extraction,
 )
 from heardbackyet.paths import EML_PARSED_DIR
+from heardbackyet.ollama_chat import iter_chat_chunks
 
 
 def parse_args() -> argparse.Namespace:
@@ -111,42 +111,33 @@ def build_payload(args: argparse.Namespace, prompt: str) -> dict[str, Any]:
 
 
 def stream_ollama(args: argparse.Namespace, prompt: str) -> tuple[str, str, int, float]:
-    endpoint = args.ollama_url.rstrip("/") + "/api/chat"
-    request = urllib.request.Request(
-        endpoint,
-        data=json.dumps(build_payload(args, prompt)).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-
     thinking_parts: list[str] = []
     content_parts: list[str] = []
     chunks = 0
     started = time.monotonic()
 
-    with urllib.request.urlopen(request, timeout=args.timeout) as response:
-        for line in response:
-            if not line.strip():
-                continue
-            chunks += 1
-            raw = line.decode("utf-8", errors="replace")
-            if args.raw_chunks:
-                print(raw.rstrip())
+    for raw, chunk in iter_chat_chunks(
+        args.ollama_url,
+        build_payload(args, prompt),
+        args.timeout,
+    ):
+        chunks += 1
+        if args.raw_chunks:
+            print(raw.rstrip())
 
-            chunk = json.loads(raw)
-            message = chunk.get("message", {})
-            thinking = message.get("thinking")
-            content = message.get("content")
-            if isinstance(thinking, str) and thinking:
-                thinking_parts.append(thinking)
-                if args.live_text:
-                    print(thinking, end="", flush=True)
-            if isinstance(content, str) and content:
-                content_parts.append(content)
-                if args.live_text:
-                    print(content, end="", flush=True)
-            if chunk.get("done"):
-                break
+        message = chunk.get("message", {})
+        thinking = message.get("thinking")
+        content = message.get("content")
+        if isinstance(thinking, str) and thinking:
+            thinking_parts.append(thinking)
+            if args.live_text:
+                print(thinking, end="", flush=True)
+        if isinstance(content, str) and content:
+            content_parts.append(content)
+            if args.live_text:
+                print(content, end="", flush=True)
+        if chunk.get("done"):
+            break
 
     if args.live_text:
         print()
