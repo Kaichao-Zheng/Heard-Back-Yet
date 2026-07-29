@@ -7,7 +7,6 @@ import socket
 import sys
 import time
 import urllib.error
-import urllib.request
 from pathlib import Path
 from typing import Any
 
@@ -19,6 +18,7 @@ from heardbackyet.constants import (
     CATEGORY_LABEL_UNKNOWN,
 )
 from heardbackyet.paths import EML_PARSED_DIR, ENV_PATH
+from heardbackyet.ollama_chat import chat_content
 
 
 load_dotenv(ENV_PATH)
@@ -150,7 +150,6 @@ def build_prompt(record: dict[str, Any], include_body: bool, max_body_chars: int
 
 
 def call_ollama(ollama_url: str, model: str, prompt: str, timeout_seconds: int) -> str:
-    endpoint = ollama_url.rstrip("/") + "/api/chat"
     payload = {
         "model": model,
         "stream": False,
@@ -165,23 +164,10 @@ def call_ollama(ollama_url: str, model: str, prompt: str, timeout_seconds: int) 
         ],
         "options": {
             "temperature": 0,
+            "seed": 0,
         },
     }
-
-    request = urllib.request.Request(
-        endpoint,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-
-    with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
-        response_payload = json.loads(response.read().decode("utf-8"))
-
-    content = response_payload.get("message", {}).get("content")
-    if not isinstance(content, str):
-        raise ValueError("Ollama response did not include message.content")
-    return content
+    return chat_content(ollama_url, payload, timeout_seconds)
 
 
 def parse_model_json(content: str) -> dict[str, Any]:

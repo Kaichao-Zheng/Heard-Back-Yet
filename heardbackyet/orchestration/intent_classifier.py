@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import os
-import urllib.request
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -17,8 +16,9 @@ from heardbackyet.constants import (
     RETRIEVAL_SOURCE_TYPES,
     SEMANTIC_INDEX_EMAIL_LABELS,
 )
-from heardbackyet.orchestration.query_spec import QueryIntent, QuerySpec
 from heardbackyet.paths import ENV_PATH
+from heardbackyet.ollama_chat import OllamaChatResponseError, chat_content
+from heardbackyet.orchestration.query_spec import QueryIntent, QuerySpec
 
 
 load_dotenv(ENV_PATH)
@@ -315,23 +315,12 @@ def call_ollama(
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": prompt},
         ],
-        "options": {"temperature": 0},
+        "options": {"temperature": 0, "seed": 0},
     }
-    request = urllib.request.Request(
-        f"{ollama_url}/api/chat",
-        data=json.dumps(request_payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
-        response_payload = json.loads(response.read().decode("utf-8"))
-
-    content = response_payload.get("message", {}).get("content")
-    if not isinstance(content, str):
-        raise IntentClassificationError(
-            "Ollama response did not include message.content"
-        )
-    return content
+    try:
+        return chat_content(ollama_url, request_payload, timeout_seconds)
+    except OllamaChatResponseError as error:
+        raise IntentClassificationError(str(error)) from error
 
 
 def parse_model_json(content: str) -> dict[str, Any]:
