@@ -315,7 +315,7 @@ def call_ollama(
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": prompt},
         ],
-        "options": {"temperature": 0},
+        "options": {"temperature": 0, "seed": 0},
     }
     try:
         return chat_content(ollama_url, request_payload, timeout_seconds)

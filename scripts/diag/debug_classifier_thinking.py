@@ -105,7 +105,7 @@ def build_payload(args: argparse.Namespace, prompt: str) -> dict[str, Any]:
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": prompt},
         ],
-        "options": {"temperature": 0},
+        "options": {"temperature": 0, "seed": 0},
     }
     if not args.no_format_json:
         payload["format"] = "json"

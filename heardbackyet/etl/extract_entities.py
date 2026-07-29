@@ -145,6 +145,7 @@ def call_ollama(ollama_url: str, model: str, prompt: str, timeout_seconds: int) 
         ],
         "options": {
             "temperature": 0,
+            "seed": 0,
         },
     }
     return chat_content(ollama_url, payload, timeout_seconds)
