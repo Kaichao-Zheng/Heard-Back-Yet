@@ -83,8 +83,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--limit",
         type=positive_int,
-        default=10,
-        help="Maximum filtered results to return (default: 10).",
+        default=5,
+        help="Maximum filtered results to return (default: 5).",
     )
     parser.add_argument(
         "--semantic-weight",

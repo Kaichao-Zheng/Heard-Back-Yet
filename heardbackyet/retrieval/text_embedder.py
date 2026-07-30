@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from heardbackyet.constants import EMBEDDING_DIMENSION
 from heardbackyet.paths import ENV_PATH
 
-EMBEDDING_BATCH_SIZE = 32
+EMBEDDING_BATCH_SIZE = 20           # the maximum batch size of alibaba model studio
 EMBEDDING_TIMEOUT_SECONDS = 120
 
 

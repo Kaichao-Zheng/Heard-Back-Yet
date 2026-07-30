@@ -23,7 +23,7 @@ from heardbackyet.retrieval.lexical_retriever import (
 
 
 DEFAULT_RRF_K = 60
-MIN_RRF_CANDIDATES = 10
+MIN_RRF_CANDIDATES = 20
 DEFAULT_SEMANTIC_WEIGHT = 1.0
 DEFAULT_LEXICAL_WEIGHT = 1.0
 
@@ -66,10 +66,8 @@ def search_hybrid(
     """Return semantic and lexical results fused with reciprocal rank fusion."""
     _validate_rrf_parameters(rrf_k, semantic_weight, lexical_weight)
 
-    # A final limit of one must not reduce each component to one candidate:
-    # unrelated one-list winners would tie and prevent cross-list agreement
-    # from surfacing. Keep the MVP pool bounded while separating retrieval
-    # depth from the public result limit.
+    # Keep each component pool deeper than the public result limit so RRF can
+    # surface cross-list agreement before returning the final Top-N.
     candidate_request = replace(
         request,
         limit=max(request.limit, MIN_RRF_CANDIDATES),
