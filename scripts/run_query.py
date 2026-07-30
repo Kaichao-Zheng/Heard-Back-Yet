@@ -11,13 +11,17 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from heardbackyet.db.config import load_postgres_config
+from heardbackyet.retrieval.text_embedder import (
+    OllamaTextEmbedder,
+    load_embedding_config,
+)
 from heardbackyet.orchestration.query_orchestrator import (
     QueryOrchestrationResult,
     QueryOrchestrator,
 )
-from heardbackyet.retrieval.text_embedder import (
-    OllamaTextEmbedder,
-    load_embedding_config,
+from heardbackyet.response.response_generator import (
+    generate_baseline_response,
+    generate_response,
 )
 
 
@@ -26,6 +30,17 @@ def parse_args() -> argparse.Namespace:
         description="Classify and execute one natural-language application query."
     )
     parser.add_argument("question", help="Natural-language question to execute.")
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument(
+        "--evidence-only",
+        action="store_true",
+        help="Run orchestration and show its evidence without generating an answer.",
+    )
+    modes.add_argument(
+        "--llm-only",
+        action="store_true",
+        help="Skip orchestration and let the response model answer directly.",
+    )
     return parser.parse_args()
 
 
@@ -36,7 +51,7 @@ def json_default(value: Any) -> str:
 
 
 def build_cli_payload(result: QueryOrchestrationResult) -> dict[str, Any]:
-    """Expose the query outcome without leaking the internal retrieval plan."""
+    """Expose orchestration output without leaking the internal retrieval plan."""
     serialized = asdict(result)
     classification = serialized["classification"]
     final_results = None
@@ -58,16 +73,32 @@ def main() -> int:
     args = parse_args()
     engine = None
     try:
-        engine = create_engine(load_postgres_config().database_url())
-        embedder = OllamaTextEmbedder(load_embedding_config())
-        with Session(engine) as session:
-            result = QueryOrchestrator(
-                session,
-                embedder=embedder,
-            ).orchestrate(args.question)
+        if args.llm_only:
+            payload = {
+                "mode": "llm_only",
+                **generate_baseline_response(args.question),
+            }
+        else:
+            engine = create_engine(load_postgres_config().database_url())
+            embedder = OllamaTextEmbedder(load_embedding_config())
+            with Session(engine) as session:
+                result = QueryOrchestrator(
+                    session,
+                    embedder=embedder,
+                ).orchestrate(args.question)
+            if args.evidence_only:
+                payload = {
+                    "mode": "evidence_only",
+                    **build_cli_payload(result),
+                }
+            else:
+                payload = {
+                    "mode": "full",
+                    **generate_response(result),
+                }
         print(
             json.dumps(
-                build_cli_payload(result),
+                payload,
                 ensure_ascii=False,
                 indent=2,
                 default=json_default,
