@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from heardbackyet.db.config import load_postgres_config
 from heardbackyet.retrieval.text_embedder import (
-    OllamaTextEmbedder,
+    TextEmbedder,
     load_embedding_config,
 )
 from heardbackyet.orchestration.query_orchestrator import (
@@ -80,7 +80,7 @@ def main() -> int:
             }
         else:
             engine = create_engine(load_postgres_config().database_url())
-            embedder = OllamaTextEmbedder(load_embedding_config())
+            embedder = TextEmbedder(load_embedding_config())
             with Session(engine) as session:
                 result = QueryOrchestrator(
                     session,

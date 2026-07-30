@@ -16,7 +16,7 @@ from heardbackyet.orchestration.retrieval_planner import (
     RetrievalPlan,
     RetrievalPlanner,
 )
-from heardbackyet.retrieval.text_embedder import OllamaTextEmbedder
+from heardbackyet.retrieval.text_embedder import TextEmbedder
 
 
 @dataclass(frozen=True)
@@ -42,7 +42,7 @@ class QueryOrchestrator:
         self,
         session: Session,
         *,
-        embedder: OllamaTextEmbedder | None = None,
+        embedder: TextEmbedder | None = None,
         classifier: IntentClassifier | None = None,
         planner: RetrievalPlanner | None = None,
     ) -> None:

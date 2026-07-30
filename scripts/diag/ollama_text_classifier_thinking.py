@@ -2,15 +2,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
 
 from heardbackyet.etl.classify_json import (
     MODEL,
-    MODEL_ENDPOINT,
     MAX_BODY_CHARS,
     OLLAMA_TIMEOUT_SECONDS,
     SYSTEM_PROMPT,
@@ -19,8 +20,13 @@ from heardbackyet.etl.classify_json import (
     parse_model_json,
     validate_classification,
 )
-from heardbackyet.paths import EML_PARSED_DIR
-from heardbackyet.ollama_chat import iter_chat_chunks
+from heardbackyet.paths import EML_PARSED_DIR, ENV_PATH
+from heardbackyet.model_api import iter_chat_chunks
+
+
+load_dotenv(ENV_PATH)
+
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 
 
 def parse_args() -> argparse.Namespace:
@@ -34,7 +40,7 @@ def parse_args() -> argparse.Namespace:
         help="Parsed email JSON path. Defaults to the first parsed EML JSON file.",
     )
     parser.add_argument("--model", default=MODEL)
-    parser.add_argument("--ollama-url", default=MODEL_ENDPOINT)
+    parser.add_argument("--ollama-url", default=OLLAMA_URL)
     parser.add_argument(
         "--timeout",
         type=int,

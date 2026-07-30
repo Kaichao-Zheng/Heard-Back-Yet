@@ -24,7 +24,7 @@ from matplotlib.colors import TABLEAU_COLORS
 from heardbackyet.db.config import load_postgres_config
 from heardbackyet.db.postgres_models import RetrievalChunk
 from heardbackyet.retrieval.text_embedder import (
-    OllamaTextEmbedder,
+    TextEmbedder,
     load_embedding_config,
 )
 
@@ -69,7 +69,7 @@ def parse_args() -> None:
 
 def main() -> None:
     parse_args()
-    embedder = OllamaTextEmbedder(load_embedding_config())
+    embedder = TextEmbedder(load_embedding_config())
     model = embedder.model_ref
     engine = create_engine(load_postgres_config().database_url())
 

@@ -6,19 +6,24 @@ from collections.abc import Callable, Mapping
 from dataclasses import asdict
 from typing import Any
 
-from heardbackyet.ollama_chat import OllamaChatResponseError, chat_content
+from heardbackyet.model_api import (
+    ModelAPIResponseError,
+    ChatRequest,
+    chat_content,
+    load_model_api_config,
+)
 from heardbackyet.retrieval.hit_hydration import HydratedSearchHit
 from heardbackyet.orchestration.query_orchestrator import QueryOrchestrationResult
 from heardbackyet.orchestration.intent_classifier import ClassificationOutcome, ClassificationReason
 
 
 ResponseModelCaller = Callable[[str, str], str]
+MODEL_API_CONFIG = load_model_api_config()
 MODEL = os.getenv("RESPONSE_GENERATION_MODEL")
 if not MODEL:
     raise RuntimeError(
         "RESPONSE_GENERATION_MODEL is required. Configure it in the project .env file."
     )
-MODEL_ENDPOINT = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_TIMEOUT_SECONDS = 60
 GROUNDED_SYSTEM_PROMPT = (
     "Answer the user's job-application question using only the supplied evidence "
@@ -139,23 +144,24 @@ def generate_response(
 
 def call_response_model(system_prompt: str, user_prompt: str) -> str:
     """Call the configured response-generation model for this prototype."""
-    payload = {
-        "model": MODEL,
-        "stream": False,
-        "think": False,
-        "messages": [
+    request = ChatRequest(
+        model=MODEL,
+        stream=False,
+        thinking=False,
+        messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        "options": {"temperature": 0, "seed": 0},
-    }
+        temperature=0,
+        seed=0,
+    )
     try:
         return chat_content(
-            MODEL_ENDPOINT.rstrip("/"),
-            payload,
+            MODEL_API_CONFIG,
+            request,
             OLLAMA_TIMEOUT_SECONDS,
         )
-    except OllamaChatResponseError as error:
+    except ModelAPIResponseError as error:
         raise ResponseGenerationError(str(error)) from error
 
 

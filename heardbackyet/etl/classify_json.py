@@ -18,7 +18,7 @@ from heardbackyet.constants import (
     CATEGORY_LABEL_UNKNOWN,
 )
 from heardbackyet.paths import EML_PARSED_DIR, ENV_PATH
-from heardbackyet.ollama_chat import chat_content
+from heardbackyet.model_api import ChatRequest, chat_content, load_model_api_config
 
 
 load_dotenv(ENV_PATH)
@@ -28,7 +28,8 @@ if not MODEL:
     raise RuntimeError(
         "TEXT_CLASSIFICATION_MODEL is required. Configure it in the project .env file."
     )
-MODEL_ENDPOINT = os.getenv("OLLAMA_URL", "http://localhost:11434")
+MODEL_API_CONFIG = load_model_api_config()
+MODEL_REF = MODEL_API_CONFIG.model_ref(MODEL)
 MAX_BODY_CHARS = 1500
 MODEL_RESPONSE_RETRIES = 1
 REVIEW_THRESHOLD = 0.75
@@ -71,7 +72,7 @@ def default_json_dir() -> Path:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Classify parsed email JSON files with a local Ollama model."
+        description="Classify parsed email JSON files with the configured model API."
     )
     parser.add_argument(
         "--force",
@@ -149,25 +150,23 @@ def build_prompt(record: dict[str, Any], include_body: bool, max_body_chars: int
     )
 
 
-def call_ollama(ollama_url: str, model: str, prompt: str, timeout_seconds: int) -> str:
-    payload = {
-        "model": model,
-        "stream": False,
-        "think": False,         # Keep thinking disabled. 
-        "format": "json",       # With Qwen thinking mode and format=json, ambiguous emails can overthink until timeout.
-        "messages": [
+def call_model(model: str, prompt: str, timeout_seconds: int) -> str:
+    request = ChatRequest(
+        model=model,
+        stream=False,
+        thinking=False,
+        json_output=True,
+        messages=[
             {
                 "role": "system",
                 "content": SYSTEM_PROMPT,
             },
             {"role": "user", "content": prompt},
         ],
-        "options": {
-            "temperature": 0,
-            "seed": 0,
-        },
-    }
-    return chat_content(ollama_url, payload, timeout_seconds)
+        temperature=0,
+        seed=0,
+    )
+    return chat_content(MODEL_API_CONFIG, request, timeout_seconds)
 
 
 def parse_model_json(content: str) -> dict[str, Any]:
@@ -216,7 +215,6 @@ def fallback_classification(error: Exception) -> dict[str, Any]:
 
 def classify_record(
     record: dict[str, Any],
-    ollama_url: str,
     model: str,
     max_body_chars: int,
     retries: int,
@@ -225,7 +223,6 @@ def classify_record(
     subject_sender_result = classify_with_evidence(
         record=record,
         include_body=False,
-        ollama_url=ollama_url,
         model=model,
         max_body_chars=max_body_chars,
         retries=retries,
@@ -250,7 +247,6 @@ def classify_record(
     body_result = classify_with_evidence(
         record=record,
         include_body=True,
-        ollama_url=ollama_url,
         model=model,
         max_body_chars=max_body_chars,
         retries=retries,
@@ -263,7 +259,6 @@ def classify_record(
 def classify_with_evidence(
     record: dict[str, Any],
     include_body: bool,
-    ollama_url: str,
     model: str,
     max_body_chars: int,
     retries: int,
@@ -274,7 +269,7 @@ def classify_with_evidence(
 
     for attempt in range(retries + 1):
         try:
-            content = call_ollama(ollama_url, model, prompt, timeout_seconds)
+            content = call_model(model, prompt, timeout_seconds)
             return validate_classification(parse_model_json(content))
         except (ValueError, json.JSONDecodeError) as error:
             last_error = error
@@ -296,7 +291,7 @@ def should_skip(record: dict[str, Any], force: bool) -> bool:
 def update_category(
     record: dict[str, Any],
     classification: dict[str, Any],
-    model: str,
+    model_ref: str,
     review_threshold: float,
 ) -> None:
     category = record.get("category")
@@ -311,7 +306,7 @@ def update_category(
         {
             "label": label,
             "confidence": confidence,
-            "source": f"ollama:{model}:{classification['evidence']}",
+            "source": f"{model_ref}:{classification['evidence']}",
             "review_required": label == CATEGORY_LABEL_UNKNOWN
             or confidence < review_threshold,
         }
@@ -339,7 +334,6 @@ def classify_files(args: argparse.Namespace) -> int:
         try:
             classification = classify_record(
                 record=record,
-                ollama_url=MODEL_ENDPOINT,
                 model=MODEL,
                 max_body_chars=MAX_BODY_CHARS,
                 retries=MODEL_RESPONSE_RETRIES,
@@ -355,7 +349,7 @@ def classify_files(args: argparse.Namespace) -> int:
         update_category(
             record,
             classification,
-            MODEL,
+            MODEL_REF,
             REVIEW_THRESHOLD,
         )
 

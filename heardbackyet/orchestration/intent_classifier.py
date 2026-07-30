@@ -16,8 +16,14 @@ from heardbackyet.constants import (
     RETRIEVAL_SOURCE_TYPES,
     SEMANTIC_INDEX_EMAIL_LABELS,
 )
+from heardbackyet.model_api import (
+    ModelAPIConfig,
+    ModelAPIResponseError,
+    ChatRequest,
+    chat_content,
+    load_model_api_config,
+)
 from heardbackyet.paths import ENV_PATH
-from heardbackyet.ollama_chat import OllamaChatResponseError, chat_content
 from heardbackyet.orchestration.query_spec import QueryIntent, QuerySpec
 
 
@@ -28,7 +34,9 @@ if not MODEL:
     raise RuntimeError(
         "INTENT_CLASSIFICATION_MODEL is required. Configure it in the project .env file."
     )
-MODEL_ENDPOINT = os.getenv("OLLAMA_URL", "http://localhost:11434")
+MODEL_API_CONFIG = load_model_api_config()
+MODEL_ENDPOINT = MODEL_API_CONFIG.base_url
+MODEL_REF = MODEL_API_CONFIG.model_ref(MODEL)
 OLLAMA_TIMEOUT_SECONDS = 60
 
 
@@ -244,7 +252,7 @@ class IntentClassifier:
         *,
         model_caller: ModelCaller | None = None,
     ) -> None:
-        self._model_caller = call_ollama if model_caller is None else model_caller
+        self._model_caller = call_model if model_caller is None else model_caller
 
     def classify(
         self,
@@ -297,29 +305,35 @@ def build_prompt(question: str, reference_time: datetime) -> str:
     )
 
 
-def call_ollama(
-    ollama_url: str,
+def call_model(
+    model_endpoint: str,
     model: str,
     prompt: str,
     timeout_seconds: int,
 ) -> str:
-    """Call the local Ollama chat API with deterministic JSON generation."""
-    request_payload = {
-        "model": model,
-        "stream": False,
-        "think": False,
-        # Ollama uses this JSON Schema as a generation grammar. Python validation
-        # below remains authoritative for cross-field and planner constraints.
-        "format": MODEL_RESPONSE_SCHEMA,
-        "messages": [
+    """Call the configured model API with deterministic JSON generation."""
+    request = ChatRequest(
+        model=model,
+        stream=False,
+        thinking=False,
+        # Ollama uses this schema as a generation grammar; Model Studio requests
+        # a JSON object. Python validation remains authoritative.
+        json_schema=MODEL_RESPONSE_SCHEMA,
+        messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": prompt},
         ],
-        "options": {"temperature": 0, "seed": 0},
-    }
+        temperature=0,
+        seed=0,
+    )
     try:
-        return chat_content(ollama_url, request_payload, timeout_seconds)
-    except OllamaChatResponseError as error:
+        config = ModelAPIConfig(
+            provider=MODEL_API_CONFIG.provider,
+            base_url=model_endpoint,
+            api_key=MODEL_API_CONFIG.api_key,
+        )
+        return chat_content(config, request, timeout_seconds)
+    except ModelAPIResponseError as error:
         raise IntentClassificationError(str(error)) from error
 
 
@@ -381,7 +395,7 @@ def validate_classification(
             question=question,
             spec=None,
             reason_code=None,
-            source=f"ollama:{MODEL}",
+            source=MODEL_REF,
         )
 
     if outcome is not ClassificationOutcome.RESOLVED:
@@ -419,7 +433,7 @@ def validate_classification(
             question=question,
             spec=None,
             reason_code=reason_code,
-            source=f"ollama:{MODEL}",
+            source=MODEL_REF,
         )
 
     intent = _parse_enum(QueryIntent, payload.get("intent"), "intent")
@@ -457,7 +471,7 @@ def validate_classification(
         question=question,
         spec=spec,
         reason_code=None,
-        source=f"ollama:{MODEL}",
+        source=MODEL_REF,
     )
 
 

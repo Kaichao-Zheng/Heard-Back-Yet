@@ -23,7 +23,7 @@ from heardbackyet.retrieval.search_contracts import (
 )
 from heardbackyet.retrieval.hit_hydration import hydrate_search_hits
 from heardbackyet.retrieval.text_embedder import (
-    OllamaTextEmbedder,
+    TextEmbedder,
     load_embedding_config,
 )
 
@@ -158,7 +158,7 @@ def main() -> int:
             if args.mode == "lexical":
                 hits = search_lexical(session, request)
             else:
-                embedder = OllamaTextEmbedder(load_embedding_config())
+                embedder = TextEmbedder(load_embedding_config())
                 if args.mode == "hybrid":
                     hits = search_hybrid(
                         session,

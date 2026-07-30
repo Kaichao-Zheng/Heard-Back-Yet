@@ -6,7 +6,7 @@ from typing import Sequence
 
 from sqlalchemy.orm import Session
 
-from heardbackyet.retrieval.text_embedder import OllamaTextEmbedder
+from heardbackyet.retrieval.text_embedder import TextEmbedder
 from heardbackyet.retrieval.search_contracts import (
     RetrievalSnapshot,
     SearchMetadata,
@@ -56,7 +56,7 @@ class HybridSearchHit:
 
 def search_hybrid(
     session: Session,
-    embedder: OllamaTextEmbedder,
+    embedder: TextEmbedder,
     request: SearchRequest,
     *,
     rrf_k: int = DEFAULT_RRF_K,
