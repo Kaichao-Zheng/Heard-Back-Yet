@@ -25,17 +25,17 @@
 20260429_150433_bee34417,assessment,assessment,TRUE,
 20260501_064019_ad336c3f,rejection,rejection,TRUE,subtle_rejection_signal
 20260502_154457_c4ed8c08,rejection,rejection,TRUE,subtle_rejection_signal
-20260507_143039_e81e26c1,rejection,logistics,FALSE,subtle_rejection_signal
+20260507_143039_e81e26c1,rejection,rejection,TRUE,subtle_rejection_signal
 20260507_162248_a48d120b,profile-update,profile-update,TRUE,
 20260507_162426_84834091,auth,auth,TRUE,
 20260507_162531_1384554e,auth,auth,TRUE,
 20260508_213816_cbbf342e,applied,applied,TRUE,
 20260508_221718_04b836a2,auth,auth,TRUE,
-20260508_221756_d9c295d3,profile-update,applied,FALSE,html_logo; weak_signal
+20260508_221756_d9c295d3,profile-update,profile-update,TRUE,html_logo; weak_signal
 20260508_222306_ec315777,applied,applied,TRUE,
 20260510_180127_a5490ac6,logistics,logistics,TRUE,
 20260510_180134_bffc7aea,applied,applied,TRUE,
-20260510_181831_3bc1766f,applied,rejection,FALSE,html_logo
+20260510_181831_3bc1766f,applied,applied,TRUE,html_logo
 20260515_151358_f93679c8,auth,auth,TRUE,html_logo
 20260515_151432_edf6e138,auth,auth,TRUE,
 20260515_154342_5740d65a,applied,applied,TRUE,

@@ -44,9 +44,9 @@ CATEGORY_COLORS = dict(zip(CATEGORY_ORDER, TABLEAU_COLORS.values()))
 PRIMARY_EMAIL_TYPES = {"applied", "assessment", "rejection"}
 QUERY_COLOR = TABLEAU_COLORS["tab:red"]
 EVALUATION_QUERIES = (
-    ("Broad", "哪些岗位发了评测？"),
-    ("Detail", "哪些岗位要求AWS？"),
-    ("Irrelevant", "明天会不会下雨？"),
+    ("Broad", "哪些岗位发了评测"),
+    ("Detail", "哪些岗位要求AWS"),
+    ("Irrelevant", "明天会不会下雨"),
 )
 
 
@@ -223,9 +223,9 @@ def write_figure(
         zorder=5,
     )
     annotation_layouts = (
-        ((-0.20, 0.09), "right"),   # Broad: assessement query
-        ((0.10, -0.02), "left"),     # Detail: AWS query
-        ((-0.08, -0.03), "right"),   # Irrelevant: weather query
+        ((0.05, -0.15), "right"),   # Broad: assessement query
+        ((0.10, 0.15), "left"),     # Detail: AWS query
+        ((0.05, 0.05), "right"),    # Irrelevant: weather query
     )
     for (pc1, pc2, prompt_type, query), (offset, alignment) in zip(
         query_points, annotation_layouts, strict=True

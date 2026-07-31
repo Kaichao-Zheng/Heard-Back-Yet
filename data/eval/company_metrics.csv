@@ -5,11 +5,11 @@ Status-driving labels,interview,1,0.0159,1,1,1.0000,1.0000,1.0000
 Status-driving labels,offer,0,0.0000,0,0,N/A,N/A,N/A
 Status-driving labels,rejection,6,0.0952,6,6,1.0000,1.0000,1.0000
 Status-driving labels,subtotal,37,0.5873,37,37,1.0000,1.0000,1.0000
-Non-status-driving labels,auth,19,0.3016,18,18,1.0000,0.9474,0.9730
+Non-status-driving labels,auth,19,0.3016,19,19,1.0000,1.0000,1.0000
 Non-status-driving labels,delivery-failure,0,0.0000,1,0,0.0000,N/A,0.0000
 Non-status-driving labels,logistics,3,0.0476,3,3,1.0000,1.0000,1.0000
-Non-status-driving labels,profile-update,4,0.0635,6,4,0.6667,1.0000,0.8000
+Non-status-driving labels,profile-update,4,0.0635,4,4,1.0000,1.0000,1.0000
 Non-status-driving labels,unrelated,0,0.0000,2,0,0.0000,N/A,0.0000
 Non-status-driving labels,unknown,0,0.0000,0,0,N/A,N/A,N/A
-Non-status-driving labels,subtotal,26,0.4127,30,25,0.8333,0.9615,0.8929
-Overall,overall,63,1.0000,67,62,0.9254,0.9841,0.9538
+Non-status-driving labels,subtotal,26,0.4127,29,26,0.8966,1.0000,0.9455
+Overall,overall,63,1.0000,66,63,0.9545,1.0000,0.9767

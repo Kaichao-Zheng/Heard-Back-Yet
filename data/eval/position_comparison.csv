@@ -1,7 +1,7 @@
 ﻿email,expected_label,expected_entities,predicted_entity,is_matched,my_notes
-20260422_143955_68a6a9e5,applied,[],锂空电池开发工程师（工作地：常熟）（深圳）,FALSE,noisy_email; weak_signal; ie_unreliable
+20260422_143955_68a6a9e5,applied,[],,TRUE,noisy_email; weak_signal; ie_unreliable
 20260424_221952_a4258a83,auth,[],,TRUE,html_logo
-20260424_223440_ae487a03,logistics,"[""Software Development Engineer (ID: 3126816)"",""Software Development Engineer""]",,FALSE,
+20260424_223440_ae487a03,logistics,"[""Software Development Engineer (ID: 3126816)"",""Software Development Engineer""]",Software Development Engineer (ID: 3126816),TRUE,
 20260424_224120_26da98b6,applied,"[""Software Development Engineer (ID: 3126816)"",""Software Development Engineer""]",Software Development Engineer (ID: 3126816),TRUE,
 20260424_224222_012b4714,auth,[],,TRUE,html_logo
 20260425_131109_a90598b2,applied,"[""AI Engineer""]",AI Engineer,TRUE,
@@ -18,13 +18,13 @@
 20260428_153148_76b93481,applied,[],,TRUE,
 20260428_153255_5d9af566,applied,[],,TRUE,
 20260428_211711_25ffef6b,applied,[],,TRUE,
-20260428_215041_c9d44b45,auth,"[""Artificial-Intelligence-Engineer_REQ2026071089"",""Artificial-Intelligence-Engineer"",""Artificial Intelligence Engineer_REQ2026071089"",""Artificial Intelligence Engineer""]",Artificial-Intelligence-Engineer_REQ2026071089,TRUE,html_logo
+20260428_215041_c9d44b45,auth,"[""Artificial-Intelligence-Engineer_REQ2026071089"",""Artificial-Intelligence-Engineer"",""Artificial Intelligence Engineer_REQ2026071089"",""Artificial Intelligence Engineer""]",Artificial-Intelligence-Engineer,TRUE,html_logo
 20260428_221655_366d65a0,applied,"[""Artificial Intelligence Engineer""]",Artificial Intelligence Engineer,TRUE,html_logo
 20260429_133927_c26d0b44,assessment,[],,TRUE,
 20260429_133955_4c5d75e4,assessment,[],,TRUE,
 20260429_150433_bee34417,assessment,[],,TRUE,
 20260501_064019_ad336c3f,rejection,"[""Software Engineer""]",Software Engineer,TRUE,subtle_rejection_signal
-20260502_154457_c4ed8c08,rejection,"[""REQ2026071089 Artificial Intelligence Engineer (Open)"",""Artificial Intelligence Engineer (Open)"",""Artificial Intelligence Engineer""]",Artificial Intelligence Engineer (Open),TRUE,subtle_rejection_signal
+20260502_154457_c4ed8c08,rejection,"[""REQ2026071089 Artificial Intelligence Engineer (Open)"",""Artificial Intelligence Engineer (Open)"",""Artificial Intelligence Engineer""]",Artificial Intelligence Engineer,TRUE,subtle_rejection_signal
 20260507_143039_e81e26c1,rejection,"[""AI Engineer (Shenzhen/ English speaking)"",""AI Engineer""]",AI Engineer (Shenzhen/ English speaking),TRUE,subtle_rejection_signal
 20260507_162248_a48d120b,profile-update,[],,TRUE,
 20260507_162426_84834091,auth,[],,TRUE,
@@ -47,7 +47,7 @@
 20260516_234452_c9639f3c,applied,"[""Machine Learning Engineer - 3090610"",""Machine Learning Engineer""]",Machine Learning Engineer - 3090610,TRUE,
 20260517_000030_ea6fe628,applied,"[""AI Application Development Engineer""]",AI Application Development Engineer,TRUE,
 20260517_154851_63bed9f5,rejection,"[""76152 - Data Scientist-Artificial Intelligence"",""Data Scientist-Artificial Intelligence""]",Data Scientist-Artificial Intelligence,TRUE,html_logo; subtle_rejection_signal
-20260517_185642_7f17a2b2,delivery-failure,"[""AI Engineer"",""AI Engineer (New Graduate)""]",,FALSE,
+20260517_185642_7f17a2b2,delivery-failure,"[""AI Engineer"",""AI Engineer (New Graduate)""]",AI Engineer,TRUE,
 20260518_102058_70cdd83d,assessment,[],,TRUE,
 20260518_102100_137e605d,profile-update,"[""【26校招-通用研发】机器人算法工程师"",""26校招-通用研发】机器人算法工程师"",""机器人算法工程师""]",机器人算法工程师,TRUE,
 20260518_111857_6ab3372c,profile-update,"[""【26校招-通用研发】机器人算法工程师"",""26校招-通用研发】机器人算法工程师"",""机器人算法工程师""]",机器人算法工程师,TRUE,

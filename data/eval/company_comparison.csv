@@ -1,13 +1,13 @@
 ﻿email,expected_label,expected_entities,predicted_entity,is_matched,my_notes
 20260422_143955_68a6a9e5,applied,"[""华润电力""]",华润电力,TRUE,noisy_email; weak_signal; ie_unreliable
-20260424_221952_a4258a83,auth,"[""amazon"",""amazon.jobs""]",amazon,TRUE,html_logo
+20260424_221952_a4258a83,auth,"[""amazon"",""amazon.jobs""]",amazon.jobs,TRUE,html_logo
 20260424_223440_ae487a03,logistics,"[""亚马逊"",""amazon"",""Amazon""]",亚马逊,TRUE,
 20260424_224120_26da98b6,applied,"[""亚马逊"",""Amazon""]",亚马逊,TRUE,
-20260424_224222_012b4714,auth,"[""Western Digital""]",,FALSE,html_logo
+20260424_224222_012b4714,auth,"[""Western Digital""]",Western Digital,TRUE,html_logo
 20260425_131109_a90598b2,applied,"[""South China Morning Post"",""SCMP""]",South China Morning Post,TRUE,
 20260425_131806_46b1518f,auth,"[""asml"",""ASML""]",ASML,TRUE,
 20260425_165823_ebd95be8,applied,"[""ASML"",""asml""]",ASML,TRUE,
-20260426_105652_44ef5d76,rejection,"[""亚马逊"",""Amazon""]",Amazon,TRUE,subtle_rejection_signal
+20260426_105652_44ef5d76,rejection,"[""亚马逊"",""Amazon""]",亚马逊,TRUE,subtle_rejection_signal
 20260427_154534_c34a1265,auth,"[""Evismart""]",Evismart,TRUE,
 20260427_233811_33537a6b,rejection,"[""联想"",""联想中国""]",联想,TRUE,subtle_rejection_signal
 20260428_114053_231feab0,profile-update,"[""平安科技""]",平安科技,TRUE,
@@ -22,7 +22,7 @@
 20260428_221655_366d65a0,applied,"[""Valeo""]",Valeo,TRUE,html_logo
 20260429_133927_c26d0b44,assessment,"[""TCL""]",TCL,TRUE,
 20260429_133955_4c5d75e4,assessment,"[""TCL""]",TCL,TRUE,
-20260429_150433_bee34417,assessment,"[""中国平安"",""平安科技""]",平安科技,TRUE,
+20260429_150433_bee34417,assessment,"[""中国平安"",""平安科技""]",中国平安,TRUE,
 20260501_064019_ad336c3f,rejection,"[""ASML""]",ASML,TRUE,subtle_rejection_signal
 20260502_154457_c4ed8c08,rejection,"[""Valeo""]",Valeo,TRUE,subtle_rejection_signal
 20260507_143039_e81e26c1,rejection,"[""Hyphen Connect Limited"",""Hyphen Connect""]",Hyphen Connect Limited,TRUE,subtle_rejection_signal
@@ -35,9 +35,9 @@
 20260508_222306_ec315777,applied,"[""Qualcomm""]",Qualcomm,TRUE,
 20260510_180127_a5490ac6,logistics,"[""EPAM""]",EPAM,TRUE,
 20260510_180134_bffc7aea,applied,"[""EPAM""]",EPAM,TRUE,
-20260510_181831_3bc1766f,applied,"[""QIMA Group"",""QIMA""]",QIMA,TRUE,html_logo
+20260510_181831_3bc1766f,applied,"[""QIMA Group"",""QIMA""]",QIMA Group,TRUE,html_logo
 20260515_151358_f93679c8,auth,"[""IBM""]",IBM,TRUE,html_logo
-20260515_151432_edf6e138,auth,"[""IBM"",""IBM Corporation""]",IBM Corporation,TRUE,
+20260515_151432_edf6e138,auth,"[""IBM"",""IBM Corporation""]",IBM,TRUE,
 20260515_154342_5740d65a,applied,"[""IBM""]",IBM,TRUE,
 20260515_175522_d855579f,assessment,"[""安克创新""]",安克创新,TRUE,weak_signal
 20260515_202848_ced4a95f,interview,"[""平安科技""]",平安科技,TRUE,
@@ -49,8 +49,8 @@
 20260517_154851_63bed9f5,rejection,"[""IBM""]",IBM,TRUE,html_logo; subtle_rejection_signal
 20260517_185642_7f17a2b2,delivery-failure,[],wanvogfurniture.com,FALSE,
 20260518_102058_70cdd83d,assessment,"[""汇川技术""]",汇川技术,TRUE,
-20260518_102100_137e605d,profile-update,[],我公司,FALSE,
-20260518_111857_6ab3372c,profile-update,[],我公司,FALSE,
+20260518_102100_137e605d,profile-update,[],,TRUE,
+20260518_111857_6ab3372c,profile-update,[],,TRUE,
 20260519_002101_edc1b0f8,auth,"[""中国平安"",""中国平安招聘""]",中国平安,TRUE,
 20260519_002800_2a893a44,applied,"[""中国平安"",""平安科技""]",中国平安,TRUE,
 20260519_204235_13b148a8,auth,"[""中国平安"",""中国平安招聘""]",中国平安,TRUE,
@@ -74,6 +74,6 @@
 20260527_202644_c602b5e5,auth,[],,TRUE,
 20260527_202653_b69f671a,auth,"[""中国平安"",""中国平安招聘""]",中国平安,TRUE,
 20260527_215411_d14dcf13,auth,"[""比亚迪""]",比亚迪,TRUE,
-20260527_215531_b8dcea49,logistics,"[""德昌电机集团公司及下属单位"",""德昌电机集团公司"",""德昌电机"",""Johnson Electric""]",Johnson Electric,TRUE,
+20260527_215531_b8dcea49,logistics,"[""德昌电机集团公司及下属单位"",""德昌电机集团公司"",""德昌电机"",""Johnson Electric""]",德昌电机集团公司,TRUE,
 20260527_222440_72f14eed,assessment,"[""比亚迪""]",比亚迪,TRUE,
 20260528_102503_1fbc194f,assessment,"[""比亚迪""]",比亚迪,TRUE,
