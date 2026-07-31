@@ -171,6 +171,8 @@ Scope and extraction rules:
 - Put company names in company; company alone is a valid scope.
 - Extract a constraint only when the question explicitly states it. Never expand a broad
   word such as progress/status into every allowed email_types value.
+- Use reference_time only to resolve explicit relative or absolute time filters into
+  since/before. It must not affect outcome, intent, or scope. Otherwise set both to null.
 - Never emit a position constraint. Structured queries remain at company grain and retain
   position grouping in their results. Content search preserves position words in the
   original question used for semantic retrieval.
