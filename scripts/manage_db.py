@@ -1,12 +1,9 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
-from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
 
 from heardbackyet.db.config import PostgresConfig, load_postgres_config
 from heardbackyet.db.load_postgres import print_summary as print_load_summary
@@ -32,11 +29,9 @@ from heardbackyet.retrieval.index_chunks import (
 )
 from heardbackyet.retrieval.text_embedder import (
     EmbeddingConfig,
+    TextEmbedder,
     load_embedding_config,
 )
-
-
-OLLAMA_PREFLIGHT_TIMEOUT_SECONDS = 5
 
 
 @dataclass(frozen=True)
@@ -72,7 +67,7 @@ def rebuild_database(
 
 
 def preflight_rebuild() -> PostgresConfig:
-    """Fail before destructive reset when local inputs or Ollama are unavailable."""
+    """Fail before destructive reset when inputs or the embedding API are unavailable."""
     config = load_postgres_config()
     read_sql_statements(INIT_SCHEMA_PATH)
     read_sql_statements(INIT_VIEWS_PATH)
@@ -92,33 +87,12 @@ def preflight_rebuild() -> PostgresConfig:
 
 
 def ensure_embedding_model_available(config: EmbeddingConfig) -> None:
-    endpoint = config.endpoint + "/api/tags"
-    request = Request(endpoint, method="GET")
     try:
-        with urlopen(request, timeout=OLLAMA_PREFLIGHT_TIMEOUT_SECONDS) as response:
-            payload = json.load(response)
-    except HTTPError as exc:
+        TextEmbedder(config).embed(["embedding preflight"])
+    except (OSError, RuntimeError, ValueError) as exc:
         raise RuntimeError(
-            f"Ollama preflight failed with HTTP {exc.code}: {endpoint}"
+            f"Embedding preflight failed for {config.api.model_ref(config.model)}: {exc}"
         ) from exc
-    except (URLError, TimeoutError, OSError) as exc:
-        raise RuntimeError(f"Cannot reach Ollama during rebuild preflight: {exc}") from exc
-
-    raw_models = payload.get("models") if isinstance(payload, dict) else None
-    if not isinstance(raw_models, list):
-        raise RuntimeError("Ollama /api/tags returned an unexpected response.")
-
-    available = {
-        value
-        for item in raw_models
-        if isinstance(item, dict)
-        for value in (item.get("name"), item.get("model"))
-        if isinstance(value, str)
-    }
-    if config.model not in available and f"{config.model}:latest" not in available:
-        raise RuntimeError(
-            f"Embedding model {config.model!r} is not available in Ollama."
-        )
 
 
 def parse_args() -> argparse.Namespace:
@@ -162,7 +136,7 @@ def add_index_arguments(parser: argparse.ArgumentParser) -> None:
     mode.add_argument(
         "--preview",
         action="store_true",
-        help="Render and count chunks without calling Ollama or writing PostgreSQL.",
+        help="Render and count chunks without calling the model API or writing PostgreSQL.",
     )
     mode.add_argument(
         "--dry-run",
@@ -208,7 +182,7 @@ def print_index_summary(
     if preview:
         print(
             f"{result_prefix}Preview complete; "
-            "Ollama and retrieval_chunk were not changed."
+            "the model API and retrieval_chunk were not changed."
         )
     elif dry_run:
         print(

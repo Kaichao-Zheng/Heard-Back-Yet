@@ -39,18 +39,47 @@ POSTGRES_DB=heardbackyet
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 
+MODEL_PROVIDER=ollama
+# MODEL_PROVIDER=alibaba_model_studio
+
 OLLAMA_URL=http://localhost:11434
+MODEL_BASE_URL=https://your-openai-compatible-endpoint.example/v1
+MODEL_API_KEY=
+
 TEXT_CLASSIFICATION_MODEL=qwen3.6:27b
 ENTITY_EXTRACTION_MODEL=qwen3.5:9b
 EMBEDDING_MODEL=qwen3-embedding:4b
 INTENT_CLASSIFICATION_MODEL=qwen3.6:27b
+RESPONSE_GENERATION_MODEL=qwen3.6:27b
 ```
+
+> [!NOTE]
+>
+> Local inference could hit VRAM limits when different models are loaded in sequence. A hosted provider avoids local model switching, but sends model inputs to an external service. Changing the Embedding provider or model requires an explicit index rebuild before semantic or hybrid retrieval can use the new vector space.
+>
+> `MODEL_PROVIDER=alibaba_model_studio` uses the service's OpenAI-compatible
+> endpoints and provider-specific extensions such as `enable_thinking`.
+
+### Run a Model API Smoke Test
+
+This checks every unique module which configured a model.
+
+```powershell
+python -m scripts.diag.smoke_model_api
+```
+
+The complete smoke test can be slow with local Ollama because it loads multiple
+models sequentially.
+
+### Start PostgreSQL
 
 Start the Docker PostgreSQL service defined in [`compose.yaml`](./compose.yaml):
 
 ```bash
 docker compose up -d postgres
 ```
+
+`PostgreSQL` can run locally, but `pgvector` is cumbersome to build on Windows. Docker avoids that setup.
 
 ### Run Workflows
 

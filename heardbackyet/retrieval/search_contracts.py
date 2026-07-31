@@ -42,4 +42,4 @@ class SearchRequest:
 
     query: str
     filters: SearchFilters = field(default_factory=SearchFilters)
-    limit: int = 10
+    limit: int = 5

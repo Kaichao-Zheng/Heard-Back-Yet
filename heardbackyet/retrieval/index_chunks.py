@@ -21,7 +21,7 @@ from heardbackyet.retrieval.content_renderer import (
     render_jd_content,
 )
 from heardbackyet.retrieval.text_embedder import (
-    OllamaTextEmbedder,
+    TextEmbedder,
     load_embedding_config,
 )
 
@@ -150,7 +150,7 @@ def rebuild_index(
     source: str | None = None,
 ) -> IndexStats:
     candidates, stats = collect_candidates(session, limit, source)
-    embedder = OllamaTextEmbedder(load_embedding_config())
+    embedder = TextEmbedder(load_embedding_config())
     embeddings = embedder.embed([candidate.content for candidate in candidates])
     if len(embeddings) != len(candidates):
         raise ValueError("Embedding count does not match rendered chunk count.")

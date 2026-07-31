@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 from heardbackyet.constants import ENTITY_EVIDENCE
 from heardbackyet.paths import EML_PARSED_DIR, ENV_PATH
-from heardbackyet.ollama_chat import chat_content
+from heardbackyet.model_api import ChatRequest, chat_content, load_model_api_config
 
 load_dotenv(ENV_PATH)
 
@@ -24,7 +24,7 @@ if not MODEL:
     raise RuntimeError(
         "ENTITY_EXTRACTION_MODEL is required. Configure it in the project .env file."
     )
-MODEL_ENDPOINT = os.getenv("OLLAMA_URL", "http://localhost:11434")
+MODEL_API_CONFIG = load_model_api_config()
 MODEL_RESPONSE_RETRIES = 1
 MAX_BODY_CHARS = 2000
 MIN_CANDIDATE_CONFIDENCE = 0.60
@@ -130,25 +130,23 @@ def build_prompt(record: dict[str, Any]) -> str:
     )
 
 
-def call_ollama(ollama_url: str, model: str, prompt: str, timeout_seconds: int) -> str:
-    payload = {
-        "model": model,
-        "stream": False,
-        "think": False,         # Keep thinking disabled. 
-        "format": "json",       # With Qwen thinking mode and format=json, ambiguous emails can overthink until timeout.
-        "messages": [
+def call_model(model: str, prompt: str, timeout_seconds: int) -> str:
+    request = ChatRequest(
+        model=model,
+        stream=False,
+        thinking=False,
+        json_output=True,
+        messages=[
             {
                 "role": "system",
                 "content": SYSTEM_PROMPT,
             },
             {"role": "user", "content": prompt},
         ],
-        "options": {
-            "temperature": 0,
-            "seed": 0,
-        },
-    }
-    return chat_content(ollama_url, payload, timeout_seconds)
+        temperature=0,
+        seed=0,
+    )
+    return chat_content(MODEL_API_CONFIG, request, timeout_seconds)
 
 
 def parse_model_json(content: str) -> dict[str, Any]:
@@ -187,10 +185,10 @@ def parse_confidence(value: Any) -> float:
     return round(confidence, 3)
 
 
-def parse_source(value: Any, model: str) -> str:
+def parse_source(value: Any, model_ref: str) -> str:
     if value not in ENTITY_EVIDENCE.values():
         raise ValueError(f"Candidate source must be one of {sorted(ENTITY_EVIDENCE.values())}")
-    return f"ollama:{model}:{value}"
+    return f"{model_ref}:{value}"
 
 
 def evidence_from_source(source: str) -> str:
@@ -208,7 +206,7 @@ def raw_supported_by_source(raw: str, source: str, record: dict[str, Any]) -> bo
 
 def validate_candidates(
     value: Any,
-    model: str,
+    model_ref: str,
     record: dict[str, Any],
 ) -> list[dict[str, Any]]:
     if not isinstance(value, list):
@@ -225,7 +223,7 @@ def validate_candidates(
         if raw is None:
             continue
 
-        source = parse_source(item.get("source"), model)
+        source = parse_source(item.get("source"), model_ref)
         if not raw_supported_by_source(raw, source, record):
             continue
 
@@ -252,15 +250,15 @@ def validate_candidates(
 
 def validate_extraction(
     value: dict[str, Any],
-    model: str,
+    model_ref: str,
     record: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "company_candidates": validate_candidates(
-            value.get("company_candidates", []), model, record
+            value.get("company_candidates", []), model_ref, record
         ),
         "position_candidates": validate_candidates(
-            value.get("position_candidates", []), model, record
+            value.get("position_candidates", []), model_ref, record
         ),
     }
 
@@ -274,7 +272,6 @@ def fallback_extraction(_error: Exception) -> dict[str, Any]:
 
 def extract_record(
     record: dict[str, Any],
-    ollama_url: str,
     model: str,
     retries: int,
     timeout_seconds: int,
@@ -284,8 +281,12 @@ def extract_record(
 
     for attempt in range(retries + 1):
         try:
-            content = call_ollama(ollama_url, model, prompt, timeout_seconds)
-            return validate_extraction(parse_model_json(content), model, record)
+            content = call_model(model, prompt, timeout_seconds)
+            return validate_extraction(
+                parse_model_json(content),
+                MODEL_API_CONFIG.model_ref(model),
+                record,
+            )
         except (ValueError, json.JSONDecodeError) as error:
             last_error = error
             if attempt < retries:
@@ -398,7 +399,6 @@ def extract_files(args: argparse.Namespace) -> int:
         try:
             extraction = extract_record(
                 record=record,
-                ollama_url=MODEL_ENDPOINT,
                 model=MODEL,
                 retries=MODEL_RESPONSE_RETRIES,
                 timeout_seconds=OLLAMA_TIMEOUT_SECONDS,

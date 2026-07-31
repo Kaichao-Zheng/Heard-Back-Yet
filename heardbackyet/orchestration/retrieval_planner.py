@@ -94,7 +94,7 @@ class SemanticRetrievalStep:
     step_id: str
     query: str
     filters: SemanticFilterPlan = field(default_factory=SemanticFilterPlan)
-    limit: int = 10
+    limit: int = 5
     hydrate: bool = True
     depends_on: tuple[str, ...] = ()
     backend: RetrievalBackend = RetrievalBackend.SEMANTIC
@@ -291,7 +291,7 @@ class RetrievalPlanner:
             step_id="semantic_search",
             query=spec.query.strip(),
             filters=filters,
-            limit=spec.limit or 10,
+            limit=spec.limit or 5,
             hydrate=spec.hydrate,
             depends_on=depends_on,
             backend=self._semantic_backend,

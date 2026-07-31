@@ -45,17 +45,16 @@ Use `agent-logs/README.md` for log types, naming, templates, and maintenance rul
 
 ## Current Stage
 
-Stage 6: Evidence-Grounded Response Generation
+Stage 7: Interaction Layer
 
-The project is turning `QueryOrchestrationResult` into concise user-facing
-responses. Resolved queries must answer only from returned evidence and preserve
-provenance; other outcomes must return an appropriate direct answer,
-clarification request, decomposition notice, or unsupported notice.
-`scripts.run_query` remains the first presentation surface. FastAPI, frontend,
-multi-turn state, and repository-wide Ollama seeding are outside this stage.
+The project is exposing the existing query and response workflow through FastAPI
+and a minimal frontend. This stage defines the interaction boundary and delivers
+an end-to-end user flow. Whether and how to support session-scoped memory remains
+an open design question.
 
 ## Stage History
 
+* Stage 6: Evidence-grounded response generation with provenance-preserving answers
 * Stage 5: Natural-language query orchestration, deterministic retrieval
   planning, structured/RRF execution, and CLI entry point
 * Stage 4: Read-only query views/functions and pgvector semantic retrieval

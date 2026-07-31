@@ -13,7 +13,7 @@ from heardbackyet.retrieval.search_contracts import (
     SearchMetadata,
     SearchRequest,
 )
-from heardbackyet.retrieval.text_embedder import OllamaTextEmbedder
+from heardbackyet.retrieval.text_embedder import TextEmbedder
 
 
 @dataclass(frozen=True)
@@ -37,7 +37,7 @@ class SemanticSearchHit:
 
 def search_semantic(
     session: Session,
-    embedder: OllamaTextEmbedder,
+    embedder: TextEmbedder,
     request: SearchRequest,
 ) -> list[SemanticSearchHit]:
     """Embed one query and return exact cosine-search results."""

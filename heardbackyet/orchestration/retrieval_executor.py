@@ -30,7 +30,7 @@ from heardbackyet.retrieval.semantic_retriever import search_semantic
 from heardbackyet.retrieval.lexical_retriever import search_lexical
 from heardbackyet.retrieval.hybrid_retriever import search_hybrid
 from heardbackyet.retrieval.hit_hydration import hydrate_search_hits
-from heardbackyet.retrieval.text_embedder import OllamaTextEmbedder
+from heardbackyet.retrieval.text_embedder import TextEmbedder
 
 
 class RetrievalScopeError(LookupError):
@@ -40,7 +40,7 @@ class RetrievalScopeError(LookupError):
 def execute_retrieval_plan(
     plan: RetrievalPlan,
     session: Session,
-    embedder: OllamaTextEmbedder | None = None,
+    embedder: TextEmbedder | None = None,
 ) -> dict[str, tuple[Any, ...]]:
     """Execute planned steps through structured and semantic APIs."""
     results: dict[str, tuple[Any, ...]] = {}
@@ -116,7 +116,7 @@ def _execute_structured_step(
 def _execute_semantic_step(
     step: SemanticRetrievalStep,
     session: Session,
-    embedder: OllamaTextEmbedder | None,
+    embedder: TextEmbedder | None,
     results: Mapping[str, tuple[Any, ...]],
 ) -> list[Any]:
     request = SearchRequest(

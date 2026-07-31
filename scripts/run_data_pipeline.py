@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import os
 import subprocess
 import sys
 import urllib.error
@@ -10,11 +9,12 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from heardbackyet.model_api import load_model_api_config
 from heardbackyet.paths import ENV_PATH
 
 load_dotenv(ENV_PATH)
 
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+MODEL_API_CONFIG = load_model_api_config()
 OLLAMA_CHECK_TIMEOUT_SECONDS = 3
 
 
@@ -75,11 +75,11 @@ def summary_line(output: str) -> str:
 
 
 def run_step(
-    label: str, command: list[str], verbose: bool, requires_ollama: bool = False
+    label: str, command: list[str], verbose: bool, requires_model_api: bool = False
 ) -> None:
     print(f"== {label} ==")
-    if requires_ollama:
-        ensure_ollama_available(label)
+    if requires_model_api:
+        ensure_model_api_available(label)
 
     if verbose:
         subprocess.run(command, cwd=project_root(), check=True)
@@ -108,8 +108,11 @@ def run_step(
     raise SystemExit(result.returncode)
 
 
-def ensure_ollama_available(step_label: str) -> None:
-    endpoint = OLLAMA_URL.rstrip("/") + "/api/tags"
+def ensure_model_api_available(step_label: str) -> None:
+    if MODEL_API_CONFIG.provider != "ollama":
+        return
+
+    endpoint = MODEL_API_CONFIG.base_url + "/api/tags"
     request = urllib.request.Request(endpoint, method="GET")
 
     try:
@@ -120,7 +123,7 @@ def ensure_ollama_available(step_label: str) -> None:
     except (OSError, urllib.error.URLError) as error:
         print("Ollama is not reachable.")
         print(f"  step={step_label}")
-        print(f"  url={OLLAMA_URL}")
+        print(f"  url={MODEL_API_CONFIG.base_url}")
         print(f"  Start Ollama before running the {step_label} step.")
         print(f"  reason={error}")
         raise SystemExit(1) from error
@@ -144,7 +147,7 @@ def main() -> None:
         "classify_emails",
         step_command("classify_json.py", *classify_flags),
         args.verbose,
-        requires_ollama=True,
+        requires_model_api=True,
     )
 
     extract_flags = [*dry_run_flag]
@@ -154,7 +157,7 @@ def main() -> None:
         "extract_email_entities",
         step_command("extract_entities.py", *extract_flags),
         args.verbose,
-        requires_ollama=True,
+        requires_model_api=True,
     )
 
     run_step(
