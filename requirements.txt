@@ -7,3 +7,5 @@ pandas
 numpy
 matplotlib
 rank-bm25
+fastapi
+uvicorn

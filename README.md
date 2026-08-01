@@ -108,17 +108,45 @@ python -m scripts.manage_db rebuild
 
 #### 5. Query job applications
 
-> [!NOTE]
->
-> English query quality may vary because the corpus is primarily Chinese.
+Run the same query through either interface.
+
+**Option A — Diagnostic CLI**
+
+Run the query pipeline directly.
 
 ```powershell
-python -m scripts.run_query "Which roles require AWS"
+python -m scripts.run_query "哪些岗位要求AWS"
 ```
 
-See how queries are orchestrated in [`docs/query_orchestration_sequence.md`](docs/query_orchestration_sequence.md).
+**Option B — HTTP API**
 
-#### Opt. Try the low-level retrieval tools
+Run the Uvicorn development server listening on port `8000`:
+
+```powershell
+python -m uvicorn heardbackyet.presentation.app:app --reload
+```
+
+Send a user query to the versioned API in another terminal:
+
+```powershell
+curl.exe --json '{\"user_query\":\"哪些岗位要求AWS\"}' http://127.0.0.1:8000/api/v1/responses
+```
+
+Press `Ctrl+C` in the **server terminal** to stop Uvicorn.
+
+> [!NOTE]
+>
+> `哪些岗位要求AWS` (`Which roles require AWS`) is a deliberatly vague regression query:
+>
+> - It avoids cross-lingual noise from the primarily Chinese corpus.
+> - It can expose UTF-8 handling issue throughout the workflow.
+> - It creates a borderline choice between `missing_scope` and a summarized `content_search`.
+> - It includes the exact lexical term AWS, helping validate the hybrid retrieval optimization.
+>   - For this query, the semantic retriever ranks email evidence above JD.
+
+**Bonus. Try the lower-level retrieval tools**
+
+See how user queries are orchestrated in [`docs/query_orchestration_sequence.md`](docs/query_orchestration_sequence.md).
 
 ```powershell
 # Structured retrieval
