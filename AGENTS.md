@@ -36,8 +36,7 @@ Use `agent-logs/README.md` for log types, naming, templates, and maintenance rul
 * `/heardbackyet` for importable application and domain implementation
 * `/heardbackyet/etl` for ETL implementation
 * `/heardbackyet/db` for database configuration, models, and loader implementation
-* `/heardbackyet/query` for structured application query functions
-* `/heardbackyet/retrieval` for semantic indexing, search, and hydration
+* `/heardbackyet/retrieval` for structured/content retrieval, indexing, and hydration
 * `/scripts` for thin runnable entrypoints and manual workflow checkpoints
 * `/scripts/eval` for evaluation scripts and offline quality checks
 * `/scripts/diag` for diagnostics and debugging helpers

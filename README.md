@@ -118,10 +118,10 @@ python -m scripts.run_query "Which roles require AWS"
 
 See how queries are orchestrated in [`docs/query_orchestration_sequence.md`](docs/query_orchestration_sequence.md).
 
-#### Opt. Try the low-level query and retrieval tools
+#### Opt. Try the low-level retrieval tools
 
 ```powershell
-# Structured query
+# Structured retrieval
 python -m scripts.query_applications overview --limit 3
 
 # Semantic retrieval

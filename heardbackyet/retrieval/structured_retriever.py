@@ -7,7 +7,37 @@ from sqlalchemy import text
 from sqlalchemy.engine import Connection
 
 
-def query_application_overview(
+def retrieve_company_matches(
+    conn: Connection,
+    *,
+    company: str,
+) -> list[dict[str, Any]]:
+    """Return exact canonical company-name or alias matches without guessing."""
+    normalized_company = company.strip()
+    if not normalized_company:
+        raise ValueError("company must not be blank")
+
+    result = conn.execute(
+        text(
+            """
+            SELECT DISTINCT
+                c.company_id,
+                c.company_name
+            FROM company AS c
+            LEFT JOIN company_alias AS ca
+                ON ca.company_id = c.company_id
+            WHERE
+                LOWER(c.company_name) = LOWER(:company)
+                OR LOWER(ca.raw_name) = LOWER(:company)
+            ORDER BY c.company_id
+            """
+        ),
+        {"company": normalized_company},
+    )
+    return [dict(row) for row in result.mappings()]
+
+
+def retrieve_application_overview(
     conn: Connection,
     *,
     company: str | None = None,
@@ -52,7 +82,7 @@ def query_application_overview(
     )
 
 
-def query_application_timeline(
+def retrieve_application_timeline(
     conn: Connection,
     *,
     application_id: int | None = None,
@@ -63,12 +93,12 @@ def query_application_timeline(
     limit: int | None = None,
 ) -> list[dict[str, Any]]:
     """Return company-grain status timeline rows from v_application_timeline."""
-    if application_id is None and not company and not _is_recent_submission_query(
+    if application_id is None and not company and not _is_recent_submission_retrieval(
         email_type,
         since,
     ):
         raise ValueError(
-            "timeline queries must be scoped by application_id, company, "
+            "timeline retrieval must be scoped by application_id, company, "
             "or email_type='applied' with since"
         )
 
@@ -120,7 +150,7 @@ def query_application_timeline(
     )
 
 
-def query_application_provenance(
+def retrieve_application_provenance(
     conn: Connection,
     *,
     application_id: int | None = None,
@@ -132,7 +162,7 @@ def query_application_provenance(
     """Return explainability rows from v_application_provenance."""
     if application_id is None and not company:
         raise ValueError(
-            "provenance queries must be scoped by application_id or company"
+            "provenance retrieval must be scoped by application_id or company"
         )
 
     where_clauses: list[str] = []
@@ -182,7 +212,7 @@ def query_application_provenance(
     )
 
 
-def query_inconsistent_status_snapshots(
+def retrieve_inconsistent_status_snapshots(
     conn: Connection,
     *,
     limit: int | None = None,
@@ -216,7 +246,7 @@ def query_inconsistent_status_snapshots(
     )
 
 
-def query_unlinked_status_emails(
+def retrieve_unlinked_status_emails(
     conn: Connection,
     *,
     company: str | None = None,
@@ -260,7 +290,10 @@ def query_unlinked_status_emails(
     )
 
 
-def _is_recent_submission_query(email_type: str | None, since: datetime | None) -> bool:
+def _is_recent_submission_retrieval(
+    email_type: str | None,
+    since: datetime | None,
+) -> bool:
     return email_type == "applied" and since is not None
 
 
