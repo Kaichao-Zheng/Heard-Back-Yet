@@ -1,1 +1,0 @@
-"""Structured application query functions."""

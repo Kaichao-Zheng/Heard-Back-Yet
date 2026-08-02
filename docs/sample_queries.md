@@ -16,7 +16,7 @@ v_unlinked_status_email
 回答：哪些 status-driving 邮件还没成功挂到 application 上，需要人工 review
 
 
-# Sample Queries
+# Structured Retrieval Examples
 
 - Latest N status updates
   最新的N条进展

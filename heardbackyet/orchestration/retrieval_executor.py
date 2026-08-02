@@ -14,17 +14,17 @@ from heardbackyet.orchestration.retrieval_planner import (
     StructuredOperation,
     StructuredRetrievalStep,
 )
-from heardbackyet.query.table_queries import query_company_matches
-from heardbackyet.query.view_queries import (
-    query_application_provenance,
-    query_application_overview,
-    query_application_timeline,
-    query_inconsistent_status_snapshots,
-    query_unlinked_status_emails,
-)
 from heardbackyet.retrieval.search_contracts import (
     SearchFilters,
     SearchRequest,
+)
+from heardbackyet.retrieval.structured_retriever import (
+    retrieve_application_overview,
+    retrieve_application_provenance,
+    retrieve_application_timeline,
+    retrieve_company_matches,
+    retrieve_inconsistent_status_snapshots,
+    retrieve_unlinked_status_emails,
 )
 from heardbackyet.retrieval.semantic_retriever import search_semantic
 from heardbackyet.retrieval.lexical_retriever import search_lexical
@@ -68,18 +68,18 @@ def _execute_structured_step(
         case StructuredOperation.RESOLVE_COMPANY:
             if not parameters.company:
                 raise ValueError("resolve_company requires company")
-            return query_company_matches(
+            return retrieve_company_matches(
                 conn,
                 company=parameters.company,
             )
         case StructuredOperation.APPLICATION_OVERVIEW:
-            return query_application_overview(
+            return retrieve_application_overview(
                 conn,
                 company=parameters.company,
                 limit=parameters.limit,
             )
         case StructuredOperation.APPLICATION_TIMELINE:
-            return query_application_timeline(
+            return retrieve_application_timeline(
                 conn,
                 application_id=parameters.application_id,
                 company=parameters.company,
@@ -89,7 +89,7 @@ def _execute_structured_step(
                 limit=parameters.limit,
             )
         case StructuredOperation.APPLICATION_PROVENANCE:
-            return query_application_provenance(
+            return retrieve_application_provenance(
                 conn,
                 application_id=parameters.application_id,
                 company=parameters.company,
@@ -98,12 +98,12 @@ def _execute_structured_step(
                 limit=parameters.limit,
             )
         case StructuredOperation.INCONSISTENT_STATUS_SNAPSHOT:
-            return query_inconsistent_status_snapshots(
+            return retrieve_inconsistent_status_snapshots(
                 conn,
                 limit=parameters.limit,
             )
         case StructuredOperation.UNLINKED_STATUS_EMAIL:
-            return query_unlinked_status_emails(
+            return retrieve_unlinked_status_emails(
                 conn,
                 company=parameters.company,
                 since=parameters.since,

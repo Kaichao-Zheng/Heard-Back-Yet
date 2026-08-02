@@ -11,26 +11,26 @@ from sqlalchemy.engine import Connection
 
 from heardbackyet.constants import APPLICATION_PROVENANCE_KINDS, RETRIEVAL_SOURCE_TYPES
 from heardbackyet.db.config import load_postgres_config
-from heardbackyet.query.view_queries import (
-    query_application_provenance,
-    query_application_overview,
-    query_application_timeline,
-    query_inconsistent_status_snapshots,
-    query_unlinked_status_emails,
+from heardbackyet.retrieval.structured_retriever import (
+    retrieve_application_overview,
+    retrieve_application_provenance,
+    retrieve_application_timeline,
+    retrieve_inconsistent_status_snapshots,
+    retrieve_unlinked_status_emails,
 )
 
 
-MONTH_QUERY_TZ = timezone(timedelta(hours=8))
+MONTH_RETRIEVAL_TZ = timezone(timedelta(hours=8))
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Query read-only PostgreSQL application tracking views."
+        description="Retrieve read-only PostgreSQL application tracking views."
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     overview = subparsers.add_parser("overview", help="List current application snapshots.")
-    overview.set_defaults(query_name="overview")
+    overview.set_defaults(retrieval_name="overview")
     overview.add_argument("--company", help="Filter company_name with ILIKE.")
     add_limit_argument(overview)
 
@@ -38,7 +38,7 @@ def parse_args() -> argparse.Namespace:
         "timeline",
         help="List company-grain status timeline rows, optionally scoped to one application.",
     )
-    timeline.set_defaults(query_name="timeline")
+    timeline.set_defaults(retrieval_name="timeline")
     timeline.add_argument("--application-id", type=int, help="Filter one application.")
     timeline.add_argument("--company", help="Filter company_name with ILIKE.")
     timeline.add_argument("--email-type", help="Filter by email_type.")
@@ -59,7 +59,7 @@ def parse_args() -> argparse.Namespace:
     provenance = subparsers.add_parser(
         "provenance", help="List provenance rows for one application or company."
     )
-    provenance.set_defaults(query_name="provenance")
+    provenance.set_defaults(retrieval_name="provenance")
     provenance.add_argument(
         "--application-id", type=int, help="Filter one application."
     )
@@ -79,13 +79,13 @@ def parse_args() -> argparse.Namespace:
     inconsistent = subparsers.add_parser(
         "inconsistent-snapshot", help="List inconsistent latest status snapshots."
     )
-    inconsistent.set_defaults(query_name="inconsistent_status_snapshot")
+    inconsistent.set_defaults(retrieval_name="inconsistent_status_snapshot")
     add_limit_argument(inconsistent)
 
     unlinked = subparsers.add_parser(
         "unlinked-email", help="List unlinked status-driving emails."
     )
-    unlinked.set_defaults(query_name="unlinked_status_email")
+    unlinked.set_defaults(retrieval_name="unlinked_status_email")
     unlinked.add_argument("--company", help="Filter company_raw with ILIKE.")
     unlinked.add_argument(
         "--last-days",
@@ -109,12 +109,19 @@ def positive_int(value: str) -> int:
     return parsed
 
 
-def run_query_command(conn: Connection, args: argparse.Namespace) -> list[dict[str, Any]]:
-    if args.query_name == "overview":
-        return query_application_overview(conn, company=args.company, limit=args.limit)
-    if args.query_name == "timeline":
+def run_retrieval_command(
+    conn: Connection,
+    args: argparse.Namespace,
+) -> list[dict[str, Any]]:
+    if args.retrieval_name == "overview":
+        return retrieve_application_overview(
+            conn,
+            company=args.company,
+            limit=args.limit,
+        )
+    if args.retrieval_name == "timeline":
         since, before = timeline_range_from_args(args)
-        return query_application_timeline(
+        return retrieve_application_timeline(
             conn,
             application_id=args.application_id,
             company=args.company,
@@ -123,8 +130,8 @@ def run_query_command(conn: Connection, args: argparse.Namespace) -> list[dict[s
             before=before,
             limit=args.limit,
         )
-    if args.query_name == "provenance":
-        return query_application_provenance(
+    if args.retrieval_name == "provenance":
+        return retrieve_application_provenance(
             conn,
             application_id=args.application_id,
             company=args.company,
@@ -132,10 +139,10 @@ def run_query_command(conn: Connection, args: argparse.Namespace) -> list[dict[s
             source_type=args.source_type,
             limit=args.limit,
         )
-    if args.query_name == "inconsistent_status_snapshot":
-        return query_inconsistent_status_snapshots(conn, limit=args.limit)
-    if args.query_name == "unlinked_status_email":
-        return query_unlinked_status_emails(
+    if args.retrieval_name == "inconsistent_status_snapshot":
+        return retrieve_inconsistent_status_snapshots(conn, limit=args.limit)
+    if args.retrieval_name == "unlinked_status_email":
+        return retrieve_unlinked_status_emails(
             conn,
             company=args.company,
             since=since_from_last_days(args.last_days),
@@ -163,14 +170,14 @@ def parse_month(value: str) -> tuple[datetime, datetime]:
         year_raw, month_raw = value.split("-", maxsplit=1)
         year = int(year_raw)
         month = int(month_raw)
-        start = datetime(year, month, 1, tzinfo=MONTH_QUERY_TZ)
+        start = datetime(year, month, 1, tzinfo=MONTH_RETRIEVAL_TZ)
     except ValueError as exc:
         raise argparse.ArgumentTypeError("month must use YYYY-MM format") from exc
 
     if month == 12:
-        end = datetime(year + 1, 1, 1, tzinfo=MONTH_QUERY_TZ)
+        end = datetime(year + 1, 1, 1, tzinfo=MONTH_RETRIEVAL_TZ)
     else:
-        end = datetime(year, month + 1, 1, tzinfo=MONTH_QUERY_TZ)
+        end = datetime(year, month + 1, 1, tzinfo=MONTH_RETRIEVAL_TZ)
     return start, end
 
 
@@ -188,7 +195,7 @@ def main() -> int:
     engine = create_engine(load_postgres_config().database_url())
     try:
         with engine.connect() as conn:
-            rows = run_query_command(conn, args)
+            rows = run_retrieval_command(conn, args)
         print(json.dumps(rows, ensure_ascii=False, indent=2, default=json_default))
     except Exception as exc:
         print(f"query_applications failed: {exc}", file=sys.stderr)

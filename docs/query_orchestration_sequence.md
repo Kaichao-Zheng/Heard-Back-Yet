@@ -6,7 +6,7 @@ sequenceDiagram
     participant C as IntentClassifier
     participant P as RetrievalPlanner
     participant E as RetrievalExecutor
-    participant R as Retrieval / View
+    participant R as Retrieval layer
 
     CLI->>O: orchestrate(question)
     O->>C: classify(question)
@@ -18,7 +18,7 @@ sequenceDiagram
         O->>P: plan(spec: QuerySpec)
         P-->>O: return RetrievalPlan
         O->>E: execute(plan: RetrievalPlan)
-        E->>R: query / search
+        E->>R: structured / content retrieval
         R-->>E: records / hits
         E-->>O: return step_results
         O-->>CLI: return QueryOrchestrationResult
@@ -35,7 +35,7 @@ sequenceDiagram
   只为 `resolved` 结果生成 `QuerySpec`。
 - `RetrievalPlanner`：根据 `QuerySpec` 的 intent 与 scope 选择计划拓扑，构造
   structured 或 content retrieval steps。
-- `RetrievalExecutor`：执行计划步骤，调用数据库 View query 或具体 retriever。
+- `RetrievalExecutor`：执行计划步骤，调用下层各类 retrievers
 
 ## Two Hybrid Concepts
 

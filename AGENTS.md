@@ -9,6 +9,9 @@ The project focuses on email parsing, classification, and state tracking, while 
 ## Stack
 
 * Python
+* PostgreSQL / pgvector
+* SQLAlchemy
+* FastAPI / Uvicorn
 * CSV / JSON
 * Git
 
@@ -18,6 +21,8 @@ The project focuses on email parsing, classification, and state tracking, while 
 * Use modular scripts
 * Add comments for non-trivial logic
 * Avoid hardcoded absolute paths
+* Default to the smallest change necessary to complete the task
+* Do not run `git add`, `git commit`, `git push` unless the user explicitly requests it
 
 ## Agent Logs
 
@@ -36,8 +41,9 @@ Use `agent-logs/README.md` for log types, naming, templates, and maintenance rul
 * `/heardbackyet` for importable application and domain implementation
 * `/heardbackyet/etl` for ETL implementation
 * `/heardbackyet/db` for database configuration, models, and loader implementation
-* `/heardbackyet/query` for structured application query functions
-* `/heardbackyet/retrieval` for semantic indexing, search, and hydration
+* `/heardbackyet/retrieval` for structured and content retrieval, indexing, and source hydration
+* `/heardbackyet/response` for the framework-neutral query-to-response workflow and response generation
+* `/heardbackyet/presentation` for FastAPI app composition, routes, and public schemas
 * `/scripts` for thin runnable entrypoints and manual workflow checkpoints
 * `/scripts/eval` for evaluation scripts and offline quality checks
 * `/scripts/diag` for diagnostics and debugging helpers
@@ -45,12 +51,13 @@ Use `agent-logs/README.md` for log types, naming, templates, and maintenance rul
 
 ## Current Stage
 
-Stage 7: Interaction Layer
+Stage 7: Presentation Layer
 
-The project is exposing the existing query and response workflow through FastAPI
-and a minimal frontend. This stage defines the interaction boundary and delivers
-an end-to-end user flow. Whether and how to support session-scoped memory remains
-an open design question.
+The current prototype exposes the existing query and response workflow through a
+custom, stateless FastAPI contract. `POST /api/v1/responses` is the product HTTP
+entrypoint; `scripts.run_query` remains a backend diagnosis CLI. The minimal frontend
+is the remaining Presentation Layer target. Temporary conversation memory is deferred
+as a response-workflow concern outside the presentation boundary.
 
 ## Stage History
 
@@ -61,4 +68,4 @@ an open design question.
 * Stage 3: PostgreSQL schema, loader, derived `latest_status`, and validation SQL
 * Stage 2: EML/JD evidence model and application grouping
 * Stage 1: classification, entity extraction, and alias normalization
-* Stage 0: `.eml -> parsing -> structured output`
+* Stage 0: validate the `.eml -> parsing -> structured output` pipeline

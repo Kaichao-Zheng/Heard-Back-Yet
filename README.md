@@ -10,7 +10,7 @@ This guide assumes you are using a Windows device.
 git clone https://github.com/Kaichao-Zheng/Heard-Back-Yet.git
 ```
 
-### Create a Virtual Environment
+### Activate the Virtual Environment
 
 ```bash
 # create environment
@@ -18,7 +18,7 @@ python -m venv .venv         # or other name you like
 
 # activate environment
 source .venv/bin/activate    # macOS/Linux
-.\.venv\Scripts\activate     # Windows Powershell
+.\.venv\Scripts\activate     # Windows PowerShell
 ```
 
 ### Install Dependencies
@@ -108,20 +108,67 @@ python -m scripts.manage_db rebuild
 
 #### 5. Query job applications
 
-> [!NOTE]
->
-> English query quality may vary because the corpus is primarily Chinese.
+Run the same query in different ways.
+
+**Option A — Diagnostic CLI**
+
+Run the query pipeline directly.
 
 ```powershell
-python -m scripts.run_query "Which roles require AWS"
+python -m scripts.run_query "哪些岗位要求AWS"
 ```
 
-See how queries are orchestrated in [`docs/query_orchestration_sequence.md`](docs/query_orchestration_sequence.md).
+**Option B — Web UI**
 
-#### Opt. Try the low-level query and retrieval tools
+Start the Uvicorn development server on port `8000`:
 
 ```powershell
-# Structured query
+python -m uvicorn heardbackyet.main:app --reload
+```
+
+Open [`http://localhost:8000/`](http://localhost:8000/) in your browser.
+
+Press Ctrl+C in the server terminal to stop Uvicorn.
+
+**Option C — HTTP API**
+
+With the same Uvicorn server running, send a query from another terminal:
+
+```powershell
+curl.exe --json '{"user_query":"哪些岗位要求AWS"}' http://localhost:8000/api/v1/responses
+```
+
+Press `Ctrl+C` in the **server terminal** to stop Uvicorn.
+
+> [!NOTE]
+>
+> `哪些岗位要求AWS` (`Which roles require AWS`) is a deliberately vague regression query:
+>
+> - It avoids cross-lingual noise from the primarily Chinese corpus.
+> - It can expose UTF-8 handling issues throughout the workflow.
+> - It creates a borderline choice between `missing_scope` and a summarized `content_search`.
+> - It includes the exact lexical term AWS, helping validate the hybrid retrieval optimization.
+>   - For this query, the semantic retriever ranks email evidence above JD.
+
+**Bonus. Inspect diagnostic checkpoints**
+
+See how user queries are orchestrated in [`docs/query_orchestration_sequence.md`](docs/query_orchestration_sequence.md).
+
+```powershell
+# Smoke response-model access
+python -m scripts.run_query "哪些岗位要求AWS" --llm-only
+
+# Inspect retrieved evidence
+python -m scripts.run_query "哪些岗位要求AWS" --evidence
+
+# Inspect the intent-classifier handoff
+python -m scripts.run_query "哪些岗位要求AWS" --query-spec
+```
+
+**Bonus. Try the lower-level retrieval tools**
+
+```powershell
+# Structured retrieval
 python -m scripts.query_applications overview --limit 3
 
 # Semantic retrieval
@@ -146,10 +193,10 @@ python -m scripts.search_chunks "Which roles require AWS" `
   --hydrate
 ```
 
-## Evaluation
+## 📊Evaluation
 
 Run the commands from the repository root after
-[activating the virtual environment](#create-a-virtual-environment).
+[Activating the virtual environment](#activate-the-virtual-environment).
 
 ### 1. Evaluate saved email classification results
 

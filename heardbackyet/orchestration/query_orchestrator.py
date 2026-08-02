@@ -61,6 +61,13 @@ class QueryOrchestrator:
             question,
             reference_time=reference_time,
         )
+        return self.orchestrate_classified_query(classification)
+
+    def orchestrate_classified_query(
+        self,
+        classification: IntentClassification,
+    ) -> QueryOrchestrationResult:
+        """Continue orchestration from an already validated classification."""
         if classification.outcome is not ClassificationOutcome.RESOLVED:
             return QueryOrchestrationResult(
                 classification=classification,

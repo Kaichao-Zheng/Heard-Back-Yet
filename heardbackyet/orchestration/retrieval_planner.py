@@ -45,7 +45,7 @@ class RouteDecision:
 
 
 @dataclass(frozen=True)
-class StructuredQueryParameters:
+class StructuredRetrievalParameters:
     application_id: int | None = None
     company: str | None = None
     email_type: str | None = None
@@ -83,7 +83,7 @@ class SemanticFilterPlan:
 class StructuredRetrievalStep:
     step_id: str
     operation: StructuredOperation
-    parameters: StructuredQueryParameters
+    parameters: StructuredRetrievalParameters
     depends_on: tuple[str, ...] = ()
 
 
@@ -148,7 +148,7 @@ def _decide_retrieval_route(spec: QuerySpec) -> RouteDecision:
     if spec.intent is not QueryIntent.CONTENT_SEARCH:
         return RouteDecision(
             mode=RetrievalMode.STRUCTURED,
-            reason=f"{spec.intent.value} is served by a structured query",
+            reason=f"{spec.intent.value} is served by structured retrieval",
         )
 
     has_resolved_scope = any(
@@ -202,7 +202,7 @@ class RetrievalPlanner:
 
         email_type = self._single_value("email_types", spec.email_types)
         source_type = self._single_value("source_types", spec.source_types)
-        parameters = StructuredQueryParameters(
+        parameters = StructuredRetrievalParameters(
             application_id=spec.application_id,
             company=spec.company,
             email_type=email_type,
@@ -215,7 +215,7 @@ class RetrievalPlanner:
         self._validate_structured_scope(operation, parameters)
         return (
             StructuredRetrievalStep(
-                step_id="structured_query",
+                step_id="structured_retrieval",
                 operation=operation,
                 parameters=parameters,
             ),
@@ -263,7 +263,7 @@ class RetrievalPlanner:
             operation=StructuredOperation.RESOLVE_COMPANY,
             # Exact canonical/alias matching may still expose conflicting data.
             # Keep every match so the executor rejects an ambiguous hard filter.
-            parameters=StructuredQueryParameters(company=spec.company),
+            parameters=StructuredRetrievalParameters(company=spec.company),
         )
         search_content = self._semantic_step(
             spec,
@@ -318,7 +318,7 @@ class RetrievalPlanner:
     @staticmethod
     def _validate_structured_scope(
         operation: StructuredOperation,
-        parameters: StructuredQueryParameters,
+        parameters: StructuredRetrievalParameters,
     ) -> None:
         if operation is StructuredOperation.APPLICATION_TIMELINE:
             recent_submission = (
