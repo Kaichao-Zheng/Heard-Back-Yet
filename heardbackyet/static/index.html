@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>HeardBackYet · 投了么</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="brand" aria-label="HeardBackYet">
+          <span class="brand-name">HeardBackYet</span>
+        </div>
+        <div class="runtime-status" aria-live="polite">
+          <span class="runtime-dot" aria-hidden="true"></span>
+          <span>实时 API</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="intro" aria-labelledby="introTitle">
+        <p class="intro-kicker">A clearer view of my job search</p>
+        <h1 class="intro-title" id="introTitle">让散落的求职来信，<br>重新说清楚。</h1>
+      </section>
+
+      <section class="conversation" id="conversation" aria-label="对话记录" aria-live="polite">
+        <div class="message-list" id="messageList"></div>
+      </section>
+
+      <div class="composer-wrap">
+        <div class="sample-row">
+          <button class="sample-query" type="button" data-query="哪些岗位要求AWS">问问看：哪些岗位要求AWS</button>
+        </div>
+        <form class="composer" id="queryForm">
+          <label for="queryInput" class="sr-only" hidden>输入关于求职记录的问题</label>
+          <textarea
+            class="query-input"
+            id="queryInput"
+            name="user_query"
+            rows="1"
+            maxlength="4000"
+            placeholder="问问看：申请进度、职位要求……"
+          ></textarea>
+          <button class="send-button" id="sendButton" type="submit" disabled>发送</button>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

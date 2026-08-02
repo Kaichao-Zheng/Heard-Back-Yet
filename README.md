@@ -18,7 +18,7 @@ python -m venv .venv         # or other name you like
 
 # activate environment
 source .venv/bin/activate    # macOS/Linux
-.\.venv\Scripts\activate     # Windows Powershell
+.\.venv\Scripts\activate     # Windows PowerShell
 ```
 
 ### Install Dependencies
@@ -108,7 +108,7 @@ python -m scripts.manage_db rebuild
 
 #### 5. Query job applications
 
-Run the same query through either interface.
+Run the same query in different ways.
 
 **Option A — Diagnostic CLI**
 
@@ -118,28 +118,34 @@ Run the query pipeline directly.
 python -m scripts.run_query "哪些岗位要求AWS"
 ```
 
-**Option B — HTTP API**
+**Option B — Web UI**
 
-Run the Uvicorn development server listening on port `8000`:
+Start the Uvicorn development server on port `8000`:
 
 ```powershell
-python -m uvicorn heardbackyet.presentation.app:app --reload
+python -m uvicorn heardbackyet.main:app --reload
 ```
 
-Send a user query to the versioned API in another terminal:
+Open [`http://localhost:8000/`](http://localhost:8000/) in your browser.
+
+Press Ctrl+C in the server terminal to stop Uvicorn.
+
+**Option C — HTTP API**
+
+With the same Uvicorn server running, send a query from another terminal:
 
 ```powershell
-curl.exe --json '{\"user_query\":\"哪些岗位要求AWS\"}' http://127.0.0.1:8000/api/v1/responses
+curl.exe --json '{"user_query":"哪些岗位要求AWS"}' http://localhost:8000/api/v1/responses
 ```
 
 Press `Ctrl+C` in the **server terminal** to stop Uvicorn.
 
 > [!NOTE]
 >
-> `哪些岗位要求AWS` (`Which roles require AWS`) is a deliberatly vague regression query:
+> `哪些岗位要求AWS` (`Which roles require AWS`) is a deliberately vague regression query:
 >
 > - It avoids cross-lingual noise from the primarily Chinese corpus.
-> - It can expose UTF-8 handling issue throughout the workflow.
+> - It can expose UTF-8 handling issues throughout the workflow.
 > - It creates a borderline choice between `missing_scope` and a summarized `content_search`.
 > - It includes the exact lexical term AWS, helping validate the hybrid retrieval optimization.
 >   - For this query, the semantic retriever ranks email evidence above JD.
@@ -190,7 +196,7 @@ python -m scripts.search_chunks "Which roles require AWS" `
 ## 📊Evaluation
 
 Run the commands from the repository root after
-[activating the virtual environment](#create-a-virtual-environment).
+[Activating the virtual environment](#activate-the-virtual-environment).
 
 ### 1. Evaluate saved email classification results
 

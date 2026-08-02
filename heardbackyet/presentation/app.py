@@ -7,9 +7,11 @@ from typing import Protocol
 
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from heardbackyet.paths import STATIC_DIR
 from heardbackyet.presentation.routes import UserQueryRunner, router
 from heardbackyet.presentation.schemas import ErrorResponse
 
@@ -132,6 +134,18 @@ def create_app(
             message="The response could not be generated.",
         )
 
+    @application.get("/", include_in_schema=False, response_class=FileResponse)
+    def frontend() -> FileResponse:
+        return FileResponse(
+            STATIC_DIR / "index.html",
+            media_type="text/html; charset=utf-8",
+        )
+
+    application.mount(
+        "/static",
+        StaticFiles(directory=STATIC_DIR),
+        name="static",
+    )
     application.include_router(router)
     return application
 
