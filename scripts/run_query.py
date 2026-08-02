@@ -41,6 +41,14 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     modes.add_argument(
+        "--query-spec",
+        action="store_true",
+        help=(
+            "Show the validated QuerySpec produced before retrieval planning, "
+            "then stop."
+        ),
+    )
+    modes.add_argument(
         "--llm-only",
         action="store_true",
         help="Skip orchestration and let the response model answer directly.",
@@ -112,6 +120,19 @@ def main() -> int:
             payload = {
                 "mode": "llm_only",
                 **generate_baseline_response(args.question),
+            }
+        elif args.query_spec:
+            classification = IntentClassifier().classify(args.question)
+            reason = classification.reason_code
+            payload = {
+                "mode": "query_spec",
+                "outcome": classification.outcome.value,
+                "reason_code": reason.value if reason is not None else None,
+                "query_spec": (
+                    asdict(classification.spec)
+                    if classification.spec is not None
+                    else None
+                ),
             }
         elif args.evidence:
             classification = IntentClassifier().classify(args.question)

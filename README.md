@@ -10,7 +10,7 @@ This guide assumes you are using a Windows device.
 git clone https://github.com/Kaichao-Zheng/Heard-Back-Yet.git
 ```
 
-### Create a Virtual Environment
+### Activate the Virtual Environment
 
 ```bash
 # create environment
@@ -144,9 +144,22 @@ Press `Ctrl+C` in the **server terminal** to stop Uvicorn.
 > - It includes the exact lexical term AWS, helping validate the hybrid retrieval optimization.
 >   - For this query, the semantic retriever ranks email evidence above JD.
 
-**Bonus. Try the lower-level retrieval tools**
+**Bonus. Inspect diagnostic checkpoints**
 
 See how user queries are orchestrated in [`docs/query_orchestration_sequence.md`](docs/query_orchestration_sequence.md).
+
+```powershell
+# Smoke response-model access
+python -m scripts.run_query "哪些岗位要求AWS" --llm-only
+
+# Inspect retrieved evidence
+python -m scripts.run_query "哪些岗位要求AWS" --evidence
+
+# Inspect the intent-classifier handoff
+python -m scripts.run_query "哪些岗位要求AWS" --query-spec
+```
+
+**Bonus. Try the lower-level retrieval tools**
 
 ```powershell
 # Structured retrieval
@@ -174,7 +187,7 @@ python -m scripts.search_chunks "Which roles require AWS" `
   --hydrate
 ```
 
-## Evaluation
+## 📊Evaluation
 
 Run the commands from the repository root after
 [activating the virtual environment](#create-a-virtual-environment).
