@@ -11,17 +11,18 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from heardbackyet.db.config import load_postgres_config
-from heardbackyet.retrieval.text_embedder import (
-    TextEmbedder,
-    load_embedding_config,
+from heardbackyet.orchestration.intent_classifier import (
+    IntentClassification,
+    IntentClassifier,
 )
 from heardbackyet.orchestration.query_orchestrator import (
     QueryOrchestrationResult,
     QueryOrchestrator,
 )
-from heardbackyet.response.response_generator import (
-    generate_baseline_response,
-    generate_response,
+from heardbackyet.orchestration.query_spec import QueryIntent
+from heardbackyet.retrieval.text_embedder import (
+    TextEmbedder,
+    load_embedding_config,
 )
 
 
@@ -32,9 +33,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("question", help="Natural-language question to execute.")
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument(
-        "--evidence-only",
+        "--evidence",
         action="store_true",
-        help="Run orchestration and show its evidence without generating an answer.",
+        help=(
+            "Show classification and, for content_search, append retriever "
+            "evidence without generating an answer."
+        ),
     )
     modes.add_argument(
         "--llm-only",
@@ -50,20 +54,47 @@ def json_default(value: Any) -> str:
     return str(value)
 
 
-def build_cli_payload(result: QueryOrchestrationResult) -> dict[str, Any]:
-    """Expose orchestration output without leaking the internal retrieval plan."""
-    serialized = asdict(result)
-    classification = serialized["classification"]
-    final_results = None
-    if result.plan is not None:
-        final_step_id = result.plan.steps[-1].step_id
-        final_results = serialized["step_results"][final_step_id]
-
-    return {
-        "outcome": classification["outcome"],
-        "reason_code": classification["reason_code"],
-        "results": final_results,
+def build_cli_payload(
+    classification: IntentClassification,
+    result: QueryOrchestrationResult | None = None,
+) -> dict[str, Any]:
+    """Expose classification plus optional content-search evidence."""
+    reason = classification.reason_code
+    spec = classification.spec
+    payload: dict[str, Any] = {
+        "outcome": classification.outcome.value,
+        "reason_code": reason.value if reason is not None else None,
+        "intent": spec.intent.value if spec is not None else None,
     }
+    if result is not None:
+        if result.plan is None or result.step_results is None:
+            raise ValueError("retrieval evidence requires completed orchestration")
+        final_step_id = result.plan.steps[-1].step_id
+        records = asdict(result)["step_results"][final_step_id]
+        projected_records = []
+        for record in records:
+            retrieval = record.get("retrieval")
+            if not isinstance(retrieval, dict):
+                raise ValueError("content evidence record is missing retrieval metadata")
+            metric = retrieval.get("metric")
+            metric_fields = {
+                "cosine_distance": ("rank", "metric", "distance"),
+                "bm25": ("rank", "metric", "score"),
+                "rrf": ("rank", "metric", "score"),
+            }.get(metric)
+            if metric_fields is None:
+                raise ValueError(f"unsupported retrieval metric: {metric}")
+            projected_records.append(
+                {
+                    **record,
+                    "retrieval": {
+                        field_name: retrieval[field_name]
+                        for field_name in metric_fields
+                    },
+                }
+            )
+        payload["results"] = projected_records
+    return payload
 
 
 def main() -> int:
@@ -74,9 +105,32 @@ def main() -> int:
     engine = None
     try:
         if args.llm_only:
+            from heardbackyet.response.response_generator import (
+                generate_baseline_response,
+            )
+
             payload = {
                 "mode": "llm_only",
                 **generate_baseline_response(args.question),
+            }
+        elif args.evidence:
+            classification = IntentClassifier().classify(args.question)
+            spec = classification.spec
+            result = None
+            if (
+                spec is not None
+                and spec.intent is QueryIntent.CONTENT_SEARCH
+            ):
+                engine = create_engine(load_postgres_config().database_url())
+                embedder = TextEmbedder(load_embedding_config())
+                with Session(engine) as session:
+                    result = QueryOrchestrator(
+                        session,
+                        embedder=embedder,
+                    ).orchestrate_classified_query(classification)
+            payload = {
+                "mode": "evidence",
+                **build_cli_payload(classification, result),
             }
         else:
             engine = create_engine(load_postgres_config().database_url())
@@ -86,16 +140,12 @@ def main() -> int:
                     session,
                     embedder=embedder,
                 ).orchestrate(args.question)
-            if args.evidence_only:
-                payload = {
-                    "mode": "evidence_only",
-                    **build_cli_payload(result),
-                }
-            else:
-                payload = {
-                    "mode": "full",
-                    **generate_response(result),
-                }
+            from heardbackyet.response.response_generator import generate_response
+
+            payload = {
+                "mode": "full",
+                **generate_response(result),
+            }
         print(
             json.dumps(
                 payload,
