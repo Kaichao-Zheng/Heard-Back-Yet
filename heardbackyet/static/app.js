@@ -2,6 +2,8 @@
   "use strict";
 
   const API_URL = "/api/v1/responses";
+  const READINESS_URL = "/ready";
+  const CONVERSATION_STORAGE_KEY = "heardbackyet.conversation_id";
   const sampleQueries = [
     "哪些岗位要求AWS",
     "平安那边有消息吗",
@@ -28,6 +30,27 @@
     loading: false,
     introHidden: false
   };
+
+  function createConversationId() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+      return window.crypto.randomUUID();
+    }
+    return `web-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  }
+
+  function loadConversationId() {
+    try {
+      const existing = window.sessionStorage.getItem(CONVERSATION_STORAGE_KEY);
+      if (existing) return existing;
+      const created = createConversationId();
+      window.sessionStorage.setItem(CONVERSATION_STORAGE_KEY, created);
+      return created;
+    } catch (_error) {
+      return createConversationId();
+    }
+  }
+
+  const conversationId = loadConversationId();
 
   const elements = {
     conversation: document.getElementById("conversation"),
@@ -230,12 +253,12 @@
 
   async function queryApi(query) {
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 120000);
+    const timeoutId = window.setTimeout(() => controller.abort(), 60000);
     try {
       const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_query: query }),
+        body: JSON.stringify({ user_query: query, conversation_id: conversationId }),
         signal: controller.signal
       });
       const payload = await response.json().catch(() => null);
@@ -250,8 +273,35 @@
     }
   }
 
+  async function ensureDependenciesReady() {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 5000);
+    try {
+      const response = await fetch(READINESS_URL, {
+        headers: { "Accept": "application/json" },
+        signal: controller.signal
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        const error = new Error(payload && payload.message ? payload.message : `HTTP ${response.status}`);
+        error.code = payload && payload.code ? payload.code : "readiness_unavailable";
+        throw error;
+      }
+    } catch (error) {
+      if (error && error.code) throw error;
+      const readinessError = new Error("Dependency readiness check failed.");
+      readinessError.code = error && error.name === "AbortError" ? "readiness_timeout" : "readiness_unreachable";
+      throw readinessError;
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  }
+
   function publicErrorMessage(error) {
-    if (error && error.name === "AbortError") return "本次查询超过 120 秒。请确认本地模型状态后重试。";
+    if (error && error.code === "dependencies_unavailable") return "数据库未就绪，请先启动 Docker（PostgreSQL）后重试。";
+    if (error && error.code === "readiness_timeout") return "数据库状态检查超时，请确认 Docker（PostgreSQL）已启动。";
+    if (error && error.code === "readiness_unreachable") return "无法连接后端服务，请确认 FastAPI 已启动后重试。";
+    if (error && error.name === "AbortError") return "本次查询超过 60 秒。请确认本地模型状态后重试。";
     if (error && error.code === "validation_error") return "问题格式无效，请修改后重试。";
     if (error && error.code === "response_unavailable") return "当前无法生成回答，请稍后重试。";
     return "无法连接查询服务，请确认后端服务可用后重试。";
@@ -268,6 +318,7 @@
     render();
 
     try {
+      await ensureDependenciesReady();
       const response = await queryApi(query);
       state.messages.push({
         role: "assistant",

@@ -1,4 +1,4 @@
-# 0018 Ephemeral Conversation boundary
+# 0018 Ephemeral Conversation Boundary
 
 ## Status
 
@@ -6,30 +6,28 @@ Accepted
 
 ## Context
 
-- 当前 `POST /api/v1/responses` 仅接收 `user_query`，核心 `AnswerQuery` 和 HTTP contract 都是单轮无状态的。
-- H5 与 Weixin Bot 都需要最基础的短时连续对话，例如解析“那阿里呢”“为什么”“来源呢”等追问。
-- MVP 短期内不实现持久化用户记忆；临时上下文仍必须由两个渠道复用，不能分别存放在浏览器和 Bridge 中。
-- 微信 `context_token` 是当前回复的传输令牌，可能过期，不能充当应用语义记忆或稳定会话身份。
+- H5 与 Weixin 都需要解析“那阿里呢”“为什么”等短时追问，但 MVP 不做持久化用户记忆。
+- iLink 的 transport `session_id` 和 `context_token` 不是应用语义记忆，不能直接作为会话标识。
 
 ## Decision
 
-- 保留现有无状态单轮路径，并在 Response Layer 外围增加可选、有界、非持久化的 `ConversationRunner`。
-- 请求增加可选匿名 `conversation_id`：缺失时保持现有 `AnswerQuery.run(user_query)` 行为；存在时由 `ConversationRunner` 读取短时上下文、完成指代消解，再调用无状态 `AnswerQuery`。
-- 临时状态通过 `ConversationStore` port 隔离。MVP 使用 `InMemoryConversationStore`；默认保存最近 3 轮和上一份 Canonical Response，TTL 为 30-60 分钟，进程重启即丢失。
-- H5 在 `sessionStorage` 保存随机 UUID；Weixin Bridge 使用服务端密钥对 `bot_id + from_user_id` 做 HMAC，生成不透明 `conversation_id`。原始微信用户 ID 不进入公共 HTTP contract。
-- H5 和 Weixin 调用同一个 FastAPI/ConversationRunner/Store。MVP 固定单 FastAPI worker，并对同一 `conversation_id` 使用异步锁，保证快速连续消息按顺序更新会话。
-- 默认 H5 与 Weixin 是两个独立会话。跨渠道续聊依赖未来的身份绑定，不属于 MVP。
+- 保留 `AnswerQuery` 的无状态单轮路径；独立的 `ConversationService` 负责可选、有界、非持久化的会话协调，再调用 `AnswerQuery`。
+- HTTP 请求可携带匿名 `conversation_id`。缺失时保持单轮行为；存在时读取上下文、改写追问并写回。它不是 Cookie、登录态或 transport session。
+- `ConversationStore` 隔离存储实现。MVP 使用 `InMemoryConversationStore`：最近 3 个完整轮次、30 分钟滑动 TTL、最多 99 个会话，进程重启即丢失。
+- `conversation_id` 最长 128 字符；用户问题和改写后问题最长 1000 字符。Store 在读写时惰性清理过期记录，最近 3 轮保存完整 Canonical Response。
+- H5 在 `sessionStorage` 保存随机 ID；Bridge 用服务端密钥对 `bot_id + from_user_id` 做 HMAC，派生不透明 ID。原始微信用户 ID 不进入公共 HTTP contract。
+- H5 与 Weixin 共用 FastAPI、`ConversationService` 和 Store。MVP 固定单 worker，并串行化同一会话的“读取 -> 执行 -> 写回”事务。
+- 两个渠道默认是独立会话；跨渠道续聊依赖身份绑定，不属于 MVP。
 
 ## Reasons
 
-- “非持久化”与“无状态”不同；短时指代消解需要服务端暂存上下文，但不要求立即设计长期记忆模型。
-- 保留无状态路径可继续服务 CLI、诊断、评测和单轮客户端，也避免会话能力侵入 `AnswerQuery` 的稳定输入边界。
-- Store port 使持久化成为可替换实现，而不是渠道重构。
-- 服务端统一存储可以保证 H5 与微信使用相同 TTL、轮数、上下文解析和 Canonical Response。
+- 短时指代消解需要服务端状态，但不要求设计长期记忆。
+- 保留无状态 `AnswerQuery` 可继续服务 CLI、诊断、评测和单轮客户端，并保持 Response Layer 边界稳定。
+- 统一 Store 可保证两个渠道使用相同 TTL、轮数、追问改写和 Canonical Response；port 使未来持久化不必重构渠道。
 
 ## Consequences
 
-- 浏览器中的 `state.messages` 只负责渲染，Weixin Bridge 只负责传输；二者都不是语义记忆来源。
-- FastAPI 进程重启或 TTL 到期后，已有 `conversation_id` 被视作新会话；无法解析的追问应请求澄清，不得猜测旧上下文。
-- 多 worker 或多实例部署前必须将 Store 替换为 Redis/PostgreSQL，或提供可靠的共享状态与并发控制。
-- 未来持久化只替换 `ConversationStore` 实现；H5、Weixin、`ConversationRunner` 和 `AnswerQuery` 的职责边界保持不变。
+- 浏览器消息状态仅用于渲染，Bridge 仅负责传输；语义记忆以服务端 Store 为准。
+- 进程重启或 TTL 到期后，会话视为新会话；无法解析的追问必须请求澄清。
+- 单 worker 是内存 Store 的部署约束。多 worker 或多实例前必须改用 Redis/PostgreSQL 等共享存储，并提供并发控制。
+- 会话协调、Store 与 `FollowUpRewriter` 位于 `heardbackyet/conversation/`；`heardbackyet/response/answer_query.py` 保持无状态；`heardbackyet/bootstrap.py` 负责组装。

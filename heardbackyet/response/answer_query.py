@@ -2,16 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
 
-from sqlalchemy import create_engine
-from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from heardbackyet.db.config import load_postgres_config
 from heardbackyet.orchestration.query_orchestrator import QueryOrchestrator
-from heardbackyet.retrieval.text_embedder import TextEmbedder, load_embedding_config
+from heardbackyet.retrieval.text_embedder import TextEmbedder
 from heardbackyet.response.response_generator import generate_response
 
 
@@ -34,30 +30,3 @@ class AnswerQuery:
                 embedder=self._embedder,
             ).orchestrate(user_query)
         return generate_response(result)
-
-
-@dataclass
-class AnswerQueryRuntime:
-    """Long-lived dependencies owned by one API lifespan."""
-
-    runner: AnswerQuery
-    engine: Engine
-
-    def close(self) -> None:
-        self.engine.dispose()
-
-
-def build_answer_query_runtime() -> AnswerQueryRuntime:
-    """Build shared dependencies while keeping database sessions request-local."""
-    database_url = load_postgres_config().database_url()
-    embedding_config = load_embedding_config()
-    engine = create_engine(
-        database_url,
-        pool_pre_ping=True,
-    )
-    db_session_factory = sessionmaker(bind=engine, expire_on_commit=False)
-    runner = AnswerQuery(
-        db_session_factory,
-        TextEmbedder(embedding_config),
-    )
-    return AnswerQueryRuntime(runner=runner, engine=engine)

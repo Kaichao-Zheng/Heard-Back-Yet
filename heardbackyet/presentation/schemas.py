@@ -8,11 +8,17 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserQueryRequest(BaseModel):
-    """Public input for one stateless application user query."""
+    """Public input for one query, optionally linked to temporary memory."""
 
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-    user_query: str = Field(min_length=1, max_length=4000)
+    user_query: str = Field(min_length=1, max_length=1000)
+    conversation_id: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=128,
+        pattern=r"^[A-Za-z0-9._:-]+$",
+    )
 
 
 class UserQueryResponse(BaseModel):
@@ -48,3 +54,7 @@ class ErrorResponse(BaseModel):
 
 class HealthResponse(BaseModel):
     status: Literal["ok"] = "ok"
+
+
+class ReadinessResponse(BaseModel):
+    status: Literal["ready"] = "ready"

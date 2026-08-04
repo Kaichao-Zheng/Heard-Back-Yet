@@ -2,6 +2,31 @@
 
 English | [中文](./README_ZH.md)
 
+---
+
+## 🔍How It Works
+
+```mermaid
+flowchart LR
+    QUERY[/"User Query"/]
+    MEMORY[("In-Process Memory")]
+    ORCH["Query Orchestration"]
+
+    DATA[/"Emails + JDs"/]
+    ETL["Classify · Extract · Associate"]
+    DB[("PostgreSQL + pgvector")]
+
+    RETRIEVE["Structured Retrieval<br/>Hybrid Retrieval"]
+    RESPONSE[/"Grounded Answer"/]
+
+    QUERY --> MEMORY --> ORCH --> RETRIEVE
+    DATA --> ETL --> DB --> RETRIEVE
+    RETRIEVE --> RESPONSE
+```
+
+For underlying component interactions, see the [`docs/data_pipeline_architecture.md`](./docs/data_pipeline_architecture.md).
+
+
 ## 🚀Getting Started
 
 This guide assumes you are using a Windows device.
@@ -117,15 +142,7 @@ The `reset` command recreates the database, then applies all Alembic migrations 
 
 Run the same query in different ways.
 
-**Option A — Diagnostic CLI**
-
-Run the query pipeline directly.
-
-```powershell
-python -m scripts.run_query "哪些岗位要求AWS"
-```
-
-**Option B — Web UI**
+**Option A — Web UI**
 
 Start the Uvicorn development server on port `8000`:
 
@@ -135,17 +152,29 @@ python -m uvicorn heardbackyet.main:app --reload
 
 Open [`http://localhost:8000/`](http://localhost:8000/) in your browser.
 
-Press Ctrl+C in the server terminal to stop Uvicorn.
+Press Ctrl+C in the **server terminal** to stop Uvicorn.
 
-**Option C — HTTP API**
+**Option B — HTTP API**
 
 With the same Uvicorn server running, send a query from another terminal:
 
 ```powershell
-curl.exe --json '{"user_query":"哪些岗位要求AWS"}' http://localhost:8000/api/v1/responses
+curl.exe --json '{"user_query":"平安那边有消息吗","conversation_id":"demo-1"}' `
+  http://localhost:8000/api/v1/responses
+
+curl.exe --json '{"user_query":"那安克呢","conversation_id":"demo-1"}' `
+  http://localhost:8000/api/v1/responses
+```
+Press `Ctrl+C` in the **server terminal** to stop Uvicorn.
+
+**Option C — Diagnostic CLI**
+
+Run the query pipeline directly **without memory**.
+
+```powershell
+python -m scripts.run_query "哪些岗位要求AWS"
 ```
 
-Press `Ctrl+C` in the **server terminal** to stop Uvicorn.
 
 > [!NOTE]
 >

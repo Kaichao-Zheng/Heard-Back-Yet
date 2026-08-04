@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from heardbackyet.paths import STATIC_DIR
-from heardbackyet.presentation.routes import UserQueryRunner, router
+from heardbackyet.presentation.routes import ReadinessService, UserQueryService, router
 from heardbackyet.presentation.schemas import ErrorResponse
 
 LOGGER = logging.getLogger(__name__)
@@ -24,20 +24,21 @@ class UTF8JSONResponse(JSONResponse):
     media_type = "application/json; charset=utf-8"
 
 
-class RuntimePort(Protocol):
-    runner: UserQueryRunner
+class ApiRuntimePort(Protocol):
+    query_service: UserQueryService
+    readiness_service: ReadinessService
 
     def close(self) -> None: ...
 
 
-RuntimeFactory = Callable[[], RuntimePort]
+ApiRuntimeFactory = Callable[[], ApiRuntimePort]
 
 
-def _default_runtime_factory() -> RuntimePort:
+def _default_runtime_factory() -> ApiRuntimePort:
     # Keep model and database configuration lazy so importing the ASGI app is safe.
-    from heardbackyet.response.answer_query import build_answer_query_runtime
+    from heardbackyet.bootstrap import build_api_runtime
 
-    return build_answer_query_runtime()
+    return build_api_runtime()
 
 
 def _error_response(
@@ -57,21 +58,26 @@ def _error_response(
 
 def create_app(
     *,
-    user_query_runner: UserQueryRunner | None = None,
-    runtime_factory: RuntimeFactory | None = None,
+    query_service: UserQueryService | None = None,
+    readiness_service: ReadinessService | None = None,
+    runtime_factory: ApiRuntimeFactory | None = None,
 ) -> FastAPI:
     """Create the ASGI app and own its runtime and HTTP-wide behavior."""
-    if user_query_runner is not None and runtime_factory is not None:
-        raise ValueError("provide user_query_runner or runtime_factory, not both")
+    if query_service is not None and runtime_factory is not None:
+        raise ValueError("provide query_service or runtime_factory, not both")
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        runtime: RuntimePort | None = None
-        if user_query_runner is None:
+        runtime: ApiRuntimePort | None = None
+        if query_service is None:
             runtime = (runtime_factory or _default_runtime_factory)()
-            app.state.user_query_runner = runtime.runner
+            app.state.query_service = runtime.query_service
+            app.state.readiness_service = runtime.readiness_service
         else:
-            app.state.user_query_runner = user_query_runner
+            app.state.query_service = query_service
+            if readiness_service is None:
+                raise ValueError("readiness_service is required with query_service")
+            app.state.readiness_service = readiness_service
         try:
             yield
         finally:
@@ -106,6 +112,10 @@ def create_app(
             status.HTTP_405_METHOD_NOT_ALLOWED: (
                 "method_not_allowed",
                 "HTTP method not allowed.",
+            ),
+            status.HTTP_503_SERVICE_UNAVAILABLE: (
+                "dependencies_unavailable",
+                "A query dependency is unavailable.",
             ),
         }
         code, message = known_errors.get(
