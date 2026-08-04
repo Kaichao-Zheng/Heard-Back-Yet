@@ -63,10 +63,12 @@ def retrieve_application_overview(
             latest_status,
             latest_status_email_subject,
             email_link_method,
+            eml_source_path,
             latest_jd_id,
             jd_captured_at,
             jd_location_raw,
             jd_salary_raw,
+            jd_source_path,
             jd_source_url
         FROM v_application_overview
     """

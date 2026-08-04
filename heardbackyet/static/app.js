@@ -2,6 +2,13 @@
   "use strict";
 
   const API_URL = "/api/v1/responses";
+  const READINESS_URL = "/ready";
+  const CONVERSATION_STORAGE_KEY = "heardbackyet.conversation_id";
+  const sampleQueries = [
+    "哪些岗位要求AWS",
+    "平安那边有消息吗",
+    "亚马逊是怎么推进的"
+  ];
 
   const outcomeAliases = {
     resolved: "答案已找到",
@@ -23,6 +30,27 @@
     loading: false,
     introHidden: false
   };
+
+  function createConversationId() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+      return window.crypto.randomUUID();
+    }
+    return `web-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  }
+
+  function loadConversationId() {
+    try {
+      const existing = window.sessionStorage.getItem(CONVERSATION_STORAGE_KEY);
+      if (existing) return existing;
+      const created = createConversationId();
+      window.sessionStorage.setItem(CONVERSATION_STORAGE_KEY, created);
+      return created;
+    } catch (_error) {
+      return createConversationId();
+    }
+  }
+
+  const conversationId = loadConversationId();
 
   const elements = {
     conversation: document.getElementById("conversation"),
@@ -55,11 +83,22 @@
   function sourceName(source) {
     if (source.source_path) return sourceFilename(source.source_path);
     const references = [];
-    const emailId = source.email_id ?? source.latest_status_email_id ?? source.pointed_email_id;
+    const emailId = source.email_id
+      ?? source.latest_status_email_id
+      ?? source.pointed_email_id
+      ?? (source.source_type === "email" ? source.source_id : null);
+    const jobDescriptionId = source.latest_jd_id
+      ?? (source.source_type === "job_description" ? source.source_id : null);
     if (emailId != null) references.push(`邮件 #${emailId}`);
-    if (source.latest_jd_id != null) references.push(`职位描述 #${source.latest_jd_id}`);
+    if (jobDescriptionId != null) references.push(`职位描述 #${jobDescriptionId}`);
     if (source.provenance_id != null) references.push(`证据记录 #${source.provenance_id}`);
     return references.join(" · ") || "未提供来源详情";
+  }
+
+  function initializeSampleQuery() {
+    const query = sampleQueries[Math.floor(Math.random() * sampleQueries.length)];
+    elements.sample.dataset.query = query;
+    elements.sample.textContent = `问问看：${query}`;
   }
 
   function appendFormattedText(container, text) {
@@ -124,23 +163,27 @@
       const topline = element("div", "source-topline");
       const hasEmail = source.email_id != null || source.latest_status_email_id != null || source.pointed_email_id != null;
       const hasJobDescription = source.latest_jd_id != null || source.jd_source_url;
-      const typeLabel = source.source_type === "email" ? "原始邮件" : source.source_type === "job_description" ? "职位描述" : hasEmail && hasJobDescription ? "申请证据" : hasEmail ? "原始邮件" : hasJobDescription ? "职位描述" : "来源";
+      const typeLabel = source.source_type === "email" ? "原始邮件" : source.source_type === "job_description" ? "职位描述" : hasEmail ? "原始邮件" : hasJobDescription ? "职位描述" : "来源";
       topline.appendChild(element("span", "source-kind", typeLabel));
       if (source.source_id !== undefined && source.source_id !== null) {
         topline.appendChild(element("span", "source-id", `#${source.source_id}`));
       }
       item.appendChild(topline);
 
-      item.appendChild(element("div", "source-name", sourceName(source)));
+      const detail = element("div", "source-detail");
+      const name = element("div", "source-name", sourceName(source));
+      if (source.source_path) name.title = source.source_path;
+      detail.appendChild(name);
 
       const sourceUrl = source.source_url || source.jd_source_url;
       if (typeof sourceUrl === "string" && /^https?:\/\//i.test(sourceUrl)) {
-        const link = element("a", "source-link", source.source_url ? "打开原始链接" : "打开职位描述");
+        const link = element("a", "source-link", "打开职位详情");
         link.href = sourceUrl;
         link.target = "_blank";
         link.rel = "noopener noreferrer";
-        item.appendChild(link);
+        detail.appendChild(link);
       }
+      item.appendChild(detail);
       list.appendChild(item);
     });
 
@@ -151,7 +194,7 @@
   function renderMessage(message) {
     const classes = ["message", message.role];
     if (message.role === "assistant") {
-      classes.push(message.badge === "欢迎语" ? "welcome" : "response");
+      classes.push("response");
     }
     if (message.error) classes.push("error");
     const article = element("article", classes.join(" "));
@@ -215,12 +258,12 @@
 
   async function queryApi(query) {
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 120000);
+    const timeoutId = window.setTimeout(() => controller.abort(), 60000);
     try {
       const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_query: query }),
+        body: JSON.stringify({ user_query: query, conversation_id: conversationId }),
         signal: controller.signal
       });
       const payload = await response.json().catch(() => null);
@@ -235,8 +278,35 @@
     }
   }
 
+  async function ensureDependenciesReady() {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 5000);
+    try {
+      const response = await fetch(READINESS_URL, {
+        headers: { "Accept": "application/json" },
+        signal: controller.signal
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        const error = new Error(payload && payload.message ? payload.message : `HTTP ${response.status}`);
+        error.code = payload && payload.code ? payload.code : "readiness_unavailable";
+        throw error;
+      }
+    } catch (error) {
+      if (error && error.code) throw error;
+      const readinessError = new Error("Dependency readiness check failed.");
+      readinessError.code = error && error.name === "AbortError" ? "readiness_timeout" : "readiness_unreachable";
+      throw readinessError;
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  }
+
   function publicErrorMessage(error) {
-    if (error && error.name === "AbortError") return "本次查询超过 120 秒。请确认本地模型状态后重试。";
+    if (error && error.code === "dependencies_unavailable") return "数据库未就绪，请先启动 Docker（PostgreSQL）后重试。";
+    if (error && error.code === "readiness_timeout") return "数据库状态检查超时，请确认 Docker（PostgreSQL）已启动。";
+    if (error && error.code === "readiness_unreachable") return "无法连接后端服务，请确认 FastAPI 已启动后重试。";
+    if (error && error.name === "AbortError") return "本次查询超过 60 秒。请确认本地模型状态后重试。";
     if (error && error.code === "validation_error") return "问题格式无效，请修改后重试。";
     if (error && error.code === "response_unavailable") return "当前无法生成回答，请稍后重试。";
     return "无法连接查询服务，请确认后端服务可用后重试。";
@@ -253,6 +323,7 @@
     render();
 
     try {
+      await ensureDependenciesReady();
       const response = await queryApi(query);
       state.messages.push({
         role: "assistant",
@@ -291,6 +362,7 @@
 
   window.addEventListener("resize", () => requestAnimationFrame(maybeHideIntro));
 
+  initializeSampleQuery();
   render();
   autosizeInput();
 })();

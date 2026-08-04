@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from typing import Any, Protocol
 
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from heardbackyet.presentation.schemas import (
     ErrorResponse,
     HealthResponse,
+    ReadinessResponse,
     UserQueryRequest,
     UserQueryResponse,
 )
@@ -14,14 +15,28 @@ from heardbackyet.presentation.schemas import (
 router = APIRouter()
 
 
-class UserQueryRunner(Protocol):
-    """Presentation port for the single-user-query application capability."""
+class UserQueryService(Protocol):
+    """Presentation port for stateless or conversation-linked user queries."""
 
-    def run(self, user_query: str, /) -> dict[str, Any]: ...
+    def run(
+        self,
+        user_query: str,
+        /,
+        *,
+        conversation_id: str | None = None,
+    ) -> dict[str, Any]: ...
 
 
-def _user_query_runner(request: Request) -> UserQueryRunner:
-    return request.app.state.user_query_runner
+class ReadinessService(Protocol):
+    def first_unavailable_dependency(self) -> str | None: ...
+
+
+def _query_service(request: Request) -> UserQueryService:
+    return request.app.state.query_service
+
+
+def _readiness_service(request: Request) -> ReadinessService:
+    return request.app.state.readiness_service
 
 
 @router.get(
@@ -33,6 +48,20 @@ def _user_query_runner(request: Request) -> UserQueryRunner:
 def health() -> HealthResponse:
     # Liveness intentionally avoids model and database calls.
     return HealthResponse()
+
+
+@router.get(
+    "/ready",
+    response_model=ReadinessResponse,
+    responses={status.HTTP_503_SERVICE_UNAVAILABLE: {"model": ErrorResponse}},
+    tags=["operations"],
+)
+def readiness(
+    readiness_service: ReadinessService = Depends(_readiness_service),
+) -> ReadinessResponse:
+    if readiness_service.first_unavailable_dependency() is not None:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+    return ReadinessResponse()
 
 
 @router.post(
@@ -47,6 +76,13 @@ def health() -> HealthResponse:
 )
 def create_response(
     payload: UserQueryRequest,
-    runner: UserQueryRunner = Depends(_user_query_runner),
+    query_service: UserQueryService = Depends(_query_service),
 ) -> UserQueryResponse:
-    return UserQueryResponse.model_validate(runner.run(payload.user_query))
+    if payload.conversation_id is None:
+        response = query_service.run(payload.user_query)
+    else:
+        response = query_service.run(
+            payload.user_query,
+            conversation_id=payload.conversation_id,
+        )
+    return UserQueryResponse.model_validate(response)

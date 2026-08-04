@@ -1,17 +1,18 @@
 from __future__ import annotations
 
-from pathlib import Path
+from alembic import command
+from alembic.config import Config
+from alembic.script import ScriptDirectory
 
 from heardbackyet.db.config import (
     MAINTENANCE_DATABASE,
     PostgresConfig,
     load_postgres_config,
 )
-from heardbackyet.paths import ENV_PATH, SQL_SCHEMA_PATH, SQL_VIEWS_PATH
+from heardbackyet.paths import ALEMBIC_CONFIG_PATH, ENV_PATH
 
 
-INIT_SCHEMA_PATH = SQL_SCHEMA_PATH
-INIT_VIEWS_PATH = SQL_VIEWS_PATH
+MIGRATION_TARGET = "head"
 
 
 def quote_identifier(identifier: str) -> str:
@@ -46,62 +47,43 @@ def recreate_database(config: PostgresConfig) -> None:
     engine.dispose()
 
 
-def read_sql_statements(path: Path) -> list[str]:
-    raw_sql = path.read_text(encoding="utf-8")
-    statements = []
-
-    for statement in raw_sql.split(";"):
-        stripped = statement.strip()
-        if stripped:
-            statements.append(stripped)
-
-    if not statements:
-        raise RuntimeError(f"No SQL statements found in {path}")
-    return statements
+def build_alembic_config(config: PostgresConfig) -> Config:
+    """Build Alembic configuration for the explicitly selected database."""
+    alembic_config = Config(str(ALEMBIC_CONFIG_PATH))
+    alembic_config.attributes["database_url"] = config.database_url().render_as_string(
+        hide_password=False
+    )
+    return alembic_config
 
 
-def create_tables(config: PostgresConfig) -> None:
-    from sqlalchemy import create_engine
-
-    engine = create_engine(config.database_url())
-    try:
-        # Run the schema file in one transaction so partial table creation rolls back.
-        with engine.begin() as conn:
-            for statement in read_sql_statements(INIT_SCHEMA_PATH):
-                conn.exec_driver_sql(statement)
-    finally:
-        engine.dispose()
+def migration_head(config: PostgresConfig) -> str:
+    """Return the single migration head, failing before a destructive reset."""
+    script = ScriptDirectory.from_config(build_alembic_config(config))
+    heads = script.get_heads()
+    if len(heads) != 1:
+        raise RuntimeError(f"Expected exactly one Alembic head; found: {heads}")
+    return heads[0]
 
 
-def create_views(config: PostgresConfig) -> None:
-    from sqlalchemy import create_engine
-
-    engine = create_engine(config.database_url())
-    try:
-        with engine.begin() as conn:
-            for statement in read_sql_statements(INIT_VIEWS_PATH):
-                conn.exec_driver_sql(statement)
-    finally:
-        engine.dispose()
+def upgrade_schema(config: PostgresConfig) -> None:
+    """Upgrade the configured database to the latest schema revision."""
+    migration_head(config)
+    command.upgrade(build_alembic_config(config), MIGRATION_TARGET)
 
 
 def reset_database(config: PostgresConfig | None = None) -> PostgresConfig:
-    """Recreate the configured database, schema, and read-only views."""
+    """Recreate the configured database and upgrade its schema to Alembic head."""
     resolved_config = config or load_postgres_config()
     recreate_database(resolved_config)
-    create_tables(resolved_config)
-    create_views(resolved_config)
+    upgrade_schema(resolved_config)
     return resolved_config
 
 
 def print_reset_context(config: PostgresConfig) -> None:
-    schema_statement_count = len(read_sql_statements(INIT_SCHEMA_PATH))
-    view_statement_count = len(read_sql_statements(INIT_VIEWS_PATH))
+    head = migration_head(config)
 
     print(f"- Load connection settings from: {ENV_PATH}")
     print(f"- Recreate database: {config.database}")
     print(f"- Maintenance database: {MAINTENANCE_DATABASE}")
-    print(f"- Create schema from: {INIT_SCHEMA_PATH}")
-    print(f"- Schema statements: {schema_statement_count}")
-    print(f"- Create views from: {INIT_VIEWS_PATH}")
-    print(f"- View statements: {view_statement_count}")
+    print(f"- Alembic config: {ALEMBIC_CONFIG_PATH}")
+    print(f"- Upgrade schema to: {MIGRATION_TARGET} ({head})")

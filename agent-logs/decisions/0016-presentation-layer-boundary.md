@@ -17,7 +17,7 @@ Accepted
 - FastAPI 负责请求校验、调用框架无关的 query use case、HTTP 错误映射和响应序列化。
 - 前端只负责输入、加载状态、回答与来源展示。
 - Presentation 公共 contract 使用 `UserQueryRequest.user_query` 和 `UserQueryResponse`；
-  `UserQueryRunner` 仅是 adapter port，不向下改写既有 contract。
+  `UserQueryService` 仅是 adapter port，不向下改写既有 contract。
 - HTTP 使用自定义 `POST /api/v1/responses`。请求、响应、错误与状态语义均属于
   HeardBackYet，不复用 OpenAI `/v1/responses` 的精确路径或 `input` 字段，避免暗示
   OpenAI SDK compatibility。
@@ -31,8 +31,8 @@ Accepted
 - 成功 response 显式返回 `200`；因为不持久化 response resource，不使用 `201`。
   请求校验、未匹配 route、错误 method 与未预期异常分别映射为 `422/404/405/500`，
   并统一使用非敏感 `ErrorResponse` envelope。
-- 第一版保持无状态；如果后续支持临时 memory，其 store 和 context resolver 位于
-  Response Layer 边界，presentation 只传递匿名 conversation identifier。
+- 第一版保持无状态；后续 decision `0018` 将临时 memory 提升为独立的 Conversation
+  Coordination Layer，presentation 仍只传递匿名 session identifier。
 
 ## Reasons
 
@@ -49,6 +49,6 @@ Accepted
   plan、provider API 形态和 workflow 类名不进入 URL。
 - `AnswerQuery` 放在 `heardbackyet/response/answer_query.py`，作为 Response Layer 的
   框架无关入口；`response_generator.py` 保持为该层内部的回答生成组件。
-- FastAPI 通过 `AnswerQuery.run()` 进入现有 Orchestrator；CLI eval 保持直接组装
-  下层能力。
-- 临时 memory 不改变本层命名，也不作为第一版 Presentation Layer 的完成条件。
+- FastAPI 通过 `ConversationService` 调用 `AnswerQuery.run()` 并进入现有 Orchestrator；
+  CLI eval 保持直接组装下层能力。
+- 临时 memory 不属于 Presentation Layer；顶层 `bootstrap.py` 负责跨层依赖组装。

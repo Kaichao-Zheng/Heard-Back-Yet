@@ -42,8 +42,9 @@ Use `agent-logs/README.md` for log types, naming, templates, and maintenance rul
 * `/heardbackyet/etl` for ETL implementation
 * `/heardbackyet/db` for database configuration, models, and loader implementation
 * `/heardbackyet/retrieval` for structured and content retrieval, indexing, and source hydration
+* `/heardbackyet/conversation` for framework-neutral temporary-session coordination, query rewriting, and conversation stores
 * `/heardbackyet/response` for the framework-neutral query-to-response workflow and response generation
-* `/heardbackyet/presentation` for FastAPI app composition, routes, and public schemas
+* `/heardbackyet/presentation` for FastAPI app lifespan, routes, and public schemas
 * `/scripts` for thin runnable entrypoints and manual workflow checkpoints
 * `/scripts/eval` for evaluation scripts and offline quality checks
 * `/scripts/diag` for diagnostics and debugging helpers
@@ -53,11 +54,9 @@ Use `agent-logs/README.md` for log types, naming, templates, and maintenance rul
 
 Stage 7: Presentation Layer
 
-The current prototype exposes the existing query and response workflow through a
-custom, stateless FastAPI contract. `POST /api/v1/responses` is the product HTTP
-entrypoint; `scripts.run_query` remains a backend diagnosis CLI. The minimal frontend
-is the remaining Presentation Layer target. Temporary conversation memory is deferred
-as a response-workflow concern outside the presentation boundary.
+The FastAPI/H5 path and bounded conversation context are in place.
+
+The current focus is Weixin Access through a lightweight ClawBot/iLink Bridge that reuses the existing Conversation Layer and Canonical Response path.
 
 ## Stage History
 

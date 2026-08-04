@@ -10,10 +10,8 @@ from heardbackyet.db.load_postgres import print_summary as print_load_summary
 from heardbackyet.db.load_postgres import run_load
 from heardbackyet.db.postgres_loader import LoadStats
 from heardbackyet.db.reset_db import (
-    INIT_SCHEMA_PATH,
-    INIT_VIEWS_PATH,
+    migration_head,
     print_reset_context,
-    read_sql_statements,
     reset_database,
 )
 from heardbackyet.paths import (
@@ -69,8 +67,7 @@ def rebuild_database(
 def preflight_rebuild() -> PostgresConfig:
     """Fail before destructive reset when inputs or the embedding API are unavailable."""
     config = load_postgres_config()
-    read_sql_statements(INIT_SCHEMA_PATH)
-    read_sql_statements(INIT_VIEWS_PATH)
+    migration_head(config)
 
     for path in (
         EML_PARSED_DIR,
@@ -102,12 +99,12 @@ def parse_args() -> argparse.Namespace:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     reset = subparsers.add_parser(
-        "reset", help="Recreate the database, schema, and views."
+        "reset", help="Recreate the database and upgrade its schema to Alembic head."
     )
     reset.add_argument(
         "--dry-run",
         action="store_true",
-        help="Validate configuration and SQL without changing PostgreSQL.",
+        help="Validate configuration and the migration chain without changing PostgreSQL.",
     )
 
     load = subparsers.add_parser(

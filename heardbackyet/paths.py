@@ -5,8 +5,7 @@ from pathlib import Path
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = PACKAGE_ROOT.parent
-SQL_SCHEMA_PATH = PROJECT_ROOT / "sql" / "init_schema.sql"
-SQL_VIEWS_PATH = PROJECT_ROOT / "sql" / "init_views.sql"
+ALEMBIC_CONFIG_PATH = PROJECT_ROOT / "alembic.ini"
 ENV_PATH = PROJECT_ROOT / ".env"
 
 STATIC_DIR = PACKAGE_ROOT / "static"
