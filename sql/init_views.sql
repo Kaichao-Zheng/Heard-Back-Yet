@@ -1,3 +1,6 @@
+-- Reference snapshot only; application view changes are managed by Alembic migrations.
+-- This file is not read by runtime code and must not be used to upgrade a database.
+
 CREATE OR REPLACE VIEW v_application_overview AS
 SELECT
     -- Application identity
@@ -13,12 +16,14 @@ SELECT
     a.latest_status,                -- snapshot
     e.subject AS latest_status_email_subject,
     e.application_link_method AS email_link_method,
+    e.source_path AS eml_source_path,
 
     -- Application-level JD snapshot
     a.latest_jd_id,                 -- snapshot pointer
     jd.captured_at AS jd_captured_at,
     jd.location_raw AS jd_location_raw,
     jd.salary_raw AS jd_salary_raw,
+    jd.source_path AS jd_source_path,
     jd.source_url AS jd_source_url
 FROM application AS a
 JOIN company AS c

@@ -118,7 +118,7 @@ def generate_response(
         response["sources"] = [
             source
             for record in records
-            if (source := _source_record(record))
+            for source in _source_records(record)
         ]
         return response
 
@@ -201,16 +201,19 @@ def _serialize_record(record: Any) -> dict[str, Any]:
     )
 
 
-def _source_record(record: Any) -> dict[str, Any]:
+def _source_records(record: Any) -> tuple[dict[str, Any], ...]:
     if isinstance(record, Mapping):
-        return {
+        if "eml_source_path" in record or "jd_source_path" in record:
+            return _overview_source_records(record)
+        source = {
             field: record[field]
             for field in SOURCE_FIELDS
             if record.get(field) is not None
         }
+        return (source,) if source else ()
     if isinstance(record, HydratedSearchHit):
         source = record.source
-        return {
+        return ({
             key: value
             for key, value in {
                 "source_type": record.metadata.source_type,
@@ -219,5 +222,47 @@ def _source_record(record: Any) -> dict[str, Any]:
                 "source_url": getattr(source, "source_url", None),
             }.items()
             if value is not None
-        }
-    return {}
+        },)
+    return ()
+
+
+def _overview_source_records(
+    record: Mapping[str, Any],
+) -> tuple[dict[str, Any], ...]:
+    """Split one overview snapshot into its actual email and JD sources."""
+    if "eml_source_path" not in record and "jd_source_path" not in record:
+        return ()
+
+    sources: list[dict[str, Any]] = []
+    if (
+        record.get("latest_status_email_id") is not None
+        or record.get("eml_source_path") is not None
+    ):
+        sources.append(
+            {
+                key: value
+                for key, value in {
+                    "source_type": "email",
+                    "source_id": record.get("latest_status_email_id"),
+                    "source_path": record.get("eml_source_path"),
+                }.items()
+                if value is not None
+            }
+        )
+    if (
+        record.get("latest_jd_id") is not None
+        or record.get("jd_source_path") is not None
+    ):
+        sources.append(
+            {
+                key: value
+                for key, value in {
+                    "source_type": "job_description",
+                    "source_id": record.get("latest_jd_id"),
+                    "source_path": record.get("jd_source_path"),
+                    "source_url": record.get("jd_source_url"),
+                }.items()
+                if value is not None
+            }
+        )
+    return tuple(sources)

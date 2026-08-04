@@ -1,3 +1,6 @@
+-- Reference snapshot only; application schema changes are managed by Alembic migrations.
+-- This file is not read by runtime code and must not be used to upgrade a database.
+
 CREATE EXTENSION IF NOT EXISTS vector;
 
 CREATE TABLE company (
