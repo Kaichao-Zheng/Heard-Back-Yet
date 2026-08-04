@@ -100,11 +100,18 @@ python -m scripts.run_data_pipeline
 
 Follow [`scripts/normalize_aliases.md`](./scripts/normalize_aliases.md).
 
-#### 4. Rebuild PostgreSQL data and semantic search embeddings
+#### 4. Build PostgreSQL data and semantic search embeddings
 
 ```bash
+# rebuild = reset + load + index
 python -m scripts.manage_db rebuild
+
+python -m scripts.manage_db reset
+python -m scripts.manage_db load
+python -m scripts.manage_db index
 ```
+
+The `reset` command recreates the database, then applies all Alembic migrations up to the latest revision.
 
 #### 5. Query job applications
 
