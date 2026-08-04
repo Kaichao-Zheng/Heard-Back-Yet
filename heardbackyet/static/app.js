@@ -2,6 +2,11 @@
   "use strict";
 
   const API_URL = "/api/v1/responses";
+  const sampleQueries = [
+    "哪些岗位要求AWS",
+    "平安那边有消息吗",
+    "亚马逊是怎么推进的"
+  ];
 
   const outcomeAliases = {
     resolved: "答案已找到",
@@ -60,6 +65,12 @@
     if (source.latest_jd_id != null) references.push(`职位描述 #${source.latest_jd_id}`);
     if (source.provenance_id != null) references.push(`证据记录 #${source.provenance_id}`);
     return references.join(" · ") || "未提供来源详情";
+  }
+
+  function initializeSampleQuery() {
+    const query = sampleQueries[Math.floor(Math.random() * sampleQueries.length)];
+    elements.sample.dataset.query = query;
+    elements.sample.textContent = `问问看：${query}`;
   }
 
   function appendFormattedText(container, text) {
@@ -124,23 +135,27 @@
       const topline = element("div", "source-topline");
       const hasEmail = source.email_id != null || source.latest_status_email_id != null || source.pointed_email_id != null;
       const hasJobDescription = source.latest_jd_id != null || source.jd_source_url;
-      const typeLabel = source.source_type === "email" ? "原始邮件" : source.source_type === "job_description" ? "职位描述" : hasEmail && hasJobDescription ? "申请证据" : hasEmail ? "原始邮件" : hasJobDescription ? "职位描述" : "来源";
+      const typeLabel = source.source_type === "email" ? "原始邮件" : source.source_type === "job_description" ? "职位描述" : hasEmail ? "原始邮件" : hasJobDescription ? "职位描述" : "来源";
       topline.appendChild(element("span", "source-kind", typeLabel));
       if (source.source_id !== undefined && source.source_id !== null) {
         topline.appendChild(element("span", "source-id", `#${source.source_id}`));
       }
       item.appendChild(topline);
 
-      item.appendChild(element("div", "source-name", sourceName(source)));
+      const detail = element("div", "source-detail");
+      const name = element("div", "source-name", sourceName(source));
+      if (source.source_path) name.title = source.source_path;
+      detail.appendChild(name);
 
       const sourceUrl = source.source_url || source.jd_source_url;
       if (typeof sourceUrl === "string" && /^https?:\/\//i.test(sourceUrl)) {
-        const link = element("a", "source-link", source.source_url ? "打开原始链接" : "打开职位描述");
+        const link = element("a", "source-link", "打开职位详情");
         link.href = sourceUrl;
         link.target = "_blank";
         link.rel = "noopener noreferrer";
-        item.appendChild(link);
+        detail.appendChild(link);
       }
+      item.appendChild(detail);
       list.appendChild(item);
     });
 
@@ -151,7 +166,7 @@
   function renderMessage(message) {
     const classes = ["message", message.role];
     if (message.role === "assistant") {
-      classes.push(message.badge === "欢迎语" ? "welcome" : "response");
+      classes.push("response");
     }
     if (message.error) classes.push("error");
     const article = element("article", classes.join(" "));
@@ -291,6 +306,7 @@
 
   window.addEventListener("resize", () => requestAnimationFrame(maybeHideIntro));
 
+  initializeSampleQuery();
   render();
   autosizeInput();
 })();
