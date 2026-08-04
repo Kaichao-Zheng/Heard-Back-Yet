@@ -83,9 +83,14 @@
   function sourceName(source) {
     if (source.source_path) return sourceFilename(source.source_path);
     const references = [];
-    const emailId = source.email_id ?? source.latest_status_email_id ?? source.pointed_email_id;
+    const emailId = source.email_id
+      ?? source.latest_status_email_id
+      ?? source.pointed_email_id
+      ?? (source.source_type === "email" ? source.source_id : null);
+    const jobDescriptionId = source.latest_jd_id
+      ?? (source.source_type === "job_description" ? source.source_id : null);
     if (emailId != null) references.push(`邮件 #${emailId}`);
-    if (source.latest_jd_id != null) references.push(`职位描述 #${source.latest_jd_id}`);
+    if (jobDescriptionId != null) references.push(`职位描述 #${jobDescriptionId}`);
     if (source.provenance_id != null) references.push(`证据记录 #${source.provenance_id}`);
     return references.join(" · ") || "未提供来源详情";
   }
