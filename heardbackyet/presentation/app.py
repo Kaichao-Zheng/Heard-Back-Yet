@@ -7,11 +7,13 @@ from typing import Protocol
 
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from heardbackyet.paths import STATIC_DIR
+from heardbackyet.presentation.config import load_api_allowed_frontend_origins
 from heardbackyet.presentation.routes import ReadinessService, UserQueryService, router
 from heardbackyet.presentation.schemas import ErrorResponse
 
@@ -90,6 +92,15 @@ def create_app(
         lifespan=lifespan,
         default_response_class=UTF8JSONResponse,
     )
+
+    allowed_frontend_origins = load_api_allowed_frontend_origins()
+    if allowed_frontend_origins:
+        application.add_middleware(
+            CORSMiddleware,
+            allow_origins=list(allowed_frontend_origins),
+            allow_methods=["GET", "POST"],
+            allow_headers=["Accept", "Content-Type"],
+        )
 
     @application.exception_handler(RequestValidationError)
     async def validation_error_handler(

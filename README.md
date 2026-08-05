@@ -1,9 +1,14 @@
-# Heard-Back-Yet
 
-English | [中文](./README_ZH.md)
+
+<h1 align="center">Heard-Back-Yet</h1>
 
 ---
 
+<p align="center">
+  English | <a href="./README_ZH.md">中文</a>
+  <br><br>
+  <a href="https://heardbackyet.pages.dev"><strong>Try the live prototype here.</strong></a>
+</p>
 ## 🔍How It Works
 
 ```mermaid
@@ -29,7 +34,9 @@ For underlying component interactions, see the [`docs/data_pipeline_architecture
 
 ## 🚀Getting Started
 
-This guide assumes you are using a Windows device.
+This guide assumes you are running the project locally on Windows.
+
+For a reference deployment setup, see [`docs/cloud_deployment.md`](./docs/cloud_deployment.md).
 
 ```bash
 git clone https://github.com/Kaichao-Zheng/Heard-Back-Yet.git
@@ -55,7 +62,7 @@ python -m pip freeze > requirements.txt
 
 ### Configure Environment Variables
 
-Copy the file `.env.example` and rename the file to `.env` in the root directory.
+Copy the file `.env.local.example` and rename the file to `.env` in the root directory.
 
 ```env
 POSTGRES_HOST=localhost
@@ -141,6 +148,14 @@ The `reset` command recreates the database, then applies all Alembic migrations 
 #### 5. Query job applications
 
 Run the same query in different ways.
+
+For the default local-development mode, copy `.env.local.example` to `.env`. Compose
+starts PostgreSQL only, while FastAPI continues to run directly from the venv.
+For the VPS mode, start from `.env.cloud.example` and use the explicit
+`docker compose --profile cloud` commands in the deployment guide to activate
+migration, FastAPI, and Nginx containers. The presentation MVP uses Cloudflare
+HTTPS at the edge and an HTTP Nginx origin on VPS port `80`. See
+[`docs/cloud_deployment.md`](./docs/cloud_deployment.md).
 
 **Option A — Web UI**
 
