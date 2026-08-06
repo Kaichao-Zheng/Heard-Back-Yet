@@ -1,8 +1,17 @@
 (() => {
   "use strict";
 
-  const API_URL = "/api/v1/responses";
-  const READINESS_URL = "/ready";
+  const runtimeConfig = window.__HEARDBACKYET_CONFIG__ || {};
+  const apiBaseUrl = typeof runtimeConfig.apiBaseUrl === "string"
+    ? runtimeConfig.apiBaseUrl.trim().replace(/\/+$/, "")
+    : "";
+
+  function apiUrl(path) {
+    return `${apiBaseUrl}${path}`;
+  }
+
+  const API_URL = apiUrl("/api/v1/responses");
+  const READINESS_URL = apiUrl("/ready");
   const CONVERSATION_STORAGE_KEY = "heardbackyet.conversation_id";
   const sampleQueries = [
     "哪些岗位要求AWS",

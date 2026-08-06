@@ -1,0 +1,17 @@
+.git
+.github
+.venv
+.env
+.env.*
+!.env.example
+!.env.cloud.example
+__pycache__/
+*.py[codz]
+.pytest_cache/
+.ruff_cache/
+agent-logs/
+data/
+dist/
+docs/
+tests/
+*.log
