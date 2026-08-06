@@ -9,3 +9,5 @@ matplotlib
 rank-bm25
 fastapi
 uvicorn
+anyio>=4,<5
+wechat-clawbot @ git+https://github.com/nightsailer/wechat-clawbot.git@master

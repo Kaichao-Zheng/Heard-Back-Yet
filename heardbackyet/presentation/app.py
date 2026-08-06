@@ -14,8 +14,15 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from heardbackyet.paths import STATIC_DIR
 from heardbackyet.presentation.config import load_api_allowed_frontend_origins
-from heardbackyet.presentation.routes import ReadinessService, UserQueryService, router
+from heardbackyet.presentation.routes import (
+    ReadinessService,
+    UserQueryService,
+    router as core_router,
+)
 from heardbackyet.presentation.schemas import ErrorResponse
+from heardbackyet.presentation.weixin.config import WeixinSettings
+from heardbackyet.presentation.weixin.routes import router as weixin_router
+from heardbackyet.presentation.weixin.runtime import WeixinRuntime
 
 LOGGER = logging.getLogger(__name__)
 
@@ -71,18 +78,29 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         runtime: ApiRuntimePort | None = None
-        if query_service is None:
-            runtime = (runtime_factory or _default_runtime_factory)()
-            app.state.query_service = runtime.query_service
-            app.state.readiness_service = runtime.readiness_service
-        else:
-            app.state.query_service = query_service
-            if readiness_service is None:
-                raise ValueError("readiness_service is required with query_service")
-            app.state.readiness_service = readiness_service
+        weixin_runtime: WeixinRuntime | None = None
         try:
+            if query_service is None:
+                runtime = (runtime_factory or _default_runtime_factory)()
+                app.state.query_service = runtime.query_service
+                app.state.readiness_service = runtime.readiness_service
+            else:
+                app.state.query_service = query_service
+                if readiness_service is None:
+                    raise ValueError("readiness_service is required with query_service")
+                app.state.readiness_service = readiness_service
+
+            weixin_settings = WeixinSettings.from_env()
+            weixin_runtime = WeixinRuntime(
+                app.state.query_service,
+                weixin_settings,
+            )
+            await weixin_runtime.start()
+            app.state.weixin_runtime = weixin_runtime
             yield
         finally:
+            if weixin_runtime is not None:
+                await weixin_runtime.close()
             if runtime is not None:
                 runtime.close()
 
@@ -167,7 +185,8 @@ def create_app(
         StaticFiles(directory=STATIC_DIR),
         name="static",
     )
-    application.include_router(router)
+    application.include_router(core_router)
+    application.include_router(weixin_router)
     return application
 
 

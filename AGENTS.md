@@ -45,6 +45,7 @@ Use `agent-logs/README.md` for log types, naming, templates, and maintenance rul
 * `/heardbackyet/conversation` for framework-neutral temporary-session coordination, query rewriting, and conversation stores
 * `/heardbackyet/response` for the framework-neutral query-to-response workflow and response generation
 * `/heardbackyet/presentation` for FastAPI app lifespan, routes, and public schemas
+* `/heardbackyet/presentation/weixin` for the Weixin/iLink channel adapter
 * `/scripts` for thin runnable entrypoints and manual workflow checkpoints
 * `/scripts/eval` for evaluation scripts and offline quality checks
 * `/scripts/diag` for diagnostics and debugging helpers
