@@ -47,6 +47,9 @@ services:
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: "5432"
+      HBY_WEIXIN_STATE_DIR: /var/lib/heardbackyet/weixin
+    volumes:
+      - heardbackyet_weixin_state:/var/lib/heardbackyet/weixin
     expose:
       - "8000"
     extra_hosts:
@@ -84,3 +87,4 @@ services:
 
 volumes:
   heardbackyet_pgdata:
+  heardbackyet_weixin_state:

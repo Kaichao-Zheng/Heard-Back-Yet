@@ -8,7 +8,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 COPY requirements.txt ./
-RUN python -m pip install --requirement requirements.txt
+# Install Git so pip can fetch wechat-clawbot SDK from GitHub.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git \
+    && python -m pip install --requirement requirements.txt \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY alembic.ini ./
 COPY migrations ./migrations

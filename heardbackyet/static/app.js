@@ -12,11 +12,14 @@
 
   const API_URL = apiUrl("/api/v1/responses");
   const READINESS_URL = apiUrl("/ready");
+  const WEIXIN_LOGIN_URL = apiUrl("/api/v1/weixin/login-sessions");
   const CONVERSATION_STORAGE_KEY = "heardbackyet.conversation_id";
   const sampleQueries = [
     "哪些岗位要求AWS",
     "平安那边有消息吗",
-    "亚马逊是怎么推进的"
+    "亚马逊是怎么推进的",
+    "最近投了哪些岗位",
+    "四月投了哪些工作"
   ];
 
   const outcomeAliases = {
@@ -67,8 +70,11 @@
     form: document.getElementById("queryForm"),
     input: document.getElementById("queryInput"),
     send: document.getElementById("sendButton"),
-    sample: document.querySelector(".sample-query")
+    sample: document.querySelector(".sample-query"),
+    weixinEntry: document.getElementById("weixinEntry")
   };
+  const weixinEntryLabel = elements.weixinEntry.textContent;
+  let weixinFeedbackTimer = null;
 
   function element(tag, className, text) {
     const node = document.createElement(tag);
@@ -368,6 +374,38 @@
   });
 
   elements.sample.addEventListener("click", () => submitQuery(elements.sample.dataset.query || ""));
+
+  async function startWeixinLogin() {
+    if (elements.weixinEntry.disabled) return;
+    if (weixinFeedbackTimer !== null) {
+      window.clearTimeout(weixinFeedbackTimer);
+      weixinFeedbackTimer = null;
+    }
+    elements.weixinEntry.disabled = true;
+    elements.weixinEntry.textContent = "正在打开微信…";
+    try {
+      const response = await fetch(WEIXIN_LOGIN_URL, {
+        method: "POST",
+        headers: { Accept: "application/json" }
+      });
+      if (response.status === 429) throw new Error("busy");
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = await response.json();
+      if (!payload.qrcode_url) throw new Error("missing-url");
+      window.location.assign(payload.qrcode_url);
+    } catch (error) {
+      elements.weixinEntry.disabled = false;
+      elements.weixinEntry.textContent = error.message === "busy"
+        ? "授权请求较多，请稍后重试"
+        : "暂时无法打开，请重试";
+      weixinFeedbackTimer = window.setTimeout(() => {
+        elements.weixinEntry.textContent = weixinEntryLabel;
+        weixinFeedbackTimer = null;
+      }, 2400);
+    }
+  }
+
+  elements.weixinEntry.addEventListener("click", startWeixinLogin);
 
   window.addEventListener("resize", () => requestAnimationFrame(maybeHideIntro));
 

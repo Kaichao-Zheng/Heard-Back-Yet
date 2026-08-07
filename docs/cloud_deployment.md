@@ -39,11 +39,11 @@ internet.
 Keep outbound traffic allowed so `cloudflared` can establish the
 encrypted tunnel to Cloudflare.
 
-## 2. Configure Cloudflare
+## 2. Configure Cloudflare Tunnel
 
 In the Cloudflare dashboard:
 
-1. Create a Cloudflare Tunnel and install its Linux connector on the VPS.
+1. Create a **Cloudflare Tunnel** and install its Linux connector on the VPS.
 2. Wait until the tunnel status is `Healthy`.
 3. Without creating an `A` record, add a published application route from
    `api.example.com` to `http://localhost:80`.
@@ -109,16 +109,21 @@ API_DOMAIN=api.example.com
 
 Also configure the selected model provider, endpoint, API key, and model names.
 
-## 7. Initialize and start the backend
+## 7. Initialize and start the backend containers
 
 Start PostgreSQL, rebuild the first cloud database from the copied data, and
 then start the complete cloud stack:
 
 ```bash
+# Start PostgreSQL for the database rebuild.
 docker compose --profile cloud up -d postgres
+
+# Rebuild the database from the read-only data directory.
 docker compose --profile cloud run --rm --no-deps --build \
   -v "$(pwd)/data:/app/data:ro" \
   fastapi python -m scripts.manage_db rebuild
+
+# Build and start the complete cloud stack.
 docker compose --profile cloud up --build -d
 ```
 
@@ -133,14 +138,14 @@ curl https://api.example.com/health
 
 ## 8. Configure Cloudflare Pages
 
-In Workers & Pages, connect the Git repository and deploy Pages use:
+In Workers & Pages, connect the Git repository and deploy Pages with these settings:
 
-```text
-Framework preset: None
-Build command: python -m pip install python-dotenv && python -m scripts.build_frontend --env-file /dev/null
-Build output directory: dist
-Root directory: /
-```
+| Setting | Value |
+| --- | --- |
+| Framework preset | `None` |
+| Build command | `python -m pip install python-dotenv && python -m scripts.build_frontend --env-file /dev/null` |
+| Build output directory | `dist` |
+| Root directory | `/` |
 
 Add this Pages build environment variable:
 
@@ -163,8 +168,9 @@ https://app.example.com
 > docker compose --profile cloud up -d --no-deps --force-recreate fastapi
 > ```
 
-Submit one query in the browser. A successful response confirms Pages, CORS,
-Cloudflare proxying, Nginx, FastAPI, PostgreSQL, and the model provider together.
+Submit one query in the browser. A successful response confirms Pages, CORS, Cloudflare proxying, Nginx, FastAPI, PostgreSQL, and the model provider together.
+
+The cloud profile persists Weixin login state in `heardbackyet_weixin_state` across FastAPI container replacement. This demo has no application-level authentication, so use desensitized data when the API is public.
 
 ## 9. Deploy later code updates
 
@@ -186,6 +192,7 @@ branch.
 | `heardbackyet/static/` | `dist/` deployed by Cloudflare Pages |
 | `scripts/build_frontend.py` | writes the public API URL into the Pages artifact |
 | `heardbackyet.main:app` | private `fastapi:8000` container |
+| Weixin runtime state | private `heardbackyet_weixin_state` volume |
 | `python -m alembic upgrade head` | one-shot `migrate` container |
 | `python -m scripts.manage_db rebuild` | first database bootstrap container |
 | `deploy/nginx/templates/default.conf.template` | public VPS HTTP origin on port `80` |

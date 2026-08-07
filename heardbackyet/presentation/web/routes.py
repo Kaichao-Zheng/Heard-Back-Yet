@@ -4,7 +4,7 @@ from typing import Any, Protocol
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from heardbackyet.presentation.schemas import (
+from heardbackyet.presentation.web.schemas import (
     ErrorResponse,
     HealthResponse,
     ReadinessResponse,
