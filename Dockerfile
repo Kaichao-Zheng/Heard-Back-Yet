@@ -12,6 +12,7 @@ COPY requirements.txt ./
 RUN apt-get update \
     && apt-get install -y --no-install-recommends git \
     && python -m pip install --requirement requirements.txt \
+    && apt-get purge -y --auto-remove git \
     && rm -rf /var/lib/apt/lists/*
 
 COPY alembic.ini ./
