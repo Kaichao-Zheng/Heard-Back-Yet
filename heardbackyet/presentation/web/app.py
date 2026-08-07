@@ -13,13 +13,13 @@ from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from heardbackyet.paths import STATIC_DIR
-from heardbackyet.presentation.config import load_api_allowed_frontend_origins
-from heardbackyet.presentation.routes import (
+from heardbackyet.presentation.web.config import load_api_allowed_frontend_origins
+from heardbackyet.presentation.web.routes import (
     ReadinessService,
     UserQueryService,
     router as core_router,
 )
-from heardbackyet.presentation.schemas import ErrorResponse
+from heardbackyet.presentation.web.schemas import ErrorResponse
 from heardbackyet.presentation.weixin.config import WeixinSettings
 from heardbackyet.presentation.weixin.routes import router as weixin_router
 from heardbackyet.presentation.weixin.runtime import WeixinRuntime

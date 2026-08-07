@@ -1,1 +1,1 @@
-"""HTTP and UI presentation boundary for HeardBackYet."""
+"""Presentation boundary hosting parallel channel adapters (web, weixin)."""

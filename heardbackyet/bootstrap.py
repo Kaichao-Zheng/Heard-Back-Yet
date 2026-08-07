@@ -21,7 +21,7 @@ from heardbackyet.conversation import (
     InMemoryConversationStore,
     ModelFollowUpRewriter,
 )
-from heardbackyet.presentation.readiness import DependencyReadinessChecker
+from heardbackyet.presentation.web.readiness import DependencyReadinessChecker
 
 
 @dataclass
