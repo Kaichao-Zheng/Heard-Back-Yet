@@ -90,6 +90,8 @@ cd Heard-Back-Yet
 
 ## 5. Upload the data
 
+Complete the [local Getting Started workflow](../README.md#getting-started) before deploying, then upload the finalized, desensitized `data/` snapshot.
+
 The Git repository and Docker image do not contain `data/`. From the local
 Windows PowerShell, run:
 
@@ -121,6 +123,10 @@ API_DOMAIN=api.example.com
 Also configure the selected model provider, endpoint, API key, and model names.
 
 ## 7. Initialize and start the containerized backend
+
+This rebuild loads the processed local artifacts uploaded in Step 5 and creates the retrieval index.
+
+Source processing and manual alias normalization must be completed locally before upload.
 
 ### Bootstrap the cloud backend
 
@@ -185,10 +191,11 @@ Submit one query in the browser. A successful response confirms Pages, CORS, Clo
 
 The cloud profile persists Weixin login state in `heardbackyet_weixin_state` across FastAPI container replacement. This demo has no application-level authentication, so use desensitized data when the API is public.
 
-## 9. Later code updates
+## 9. Later updates
 
-For later backend updates, do not rebuild frozen data:
+Use the matching workflow below for later code or data updates.
 
+### Update the application code
 ```bash
 git pull
 docker compose --profile cloud up --build -d
@@ -197,6 +204,21 @@ docker compose --profile cloud up --build -d
 The one-shot `migrate` container applies pending schema migrations before
 FastAPI starts. Pages automatically rebuilds after pushes to its configured Git
 branch.
+
+### Append application data
+
+Process and normalize the new data locally, then repeat the upload in Step 5.
+
+```bash
+# Insert or update processed application data.
+docker compose --profile cloud run --rm --no-deps \
+  -v "$(pwd)/data:/app/data:ro" \
+  fastapi python -m scripts.manage_db load
+
+# Rebuild retrieval chunks and embeddings.
+docker compose --profile cloud run --rm --no-deps \
+  fastapi python -m scripts.manage_db index
+```
 
 ## What the local code becomes in cloud
 
