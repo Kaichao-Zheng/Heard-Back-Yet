@@ -1,0 +1,216 @@
+Received: from SE1P216MB2008.KORP216.PROD.OUTLOOK.COM (2603:1096:101:15b::7)
+ by PUVP216MB3365.KORP216.PROD.OUTLOOK.COM with HTTPS; Fri, 24 Apr 2026
+ 14:19:56 +0000
+Received: from CWLP265CA0490.GBRP265.PROD.OUTLOOK.COM (2603:10a6:400:18a::14)
+ by SE1P216MB2008.KORP216.PROD.OUTLOOK.COM (2603:1096:101:15b::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9846.23; Fri, 24 Apr
+ 2026 14:19:55 +0000
+Received: from AM3PEPF0000A78F.eurprd04.prod.outlook.com
+ (2603:10a6:400:18a:cafe::87) by CWLP265CA0490.outlook.office365.com
+ (2603:10a6:400:18a::14) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9846.22 via Frontend Transport; Fri,
+ 24 Apr 2026 14:19:54 +0000
+Authentication-Results: spf=pass (sender IP is 23.251.237.173)
+ smtp.mailfrom=bounce.mail.amazon.jobs; dkim=pass (signature was verified)
+ header.d=mail.amazon.jobs;dkim=pass (signature was verified)
+ header.d=amazonses.com;dmarc=pass action=none
+ header.from=mail.amazon.jobs;compauth=pass reason=100
+Received-SPF: Pass (protection.outlook.com: domain of bounce.mail.amazon.jobs
+ designates 23.251.237.173 as permitted sender)
+ receiver=protection.outlook.com; client-ip=23.251.237.173;
+ helo=e237-173.smtp-out.us-west-2.amazonses.com; pr=C
+Received: from e237-173.smtp-out.us-west-2.amazonses.com (23.251.237.173) by
+ AM3PEPF0000A78F.mail.protection.outlook.com (10.167.16.118) with Microsoft
+ SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.9846.18
+ via Frontend Transport; Fri, 24 Apr 2026 14:19:53 +0000
+X-IncomingTopHeaderMarker: OriginalChecksum:FD6884CD2107BA8D83C8385B26AA53DF927ECC9D7EFE836DD853FE6B28B3C54D;UpperCasedChecksum:A97CCCC61478BD171BB993D88E6479DB6BD1EDC811F0FFD32EAE6E878F5E7F2F;SizeAsReceived:1383;Count:11
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple;
+	s=6axh45dcogsb2sogiuavz2rxq32nu2mt; d=mail.amazon.jobs;
+	t=1777040392;
+	h=Date:From:To:Message-ID:Subject:MIME-Version:Content-Type;
+	bh=REw3uUQASydZO0JXZclJlus09VVZd7HZ1Ff+yMbMKcY=;
+	b=sWvued++WQcQrZq6fyY4jOHMqOKR/0u1279FrT4IbWhk2rL/E6xIfveXdctBFeYU
+	gvqf4WEu0VKlqk6E5zqxklB0t7C89DhKMP06Q8zx/yKFwBMEEExJrn09nibEX3AKN/q
+	NBrrkFujKUfK5ao3dxx7TYGNm93ErEnl161XyS6c=
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple;
+	s=hsbnp7p3ensaochzwyq5wwmceodymuwv; d=amazonses.com; t=1777040392;
+	h=Date:From:To:Message-ID:Subject:MIME-Version:Content-Type:Feedback-ID;
+	bh=REw3uUQASydZO0JXZclJlus09VVZd7HZ1Ff+yMbMKcY=;
+	b=sKvk0k09kjh6MkT0dwewuzEc0fGigXBDidsgTCoNd7yEzmiL28nRskQ1p7vd2YhU
+	Yxd3ZFC/Tym7n6ooDiH1u4PuYy655I31O7qhkN+PM6RYiONTP/e6KkSglc1gzDgsbsN
+	JEEyRUYFlEXE+2q3BDzOe98gHtpl2XBEBE+3S4Dg=
+Date: Fri, 24 Apr 2026 14:19:52 +0000
+From: "Amazon.jobs" <noreply@mail.amazon.jobs>
+To: kaichao.zheng@outlook.com
+Message-ID: <0101019dbfdc80e1-a7c0a77a-7de0-43d4-9524-52f9dafcaea6-000000@us-west-2.amazonses.com>
+Subject: Your amazon.jobs verification code
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_109440_225814608.1777040392398"
+Feedback-ID: ::1.us-west-2.UP0lxOR8m+vuOezggY4qptYP732qQb8gEYUbU5DbxkI=:AmazonSES
+X-SES-Outgoing: 2026.04.24-23.251.237.173
+X-IncomingHeaderCount: 11
+Return-Path: 0101019dbfdc80e1-a7c0a77a-7de0-43d4-9524-52f9dafcaea6-000000@bounce.mail.amazon.jobs
+X-MS-Exchange-Organization-ExpirationStartTime: 24 Apr 2026 14:19:54.4567
+ (UTC)
+X-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit
+X-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000
+X-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit
+X-MS-Exchange-Organization-Network-Message-Id: 9eea7fba-57c2-4537-129e-08dea20c8e57
+X-EOPAttributedMessage: 0
+X-EOPTenantAttributedMessage: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa:0
+X-MS-Exchange-Organization-MessageDirectionality: Incoming
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM3PEPF0000A78F:EE_|SE1P216MB2008:EE_|PUVP216MB3365:EE_
+X-MS-Exchange-Organization-AuthSource: AM3PEPF0000A78F.eurprd04.prod.outlook.com
+X-MS-Exchange-Organization-AuthAs: Anonymous
+X-MS-UserLastLogonTime: 4/24/2026 12:58:59 AM
+X-MS-Office365-Filtering-Correlation-Id: 9eea7fba-57c2-4537-129e-08dea20c8e57
+X-MS-Exchange-EOPDirect: true
+X-Sender-IP: 23.251.237.173
+X-SID-PRA: NOREPLY@MAIL.AMAZON.JOBS
+X-SID-Result: PASS
+X-MS-Exchange-Organization-SCL: 1
+X-Microsoft-Antispam: BCL:4;ARA:1444111002|461199028|5101999024|6115599003|68400799013|16002599021|7009299003|9000799056|9400799043|970799060|1290799033|58200799025|10300799038|1680799066|5139299004|47200799024|4302099013|440099028|3412199025|30041999003|1122599022|1370799030|1360799030|1380799030|1602099012;
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Apr 2026 14:19:53.9202
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9eea7fba-57c2-4537-129e-08dea20c8e57
+X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-AuthSource: AM3PEPF0000A78F.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: Internet
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SE1P216MB2008
+X-MS-Exchange-Transport-EndToEndLatency: 00:00:02.4243309
+X-MS-Exchange-Processed-By-BccFoldering: 15.20.9818.030
+X-Microsoft-Antispam-Mailbox-Delivery:
+	ucf:1;jmr:0;ex:0;auth:1;dest:C;OFR:CustomRules;ENG:(5062000311)(920221119095)(90000117)(920221120095)(90005022)(91005020)(91035115)(9050020)(9100341)(944500132)(2008001181)(2008121020)(4810010)(4910033)(9575002)(10195002)(9320005)(120001);
+X-Message-Delivery: Vj0xLjE7dXM9MDtsPTA7YT0wO0Q9MTtHRD0xO1NDTD0z
+X-Microsoft-Antispam-Message-Info:
+	=?utf-8?B?cVRVb29hSzRTL3ZQZ0lVdG9KMzNqU0YycUcxMmFCSi9CRkFkdTNHS3oxeFhy?=
+ =?utf-8?B?ZGZIenkrZVJvbWdpTG8rUFZEQ0NoRnI1Ylp3blZZS2pyL1JnWkVRU05Lb3kw?=
+ =?utf-8?B?QVlzb2wxS0p0TTNYRkZVQURVUGxaS0Izc0hsMFVFaFdzQzBXZ04rVG8vMlRY?=
+ =?utf-8?B?a1hQY083UzM1TXI1d1c3UFpwZGczSkRGZXNCNzFXUXlQTmFTc01NQ0gxaW5H?=
+ =?utf-8?B?ZFVNQjkzKzBkMHlxRmd3MDdXNE5jajF1cnBvek1GZ3U4d3pnOUJpWklSRDg1?=
+ =?utf-8?B?dzZIQXhNSHNkL1RRUnN5U3dvaGV4ck9OZFhuL25VVW9sMis4ZGU0RStpRU0r?=
+ =?utf-8?B?MmFiUm5NaHNmeGk3MGNUdmN1eDVXMlRuWFRtS0oxTjFobDBPR2U5dnhxRGVy?=
+ =?utf-8?B?aHVzS3JVVHJlelRZdi9HMEhscWZUdGZ3WFMrbnRWOWMxWXMzV3pJc0dkaEhI?=
+ =?utf-8?B?Q3F0akJGZExqTXI1MjRTSkcweGRleTdTbXlILy83ZnJMSEdORXcweVdna29m?=
+ =?utf-8?B?SjRzMHpubWJpWVZjTi8wMlhBTUVVOTYxQWxOSThwOUdNTWIvQy9sWXl0OVln?=
+ =?utf-8?B?ME5Sbyt4eVFPQTlVcnppYlRHcUMxelppSkZjRGhZa3VkdmtQZWNad2hCcFJP?=
+ =?utf-8?B?U29wZ1FCTkI0Um1UWnNkMytzRGY0aWQrQkRYVGhDa2tFeG5YOVQ1SmNEbE0z?=
+ =?utf-8?B?RTBPbFFGV0thamNEVkZjSkJxWSt0b0xqaTlSdlRIQzRsN2hiVVQ5bmV1YWtk?=
+ =?utf-8?B?MldNTWY0a3E0bzBYMnkzMWhsUkM4RU1DTGJENmZDeHZZUHZzOHJnQVBsUFNZ?=
+ =?utf-8?B?TGlRbTMweVlTYUo3TzBDRWNLNTVUSzVjMVptMFBTNEJyTUJZYXQyUDN2cEJa?=
+ =?utf-8?B?NkRJNFhpL3BJUjBvT3FMUERUQnJhd1c0RWsva0dkRjM3WmJRank2cWtPYnVq?=
+ =?utf-8?B?aGRaSkJvY01WeTBDRDVHM1RjcWc4NDZMUy9FUEVRcG1WcDc5N2NhWTlaOGFo?=
+ =?utf-8?B?S0IvT1lsSEhUczJFdjhyUWluYjhPMXp0ZGlXLzU3bk5EaEdJQVJLa3hLek5Z?=
+ =?utf-8?B?dWtQajV3SDFENnU1MnAxczRZVjFyWmlqdEkwbGtnajBLc3pXRXArLzlUVEdk?=
+ =?utf-8?B?Y1k1YnZBVHQ3WHVFeStPdHZvVjBoVFBWODZPQzhHTG5yeWVhekxpQTV0NzFR?=
+ =?utf-8?B?SDRCTGJSajlIWk5ITllnVXNQOTFUbVQrRlluWFRpVU05NnFXNDhLSnRXdkhq?=
+ =?utf-8?B?MmtXNGZQZmdDVENmY0NZeFBobTBEL1EvT1NPandXK1hxK3NzdUxGK0c0aE05?=
+ =?utf-8?B?Wk9wU1VTQTM3akpxdm5NMSsxSmpRZy9melI3TGlYZlB4M1pWb3VnL2VKRjJ0?=
+ =?utf-8?B?aDhhQUF3SGRzVzUxMDFaVittNzhmbUg2cXFNVTRBa3pNcE5IQk52Y2UvMVFS?=
+ =?utf-8?B?cFRNVWh1OGRjNEpBQzh2cDNmRlY0SUdNYTd3cVI1NmsrbTYwWVpDaVhkazl2?=
+ =?utf-8?B?WkV1S0F1eGVJaGMySDN6dWxFOWZvS3lYdVgyOWZtQjFQMmErLysrL0NGYVRG?=
+ =?utf-8?B?ZGFHQnNRZEpJVzd4ejFGYmh4RlRoZ3MzSTlkUmdVL2dWQ3dweWd3dllyTGw5?=
+ =?utf-8?B?M0JRaXpHZ0hiejZ2d3Joc2g4UFhUTkk4bWVOMUNRTURwdXRLNlFBMVpBUEs0?=
+ =?utf-8?B?cHh4YVZaWW5zYkRwTmR4L2FrV0crb3JJM29BcDd0WnF4VXNmeHBQcTE4QnB2?=
+ =?utf-8?B?emYxNXdEdSswa0thUkFhM0lJS3dvRTlGUjZ3NXdYTkFua1ljVzNyQXhqKzgv?=
+ =?utf-8?B?V243akkrNDVXZTg5eFpUamNNV3JNKy9sd254ZkxyTUh0dVBzTzFtWDVza2xl?=
+ =?utf-8?B?bGE3OEk5MlJ5bThVZEMyUlBkbHZkOTkrRUtTWUNDU2x6VTRVM1NGUXhjZE5N?=
+ =?utf-8?B?cE9FYmtQMU95V2FFUGpqSFNVMXg4Tlh1Z3J3V0xCZUVaM3A2MlhEQ2h3b2VT?=
+ =?utf-8?B?akgrMzloOW11WDFhaXE5VjBmeS9BTzJKaXE2UTNUQVp4NVQ4N01uRUJQRlFH?=
+ =?utf-8?B?bDZ6RmN3OE90cW5kYmFGbFI4QzlnNC9Sbld5T0Mxd1NTRlRSSDhZTXJnY2RD?=
+ =?utf-8?B?Q250d1B5eCtkTzVaM1VIVUh6QVdBbnZOVllYaEF4YlBabXVWNit4ZGg5cEdm?=
+ =?utf-8?B?aytJbURPOVlra2plZkJHb0g1UFcwNGZNOW5ieVUvMENRaHorWFRKSEVPaWZG?=
+ =?utf-8?B?WWJmQ0d5emJEQlhPTGhGSmlwa2ZNdnZ4cm5lRktBblVwdS85K3IrZ2hxaGVz?=
+ =?utf-8?B?eUNPVGZ6WUwvMklNN3VGS1hVbXhLbHF1TGx0T0psdDg1c3V4aVVRTjBDNkJs?=
+ =?utf-8?B?Y21acm9rRmRIRTlBRVZ6aFpnY0toWURUYmRaa21UdWVObjlqZHlMM2wvdkth?=
+ =?utf-8?B?cDBkQlNnZm9hN2QrbWU5Q0tJSVQ0SThsTmwzT25DcEs0TjU4WW1yRUhhbDRG?=
+ =?utf-8?B?RjlySkx0alF5WGNGcXliQ1R0cE5VZ29PQWtpekpKTmxsNWdmT2Q0NzZhWVQ5?=
+ =?utf-8?B?UGV3dE14aDlJR2U5d08wZUExVC9LY0hzSzJ1d0xnYStKZ3ZrbWRXNndLNHFG?=
+ =?utf-8?B?ZGNLNEZZL3lSTVVHSURJbzFzbGNPNURaMk1DZ01iUmZuSnAxbFBjY2xIcnor?=
+ =?utf-8?B?V2IyUmk3U2lvdUd2ZkhJbm4xQlFZUzdFaktZMFloQVRmbHdlUnJ5SGk1QWJr?=
+ =?utf-8?B?SGtLUDFoUmNUUEpNK3ZTS0ZSSUs5a0pzMC9zd1V5V1NJVFlzc1BOK0ZmUjQr?=
+ =?utf-8?Q?iHJAT2kBwLlsHXBUUla8Q=3D?=
+MIME-Version: 1.0
+
+------=_Part_109440_225814608.1777040392398
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN' 'http://www.=
+w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'><html lang=3D"en" xml:lang=3D=
+"en" xmlns=3D"http://www.w3.org/1999/xhtml" xmlns:v=3D"urn:schemas-microsof=
+t-com:vml" xmlns:o=3D"urn:schemas-microsoft-com:office:office"><head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8"> <=
+!--[if gte mso 9]><xml> <o:OfficeDocumentSettings> <o:AllowPNG/> <o:PixelsP=
+erInch>96</o:PixelsPerInch> </o:OfficeDocumentSettings> </xml><![endif]--> =
+<!--[if !mso]><!--> <meta http-equiv=3D"X-UA-Compatible" content=3D"IE=3Ded=
+ge"> <!--<![endif]--> <meta name=3D"viewport" content=3D"width=3Ddevice-wid=
+th, initial-scale=3D1.0"> <!--[if (gte mso 9)|(IE)]><style type=3D'text/css=
+'>table {border-collapse: collapse;}</style><![endif]--> <style type=3D"tex=
+t/css"> @media screen and (max-width: 592px) { table#main { width: 100% !im=
+portant; max-width: 592px; } #header, #copy, #footer { padding-left: 9.8% !=
+important; } #copy, #footer { padding-right: 9.8% !important; } } @media sc=
+reen and (max-width: 591px) { #header { background-image: url('https://imag=
+e.passport.services.amazon.jobs/trapezoids.png'); background-repeat: no-rep=
+eat; background-size: contain; background-position: right center; height: 2=
+7.7vw; padding-right: 9.8% !important; } #trapezoids { display: none; } } <=
+/style> <title>Your amazon.jobs verification code</title> </head> <body sty=
+le=3D"margin: 0; padding: 0; min-width: 100%; background-color: #ffffff;"> =
+<center style=3D"width: 100%; table-layout: fixed; -webkit-text-size-adjust=
+: 100%; -ms-text-size-adjust: 100%;"> <div style=3D"max-width: 592px;"> <ta=
+ble id=3D"main" border=3D"0" cellpadding=3D"0" cellspacing=3D"0" align=3D"c=
+enter" style=3D"margin: 0 auto; width: 592px;" role=3D"presentation"> <tbod=
+y> <tr> <td id=3D"header" bgcolor=3D"#ff9900" style=3D"padding: 0 0 0 59px;=
+ font-size: 0;"><table border=3D"0" cellspacing=3D"0" cellpadding=3D"0" sty=
+le=3D"width: 100%;" role=3D"presentation"> <tbody> <tr> <td style=3D"font-s=
+ize: 0; text-align:left;"><p style=3D"margin: 16px 0;"><img src=3D"https://=
+image.passport.services.amazon.jobs/amazon-logo-dark.png" alt=3D"Amazon" wi=
+dth=3D"107" height=3D"32" title=3D"Amazon.com: Online Shopping for Electron=
+ics, Apparel, Computers, Books, DVDs &amp; more" border=3D"0"></p></td> <td=
+ id=3D"trapezoids" style=3D"font-size: 0; text-align: right;"><img src=3D"h=
+ttps://image.passport.services.amazon.jobs/trapezoids.png" width=3D"204" he=
+ight=3D"164" alt=3D""></td> </tr> </tbody> </table></td> </tr> <tr> <td id=
+=3D"copy" style=3D"padding: 15px 59px 21px; color: #232f3e; font-family: Ar=
+ial, sans-serif; font-size: 12px; line-height: 22px; text-align: left;"> <h=
+1 style=3D"margin: 30px 0; font-weight: bold; font-size: 18px; line-height:=
+ 24px; text-align: center;">Your amazon<span>.jobs</span> verification code=
+</h1> <p style=3D"margin: 0px;">Please enter the following code on amazon.j=
+obs:</p><div aria-label=3D"confirmation code" style=3D"margin: 30px 0; font=
+-weight: bold; font-size: 18px; line-height: 18px;"> 596380</div><p>This co=
+de will be active for 1 hour. If it has expired you can request a new code =
+from the verification page.</p> <p style=3D"margin: 0px;">&nbsp;</p> </td> =
+</tr> <tr> <td id=3D"footer" bgcolor=3D"#0f2b3c" style=3D"padding: 18px 59p=
+x 17px; font-size: 0;"><table border=3D"0" cellspacing=3D"0" cellpadding=3D=
+"0" style=3D"width: 100%;" role=3D"presentation"> <tbody> <tr> <td style=3D=
+"font-size: 0; text-align: left;"><table border=3D"0" cellspacing=3D"0" cel=
+lpadding=3D"0" style=3D"display: inline-table;" role=3D"presentation"> <tbo=
+dy> <tr> <td style=3D"padding: 0 10px 0 0; font-size: 0;"><a href=3D"https:=
+//www.facebook.com/InsideAmazon/" target=3D"_blank" rel=3D"noreferrer noope=
+ner" title=3D"Inside Amazon | Facebook"><img src=3D"https://image.passport.=
+services.amazon.jobs/facebook.png" alt=3D"Facebook" width=3D"26" height=3D"=
+26" border=3D"0"></a></td> <td style=3D"padding: 0 10px 0 0; font-size: 0;"=
+><a href=3D"https://www.linkedin.com/company/1586/" target=3D"_blank" rel=
+=3D"noreferrer noopener" title=3D"Amazon | LinkedIn"><img src=3D"https://im=
+age.passport.services.amazon.jobs/linkedin.png" alt=3D"LinkedIn" width=3D"2=
+6" height=3D"26" border=3D"0"></a></td> <td style=3D"padding: 0 9px 0 0; fo=
+nt-size: 0;"><a href=3D"https://www.instagram.com/insideamazon/" target=3D"=
+_blank" rel=3D"noreferrer noopener" title=3D"Inside Amazon | Instagram"><im=
+g src=3D"https://image.passport.services.amazon.jobs/instagram.png" alt=3D"=
+Instagram" width=3D"26" height=3D"26" border=3D"0"></a></td> <td style=3D"f=
+ont-size: 0;"><a href=3D"https://twitter.com/InsideAmazon" target=3D"_blank=
+" rel=3D"noreferrer noopener" title=3D"Inside Amazon | Twitter"><img src=3D=
+"https://image.passport.services.amazon.jobs/twitter.png" alt=3D"Twitter" w=
+idth=3D"26" height=3D"26" border=3D"0"></a></td> </tr> </tbody> </table></t=
+d> <td style=3D"font-size: 0; text-align: right;"><p style=3D"margin: 1px 0=
+ 0 20px;"><a href=3D"https://www.amazon.jobs/" target=3D"_blank" rel=3D"nor=
+eferrer noopener" title=3D"Amazon.jobs"><img src=3D"https://image.passport.=
+services.amazon.jobs/amazonjobs-logo-bright.png" alt=3D"Amazon" width=3D"80=
+" height=3D"19" title=3D"Amazon.jobs: Help us build Earth=E2=80=99s most cu=
+stomer-centric company." border=3D"0"></a></p></td> </tr> </tbody> </table>=
+</td> </tr> </tbody> </table> </div> </center> </body> </html>=
+
+------=_Part_109440_225814608.1777040392398--

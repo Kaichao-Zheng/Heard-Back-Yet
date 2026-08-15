@@ -1,5 +1,9 @@
 # Weixin iLink Bot Integration
 
+This guide is written in Chinese because the **Weixin** integration primarily targets users in mainland China.
+
+Compatibility with the international **WeChat** client has not been tested.
+
 ## Current Design
 
 - 使用 `nightsailer/wechat-clawbot` `master` 分支的基础 SDK，避免官方接入栈对OpenClaw的深度耦合

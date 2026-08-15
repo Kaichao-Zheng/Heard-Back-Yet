@@ -7,8 +7,8 @@ otherwise.
 
 ```mermaid
 flowchart LR
-    browser["Browser"] -->|"GET HTTPS :443"| pages["Cloudflare Pages<br/>app.example.com/"]
-    browser -->|"fetch HTTPS :443"| edge["Cloudflare API proxy<br/>api.example.com"]
+    browser["Browser"] -->|"GET HTTPS :443"| pages["Cloudflare Pages<br/>app.example.com"]
+    browser -->|"fetch HTTPS :443"| edge["Cloudflare API Edge<br/>api.example.com"]
 
     subgraph vps["VPS"]
         tunnel["Tunnel Connector"]
@@ -27,7 +27,7 @@ flowchart LR
     tunnel -->|"HTTP localhost :80"| nginx
 ```
 
-## 1. Configure AWS networking
+## 1. Configure VPS networking
 
 In the VPS security group, allow inbound traffic for:
 
@@ -39,20 +39,15 @@ internet.
 Keep outbound traffic allowed so `cloudflared` can establish the
 encrypted tunnel to Cloudflare.
 
-## 2. Configure Cloudflare Tunnel
+## 2. Install Prerequisites
 
-In the Cloudflare dashboard:
+### `SSH` into your VPS
 
-1. Create a **Cloudflare Tunnel** and install its Linux connector on the VPS.
-2. Wait until the tunnel status is `Healthy`.
-3. Without creating an `A` record, add a published application route from
-   `api.example.com` to `http://localhost:80`.
+```powershell
+ssh -i "$HOME\<path-to-key>\heardbackyet.pem" <vps-user>@<vps-ip>
+```
 
-   Cloudflare will create the tunnel DNS record automatically.
-
-## 3. Install Prerequisites
-
-`SSH` into your VPS, then:
+### Install Prerequisites
 
 ```bash
 sudo apt update
@@ -68,6 +63,22 @@ docker compose version
 exit
 ```
 
+## 3. Configure Cloudflare Tunnel
+
+In the Cloudflare dashboard:
+
+1. Create a **Cloudflare Tunnel**
+
+2. Install a Linux **tunnel connector replica** using the Cloudflare-provided commands.
+   
+   The Connection Status remains at `No connection detected yet`.
+
+3. Back to the **Tunnel dashboard** and verify that the status is `Healthy`.
+
+4. Add a **published application route** from `api.example.com` to `http://localhost:80`.
+
+   Cloudflare will create the tunnel DNS record automatically.
+
 ## 4. Prepare the VPS repository
 
 Clone the repository and enter it:
@@ -77,16 +88,18 @@ git clone https://github.com/Kaichao-Zheng/Heard-Back-Yet.git
 cd Heard-Back-Yet
 ```
 
-## 5. Upload the frozen data
+## 5. Upload the data
+
+Complete the [local Getting Started workflow](../README.md#getting-started) before deploying, then upload the finalized, desensitized `data/` snapshot.
 
 The Git repository and Docker image do not contain `data/`. From the local
 Windows PowerShell, run:
 
 ```powershell
-scp -i "$HOME\path\to\your-key.pem" -r .\data <vps-user>@<vps-ip>:/home/<vps-user>/Heard-Back-Yet/
+scp -i "$HOME\<path-to-key>\heardbackyet.pem" -r .\data <vps-user>@<vps-ip>:/home/<vps-user>/Heard-Back-Yet/
 ```
 
-## 6. Create the cloud environment
+## 6. Create the environment file
 
 Copy the example and edit it:
 
@@ -97,7 +110,7 @@ vim .env
 
 At minimum, replace all placeholder credentials and set:
 
-```dotenv
+```env
 POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
 POSTGRES_PASSWORD=<strong-password>
@@ -109,10 +122,13 @@ API_DOMAIN=api.example.com
 
 Also configure the selected model provider, endpoint, API key, and model names.
 
-## 7. Initialize and start the backend containers
+## 7. Initialize and start the containerized backend
 
-Start PostgreSQL, rebuild the first cloud database from the copied data, and
-then start the complete cloud stack:
+This rebuild loads the processed local artifacts uploaded in Step 5 and creates the retrieval index.
+
+Source processing and manual alias normalization must be completed locally before upload.
+
+### Bootstrap the cloud backend
 
 ```bash
 # Start PostgreSQL for the database rebuild.
@@ -127,12 +143,12 @@ docker compose --profile cloud run --rm --no-deps --build \
 docker compose --profile cloud up --build -d
 ```
 
-If the cloud configuration uses a hosted embedding provider, this step sends
-embedding inputs to that provider.
+If the cloud configuration uses a hosted embedding provider, this step sends embedding inputs to that provider.
 
-Test the public API before configuring Cloudflare Pages:
+### Test the backend before configuring Cloudflare Pages
 
 ```bash
+curl http://localhost/health
 curl https://api.example.com/health
 ```
 
@@ -145,7 +161,7 @@ In Workers & Pages, connect the Git repository and deploy Pages with these setti
 | Framework preset | `None` |
 | Build command | `python -m pip install python-dotenv && python -m scripts.build_frontend --env-file /dev/null` |
 | Build output directory | `dist` |
-| Root directory | `/` |
+| Root directory | ` ` |
 
 Add this Pages build environment variable:
 
@@ -153,29 +169,33 @@ Add this Pages build environment variable:
 FRONTEND_API_BASE_URL=https://api.example.com
 ```
 
-Deploy and open:
+Deploy and open the Pages site:
 
 ```text
 https://app.example.com
 ```
 
 > [!NOTE]
-> `app.example.com` is a placeholder. If the intended Pages project name is
-> unavailable, set `API_ALLOWED_FRONTEND_ORIGINS=actual.pages.dev` in the VPS `.env`
-> production URL, then reload only FastAPI:
+> If the intended Pages project name is unavailable:
+> - update the VPS `.env`
+>   ```env
+>   API_ALLOWED_FRONTEND_ORIGINS=https://actual.app.example.com
+>   ```
 >
-> ```bash
-> docker compose --profile cloud up -d --no-deps --force-recreate fastapi
-> ```
+> - recreate FastAPI
+>   ```bash
+>   docker compose --profile cloud up -d --no-deps --force-recreate fastapi
+>   ```
 
 Submit one query in the browser. A successful response confirms Pages, CORS, Cloudflare proxying, Nginx, FastAPI, PostgreSQL, and the model provider together.
 
 The cloud profile persists Weixin login state in `heardbackyet_weixin_state` across FastAPI container replacement. This demo has no application-level authentication, so use desensitized data when the API is public.
 
-## 9. Deploy later code updates
+## 9. Later updates
 
-For later backend updates, do not rebuild frozen data:
+Use the matching workflow below for later code or data updates.
 
+### Update the application code
 ```bash
 git pull
 docker compose --profile cloud up --build -d
@@ -184,6 +204,21 @@ docker compose --profile cloud up --build -d
 The one-shot `migrate` container applies pending schema migrations before
 FastAPI starts. Pages automatically rebuilds after pushes to its configured Git
 branch.
+
+### Append application data
+
+Process and normalize the new data locally, then repeat the upload in Step 5.
+
+```bash
+# Insert or update processed application data.
+docker compose --profile cloud run --rm --no-deps \
+  -v "$(pwd)/data:/app/data:ro" \
+  fastapi python -m scripts.manage_db load
+
+# Rebuild retrieval chunks and embeddings.
+docker compose --profile cloud run --rm --no-deps \
+  fastapi python -m scripts.manage_db index
+```
 
 ## What the local code becomes in cloud
 

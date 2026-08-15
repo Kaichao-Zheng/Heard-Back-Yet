@@ -1,14 +1,17 @@
 
 
-<h1 align="center">Heard-Back-Yet</h1>
-
----
+<h1 align="center">Heard Back Yet</h1>
 
 <p align="center">
-  English | <a href="./README_ZH.md">中文</a>
-  <br><br>
-  <a href="https://heardbackyet.pages.dev"><strong>Try the live prototype here.</strong></a>
+  A job application progress Q&A system for recurring questions from relatives.
 </p>
+
+<p align="center">
+  <a href="https://heardbackyet.pages.dev"><strong>Try the live prototype here.</strong></a>
+  <br><br>
+  English | <a href="./README_ZH.md">中文</a>
+</p>
+
 ## 🔍How It Works
 
 ```mermaid
@@ -18,7 +21,7 @@ flowchart LR
     ORCH["Query Orchestration"]
 
     DATA[/"Emails + JDs"/]
-    ETL["Classify · Extract · Associate"]
+    ETL["ETL Pipeline"]
     DB[("PostgreSQL + pgvector")]
 
     RETRIEVE["Structured Retrieval<br/>Hybrid Retrieval"]
@@ -27,9 +30,19 @@ flowchart LR
     QUERY --> MEMORY --> ORCH --> RETRIEVE
     DATA --> ETL --> DB --> RETRIEVE
     RETRIEVE --> RESPONSE
+
+    click QUERY href "https://github.com/Kaichao-Zheng/Heard-Back-Yet/blob/main/docs/sample_queries.md" "sample_queries.md" _self
+    click ORCH href "https://github.com/Kaichao-Zheng/Heard-Back-Yet/blob/main/docs/query_orchestration_sequence.md" "query_orchestration_sequence.md" _self
+    click ETL href "https://github.com/Kaichao-Zheng/Heard-Back-Yet/blob/main/docs/etl_pipeline.md" "etl_pipeline.md" _self
+    click DB href "https://github.com/Kaichao-Zheng/Heard-Back-Yet/blob/main/docs/logical_schema.md" "logical_schema.md" _self
+    click RETRIEVE href "https://github.com/Kaichao-Zheng/Heard-Back-Yet/blob/main/docs/rag_query_pipeline.md" "rag_query_pipeline.md" _self
 ```
 
-For underlying component interactions, see the [`docs/data_pipeline_architecture.md`](./docs/data_pipeline_architecture.md).
+| Key diagram | Content |
+| --- | --- |
+| [**RAG Query Pipeline**](./docs/rag_query_pipeline.md) | How a user query becomes an evidence-grounded answer |
+| [Layered Architecture](./docs/layered_architecture.md) | The system's major layers and their responsibilities |
+| [ETL Pipeline](./docs/etl_pipeline.md) | How emails and job descriptions become linked application records |
 
 
 ## 🚀Getting Started
@@ -46,7 +59,7 @@ git clone https://github.com/Kaichao-Zheng/Heard-Back-Yet.git
 
 ```bash
 # create environment
-python -m venv .venv         # or other name you like
+python -m venv .venv
 
 # activate environment
 source .venv/bin/activate    # macOS/Linux
@@ -57,7 +70,6 @@ source .venv/bin/activate    # macOS/Linux
 
 ```bash
 pip install -r requirements.txt
-python -m pip freeze > requirements.txt
 ```
 
 ### Configure Environment Variables
@@ -87,10 +99,10 @@ RESPONSE_GENERATION_MODEL=qwen3.6:27b
 
 > [!NOTE]
 >
-> Local inference could hit VRAM limits when different models are loaded in sequence. A hosted provider avoids local model switching, but sends model inputs to an external service. Changing the Embedding provider or model requires an explicit index rebuild before semantic or hybrid retrieval can use the new vector space.
->
-> `MODEL_PROVIDER=alibaba_model_studio` uses the service's OpenAI-compatible
-> endpoints and provider-specific extensions such as `enable_thinking`.
+> Local model switching can introduce cold-start latency and may exceed available VRAM when multiple models remain loaded. Hosted providers avoid local model loading but send model inputs externally. 
+> 
+> 1. Rebuild the vector index after changing the embedding provider or model.
+> 2. `MODEL_PROVIDER=alibaba_model_studio` uses OpenAI-compatible endpoints with extensions such as `enable_thinking`.
 
 ### Run a Model API Smoke Test
 
@@ -203,7 +215,7 @@ python -m scripts.run_query "哪些岗位要求AWS"
 
 **Bonus. Inspect diagnostic checkpoints**
 
-See how user queries are orchestrated in [`docs/query_orchestration_sequence.md`](docs/query_orchestration_sequence.md).
+See the end-to-end RAG query pipeline in [`docs/rag_query_pipeline.md`](./docs/rag_query_pipeline.md).
 
 ```powershell
 # Smoke response-model access
