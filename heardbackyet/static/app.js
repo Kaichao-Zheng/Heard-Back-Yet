@@ -14,12 +14,14 @@
   const READINESS_URL = apiUrl("/ready");
   const WEIXIN_LOGIN_URL = apiUrl("/api/v1/weixin/login-sessions");
   const CONVERSATION_STORAGE_KEY = "heardbackyet.conversation_id";
+  const SAMPLE_SCROLL_SPEED = 0.04;
+  const SAMPLE_SCROLL_RESUME_DELAY = 500;
   const sampleQueries = [
+    "最近有什么消息吗",
+    "八月投递了哪些",
     "哪些岗位要求AWS",
-    "平安那边有消息吗",
     "亚马逊是怎么推进的",
-    "最近投了哪些岗位",
-    "四月投了哪些工作"
+    "平安那边有消息吗",
   ];
 
   const outcomeAliases = {
@@ -32,7 +34,7 @@
 
   const initialMessage = {
     role: "assistant",
-    answer: "Hi，这里是 Kai 的\"投了么\"求职百问灵。\n你可以问我 求职进度、最近投递、邮件往来、岗位要求 等应聘动态。",
+    answer: "Hi，这里是 Kai 的\"投了么\"求职百问灵。\n你可以问我 求职进度、最近投递、邮件往来、岗位要求 等应聘动态。\n------\n注意：频繁扫码换绑可能触发微信防滥用导致无回复。\n详见：https://github.com/Tencent/openclaw-weixin/issues/278",
     badge: "欢迎语",
     sources: []
   };
@@ -70,11 +72,16 @@
     form: document.getElementById("queryForm"),
     input: document.getElementById("queryInput"),
     send: document.getElementById("sendButton"),
-    sample: document.querySelector(".sample-query"),
+    sampleList: document.querySelector(".sample-list"),
     weixinEntry: document.getElementById("weixinEntry")
   };
   const weixinEntryLabel = elements.weixinEntry.textContent;
   let weixinFeedbackTimer = null;
+  let sampleScrollLastTime = null;
+  let sampleScrollPosition = null;
+  let sampleScrollPausedUntil = 0;
+  let sampleScrollInteracting = false;
+  const sampleSets = [];
 
   function element(tag, className, text) {
     const node = document.createElement(tag);
@@ -110,10 +117,51 @@
     return references.join(" · ") || "未提供来源详情";
   }
 
-  function initializeSampleQuery() {
-    const query = sampleQueries[Math.floor(Math.random() * sampleQueries.length)];
-    elements.sample.dataset.query = query;
-    elements.sample.textContent = `问问看：${query}`;
+  function initializeSampleQueries() {
+    const track = element("div", "sample-track");
+    [true, false, true].forEach((isDuplicate) => {
+      const set = element("div", "sample-set");
+      if (isDuplicate) set.setAttribute("aria-hidden", "true");
+      sampleQueries.forEach((query) => {
+        const button = element("button", "sample-query", query);
+        button.type = "button";
+        button.dataset.query = query;
+        if (isDuplicate) button.tabIndex = -1;
+        set.appendChild(button);
+      });
+      track.appendChild(set);
+      sampleSets.push(set);
+    });
+    elements.sampleList.appendChild(track);
+  }
+
+  function animateSampleQueries(timestamp) {
+    const cycleWidth = sampleSets.length > 1
+      ? sampleSets[1].offsetLeft - sampleSets[0].offsetLeft
+      : 0;
+    const maxScrollLeft = elements.sampleList.scrollWidth - elements.sampleList.clientWidth;
+    const resetAt = Math.min(cycleWidth * 2, maxScrollLeft);
+    const elapsed = sampleScrollLastTime === null
+      ? 0
+      : Math.min(timestamp - sampleScrollLastTime, 50);
+    sampleScrollLastTime = timestamp;
+
+    if (sampleScrollPosition === null || sampleScrollInteracting || timestamp < sampleScrollPausedUntil) {
+      sampleScrollPosition = elements.sampleList.scrollLeft;
+    }
+
+    if (cycleWidth > 0 && resetAt > cycleWidth + 1 && sampleScrollPosition >= resetAt - 0.5) {
+      sampleScrollPosition -= cycleWidth;
+    } else if (cycleWidth > 0 && sampleScrollPosition <= 0.5) {
+      sampleScrollPosition += cycleWidth;
+    }
+
+    if (!sampleScrollInteracting && timestamp >= sampleScrollPausedUntil && maxScrollLeft > 1) {
+      sampleScrollPosition += elapsed * SAMPLE_SCROLL_SPEED;
+    }
+    elements.sampleList.scrollLeft = sampleScrollPosition;
+
+    window.requestAnimationFrame(animateSampleQueries);
   }
 
   function appendFormattedText(container, text) {
@@ -240,8 +288,6 @@
   }
 
   function render() {
-    const hasUserQuery = state.messages.length > 1;
-    document.body.classList.toggle("has-query", hasUserQuery);
     document.body.classList.toggle("intro-hidden", state.introHidden);
     elements.messageList.replaceChildren();
     state.messages.forEach((message) => elements.messageList.appendChild(renderMessage(message)));
@@ -373,7 +419,38 @@
     }
   });
 
-  elements.sample.addEventListener("click", () => submitQuery(elements.sample.dataset.query || ""));
+  elements.sampleList.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "touch" || event.pointerType === "pen") {
+      sampleScrollInteracting = true;
+    }
+  });
+
+  function pauseSampleAutoScroll(delay) {
+    sampleScrollPausedUntil = window.performance.now() + delay;
+  }
+
+  function resumeSampleAutoScroll() {
+    sampleScrollInteracting = false;
+    pauseSampleAutoScroll(SAMPLE_SCROLL_RESUME_DELAY);
+  }
+
+  elements.sampleList.addEventListener("pointerup", resumeSampleAutoScroll);
+  elements.sampleList.addEventListener("pointercancel", resumeSampleAutoScroll);
+  elements.sampleList.addEventListener("wheel", (event) => {
+    const scrollDistance = Math.abs(event.deltaX) > Math.abs(event.deltaY)
+      ? event.deltaX
+      : event.deltaY;
+    if (scrollDistance === 0) return;
+    event.preventDefault();
+    elements.sampleList.scrollLeft -= scrollDistance;
+    sampleScrollPosition = elements.sampleList.scrollLeft;
+    pauseSampleAutoScroll(SAMPLE_SCROLL_RESUME_DELAY);
+  }, { passive: false });
+
+  elements.sampleList.addEventListener("click", (event) => {
+    const button = event.target.closest(".sample-query");
+    if (button) submitQuery(button.dataset.query || "");
+  });
 
   async function startWeixinLogin() {
     if (elements.weixinEntry.disabled) return;
@@ -409,7 +486,8 @@
 
   window.addEventListener("resize", () => requestAnimationFrame(maybeHideIntro));
 
-  initializeSampleQuery();
+  initializeSampleQueries();
+  window.requestAnimationFrame(animateSampleQueries);
   render();
   autosizeInput();
 })();

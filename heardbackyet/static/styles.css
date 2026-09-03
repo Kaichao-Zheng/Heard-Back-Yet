@@ -213,13 +213,44 @@ a {
 }
 
 .sample-row {
+  width: 100%;
   margin-top: 18px;
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.sample-list {
+  width: 0;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+
+.sample-track,
+.sample-set {
+  display: flex;
+  width: max-content;
   gap: 8px;
 }
 
+.sample-set {
+  flex: 0 0 auto;
+}
+
+.sample-list::-webkit-scrollbar {
+  display: none;
+}
+
 .sample-query {
+  flex: 0 0 auto;
   min-height: 36px;
   padding: 7px 11px;
   border: 1px solid var(--line-strong);
@@ -227,6 +258,7 @@ a {
   background: var(--surface);
   color: var(--ink);
   font-size: 13px;
+  white-space: nowrap;
   cursor: pointer;
   transition: transform 100ms var(--ease), border-color 150ms var(--ease), background-color 150ms var(--ease), color 150ms var(--ease);
 }
@@ -253,8 +285,11 @@ a {
   padding: 22px 18px 26px;
   overflow-y: auto;
   overscroll-behavior-y: contain;
-  scrollbar-width: thin;
-  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: none;
+}
+
+.conversation::-webkit-scrollbar {
+  display: none;
 }
 
 .message-list {
@@ -569,10 +604,6 @@ a {
   cursor: not-allowed;
   opacity: .42;
   filter: none;
-}
-
-body.has-query .sample-row {
-  display: none;
 }
 
 body.intro-hidden .intro {
