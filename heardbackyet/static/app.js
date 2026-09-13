@@ -18,7 +18,7 @@
   const SAMPLE_SCROLL_RESUME_DELAY = 500;
   const sampleQueries = [
     "最近有什么消息吗",
-    "八月投递了哪些",
+    "九月投递了哪些",
     "哪些岗位要求AWS",
     "亚马逊是怎么推进的",
     "平安那边有消息吗",

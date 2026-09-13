@@ -16,7 +16,7 @@ from heardbackyet.model_api import (
 )
 from heardbackyet.paths import ENV_PATH
 
-EMBEDDING_BATCH_SIZE = 20           # the maximum batch size of alibaba model studio
+EMBEDDING_BATCH_SIZE = 10           # a safer batch size for alibaba model studio
 EMBEDDING_TIMEOUT_SECONDS = 120
 
 
